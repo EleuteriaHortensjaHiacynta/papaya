@@ -2,10 +2,34 @@
 //
 
 #include <iostream>
+#include <raylib.h>
+#include "MainMenu.h"
 
-int main()
-{
+
+int main() {
     std::cout << "Hello World!\n";
+
+    Vector2 MousePos = { 0.0f, 0.0f };
+
+    const int WindowHeight = 720;
+    const int WindowWidth = 1280;
+
+    InitWindow(WindowWidth, WindowHeight, "papaya");
+
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+
+        MainMenu(MousePos, WindowWidth, WindowHeight);
+
+        ClearBackground(GREEN);
+        EndDrawing();
+    }
+
+    CloseWindow();
+
+    return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
