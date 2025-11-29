@@ -13,18 +13,25 @@ int main() {
 
     const int WindowHeight = 720;
     const int WindowWidth = 1280;
+    char State = 0;
 
     InitWindow(WindowWidth, WindowHeight, "papaya");
 
     SetTargetFPS(60);
 
+    // this loop only changes the state 
+    // the functions called have their own while loops with drawing etc
+    // because thats the way i found to easily declare things once and not in every iteration
+    // and this also makes it so for example the mouse position is only checked when required and not always
+
     while (!WindowShouldClose()) {
-        BeginDrawing();
-
-        MainMenu(MousePos, WindowWidth, WindowHeight);
-
-        ClearBackground(GREEN);
-        EndDrawing();
+        switch (State) {
+        case 0:
+            MainMenu(MousePos, WindowWidth, WindowHeight);
+            break;
+        default:
+            MainMenu(MousePos, WindowWidth, WindowHeight);
+        }
     }
 
     CloseWindow();
