@@ -126,6 +126,7 @@
     <ClCompile Include="papaya.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GUIRayLib.h" />
     <ClInclude Include="MainMenu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
