@@ -1,6 +1,6 @@
 #pragma once
 #include <raylib.h>
-#include "GUIRayLib.h"
+#include "GUI/GUIRayLib.h"
 
 void MainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight) {
 
