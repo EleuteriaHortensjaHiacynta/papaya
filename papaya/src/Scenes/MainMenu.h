@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include "GUI/GUIRayLib.h"
 
+
 void MainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight) {
 
 	float ExitButtonHeight = 50;
