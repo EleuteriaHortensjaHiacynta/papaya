@@ -19,6 +19,9 @@
     <ClCompile Include="src\papaya.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scenes\scene_test_room.h">
+      <Filter>src\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GUI\GUIRayLib.h">
@@ -26,6 +29,9 @@
     </ClInclude>
     <ClInclude Include="src\Scenes\MainMenu.h">
       <Filter>src\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Player.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

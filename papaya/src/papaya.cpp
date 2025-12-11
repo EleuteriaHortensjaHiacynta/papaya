@@ -4,8 +4,32 @@
 #include <iostream>
 #include <raylib.h>
 #include "Scenes/MainMenu.h"
+#include "Scenes/scene_test_room.h"
 
+int main() {
+    InitWindow(800, 600, "Papaya - Test Room");
+    SetTargetFPS(60);
 
+    SceneTestRoom* testLevel = new SceneTestRoom();
+
+    while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
+
+        // Logika
+        testLevel->Update(dt);
+
+        // Rysowanie
+        BeginDrawing();
+            testLevel->Draw();
+        EndDrawing();
+    }
+
+    delete testLevel;
+    CloseWindow();
+    return 0;
+}
+
+/*
 int main() {
     std::cout << "Hello World!\n";
 
@@ -38,6 +62,7 @@ int main() {
 
     return 0;
 }
+*/
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
