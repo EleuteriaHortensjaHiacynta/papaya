@@ -30,7 +30,7 @@ public:
 	}
 
 	void Update(float deltaTime) {
-
+		
 		// przygotwanie przeszkód
 		std::vector<Rectangle> obstacles;
 		for (const auto& p : platforms) {
