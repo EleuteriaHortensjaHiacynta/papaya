@@ -7,7 +7,18 @@
 #include "Scenes/scene_test_room.h"
 
 int main() {
-    InitWindow(800, 600, "Papaya - Test Room");
+    const int screenWidth = 1280; //tymczasowo const
+    const int screenHeigt = 720; //tymczasowo const
+
+    const int gameWidth = 320;
+    const int gameHeight = 180;
+
+    InitWindow(screenWidth, screenHeigt, "Papaya - Test Room");
+
+    // Tworzenie wirtualne ekranu
+    RenderTexture2D target = LoadRenderTexture(gameWidth, gameHeight);
+    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // ¿eby pixele by³y ostre
+    
     SetTargetFPS(60);
 
     SceneTestRoom* testLevel = new SceneTestRoom();
@@ -18,12 +29,26 @@ int main() {
         // Logika
         testLevel->Update(dt);
 
-        // Rysowanie
-        BeginDrawing();
+        // Rysowanie na ma³ym ekranie
+        BeginTextureMode(target);
+            ClearBackground(RAYWHITE);
+            // Rysowania sceny(gracza+mapy)
             testLevel->Draw();
+        EndTextureMode();
+
+        // Rysowanie rozci¹gniêtego ekranu
+        BeginDrawing();
+            ClearBackground(BLACK);
+            DrawTexturePro(target.texture,
+                { 0.0f, 0.0f, (float)gameWidth, (float)-gameHeight }, // source
+                { 0.0f, 0.0f, (float)screenWidth, (float)screenHeigt }, // dest
+                { 0.0f, 0.0f }, // origin
+                0.0f, // rotation
+                WHITE);
         EndDrawing();
     }
 
+    UnloadRenderTexture(target);
     delete testLevel;
     CloseWindow();
     return 0;

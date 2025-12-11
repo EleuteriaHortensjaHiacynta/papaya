@@ -16,12 +16,12 @@ public:
 	// Konstruktor
 	SceneTestRoom() {
 		// inicjalizacja gracza (do pozycji startowej)
-		player = new Player(100, 300);
+		player = new Player(30, 100);
 
 		// TWORZENIE POZIOMU
-		platforms.push_back({ {0,500,800,50},GRAY }); // pod³oga
-		platforms.push_back({ {200,350,200,20},DARKGRAY }); // lewa platforma
-		platforms.push_back({ {500,200,200,20},BLACK }); // prawa platforma
+		platforms.push_back({ {0,160,320,40},GRAY }); // pod³oga
+		platforms.push_back({ {100,110,80,10},DARKGRAY }); // lewa platforma
+		platforms.push_back({ {220,70,60,10},BLACK }); // prawa platforma
 	}
 
 	// Destruktor
@@ -40,8 +40,8 @@ public:
 		player->Update(deltaTime, obstacles);
 
 		// reset gracza do pozycji wyjœciowej
-		if (player->position.y > 1000) {
-			player->position = { 100,300 };
+		if (player->position.y > 250) {
+			player->position = { 30,100 };
 			player->velocity = { 0,0 };
 		}
 	}
@@ -57,6 +57,6 @@ public:
 		player->Draw();
 
 		// Debug info
-		DrawText("Sterowanie: Strza³ki + Spacja", 10, 20, 10, DARKGRAY);
+		DrawText("Sterowanie: Strza³ki + Spacja", 5, 5, 5, DARKGRAY);
 	}
 };
