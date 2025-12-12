@@ -1,6 +1,12 @@
 #pragma once
 #include <raylib.h>
 #include "GUI/GUIRayLib.h"
+#include <iostream>
+
+
+void testerFunct() {
+	std::cout << "It actually worked" << std::endl;
+}
 
 void MainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight) {
 
@@ -20,14 +26,15 @@ void MainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight) {
 	Button ButtonTest2(MainButtons[2], GRAY, RED, SKYBLUE);
 	Button ButtonTest3(MainButtons[3], GRAY, RED, SKYBLUE);
 	Button ButtonTest4(MainButtons[4], GRAY, RED, SKYBLUE);
+	ButtonTest4.storeFunction(testerFunct);
 
 	while (!WindowShouldClose()) {
 		BeginDrawing();
-		ButtonTest0.MouseDetection();
-		ButtonTest1.MouseDetection();
-		ButtonTest2.MouseDetection();
-		ButtonTest3.MouseDetection();
-		ButtonTest4.MouseDetection();
+		ButtonTest0.detectMouseInteraction();
+		ButtonTest1.detectMouseInteraction();
+		ButtonTest2.detectMouseInteraction();
+		ButtonTest3.detectMouseInteraction();
+		ButtonTest4.detectMouseInteraction();
 		ClearBackground(GREEN);
 		EndDrawing();
 	}
