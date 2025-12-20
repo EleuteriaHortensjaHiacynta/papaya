@@ -17,6 +17,9 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{15e7e3e7-afe6-443c-8cab-81753482a968}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Entities">
+      <UniqueIdentifier>{c0723f7e-7b27-4664-8a23-d6503b2e7a21}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\papaya.cpp">
@@ -33,12 +36,18 @@
     <ClInclude Include="src\Scenes\MainMenu.h">
       <Filter>src\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="src\Player.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Entities\Entity.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entities\Player.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entities\Wall.h">
+      <Filter>src\Entities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\player_walk.png">
+    <Image Include="assets\player.png">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>

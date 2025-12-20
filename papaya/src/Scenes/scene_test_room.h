@@ -1,87 +1,101 @@
 #pragma once
 #include "raylib.h"
 #include <vector>
-#include "Player.h"
-
-struct Platform {
-	Rectangle rect;
-	Color color;
-};
+#include "Entities/Player.h"
+#include "Entities/Wall.h"
 
 class SceneTestRoom {
 public:
-	Player* player;
-	std::vector<Platform> platforms;
-
+	std::vector<Entity*> entities;
+	Player* playerRef; // wskaŸnik na gracza (przyda siê do kamery)
 
 	Camera2D camera = { 0 };
 
 	// Konstruktor
 	SceneTestRoom() {
 		// inicjalizacja gracza (do pozycji startowej)
-		player = new Player(30, 100);
+		playerRef = new Player(30, 100);
+		entities.push_back(playerRef); // dodajemy gracza do gry
 
 		// TWORZENIE POZIOMU
-		platforms.push_back({ {0,160,320,40},GRAY }); // pod³oga
-		platforms.push_back({ {100,110,80,10},DARKPURPLE }); // lewa platforma
-		platforms.push_back({ {220,70,60,10},BLACK }); // prawa platforma
+		entities.push_back(new Wall(0, 160, 320, 40)); // pod³oga
+		entities.push_back(new Wall(100, 110, 80, 10)); // lewa platforma
+		entities.push_back(new Wall(220, 70, 60, 10)); // prawa platforma
 
-		camera.target = { player->position.x, player->position.y }; // na co patrzy kamera
-		camera.offset = { 320.0f / 2.0f, 180.0f / 2.0f }; // punkt œrodka na ekranie
+		// konfiguracja kamery 
+		camera.target = { playerRef->position.x, playerRef->position.y };
+		camera.offset = { 160.0f, 90.0f };
 		camera.rotation = 0.0f;
 		camera.zoom = 1.0f;
+		
 	}
 
 	// Destruktor
 	~SceneTestRoom() {
-		delete player;
+		for (Entity* e : entities) {
+			delete e;
+		}
+		entities.clear();
 	}
 
 	void Update(float deltaTime) {
 
-		// przygotwanie przeszkód
-		std::vector<Rectangle> obstacles;
-		for (const auto& p : platforms) {
-			obstacles.push_back(p.rect);
+		// Update wszystkich entity
+		for (Entity* e : entities) {
+			if (e->active) {
+				e->Update(deltaTime);
+			}
 		}
 
-		player->Update(deltaTime, obstacles);
+
+		// Detekcja kolizji dla wszystkich entity
+		for (auto it1 = entities.begin(); it1 != entities.end(); ++it1) {
+			for (auto it2 = entities.begin(); it2 != entities.end(); ++it2) {
+				Entity* a = *it1;
+				Entity* b = *it2;
+
+				if (a == b) continue; // nie sprawdzamy samych ze sob¹
+				if (!a->active || !b->active) continue; // niesprawdzamy nieaktywnych
+
+				if (CheckCollisionRecs(a->GetRect(), b->GetRect())) {
+					a->OnCollision(b); // na odwrót { b -> OC(a); } i tak siê wykona przez pêtle 
+				}
+			}
+		}
 
 		// reset gracza do pozycji wyjœciowej
-		if (player->position.y > 250) {
-			player->position = { 30,100 };
-			player->velocity = { 0,0 };
+		if (playerRef->position.y > 250) {
+			playerRef->position = { 30,100 };
+			playerRef->velocity = { 0,0 };
 		}
 
-		Vector2 targetPos = { player->position.x + player->size.x / 2, player->position.y + player->size.y / 2 };
+		if (playerRef) {
+			playerRef->UpdateAnimation(deltaTime);
+			
+			// kamera
+			float targetX = playerRef->position.x;
+			float targetY = playerRef->position.y;
 
-		camera.target.x += (targetPos.x - camera.target.x) * 5.0f * deltaTime;
-		camera.target.y += (targetPos.y - camera.target.y) * 5.0f * deltaTime;
-
-
+			camera.target.x = floor(targetX);
+			camera.target.y = floor(targetY);
+		}
 	}
 
 	void Draw() {
-		//rysowanie t³a
-		ClearBackground(DARKGRAY);
+		// rysowanie t³a
+		ClearBackground(RAYWHITE);
 
-		Camera2D renderCam = camera;
+		// tryb kamery 2D
+		BeginMode2D(camera);
 
-		renderCam.target.x = floor(camera.target.x);
-		renderCam.target.y = floor(camera.target.y);
-		// ¿eby nie by³o sub-pixel rendering zaokr¹glamy float w lerpie do inta
-
-		BeginMode2D(renderCam);
-
-		for (const auto& p : platforms) {
-			DrawRectangleRec(p.rect, p.color);
-		}
-
-		player->Draw();
+			for (Entity* e : entities) {
+				if (e->active) e->Draw();
+			}
 
 		EndMode2D();
 
 		// Debug info
 		DrawText("Sterowanie: Strza³ki + Spacja", 5, 5, 5, DARKGRAY);
+		DrawText(TextFormat("Pos: %.0f, %.0f", playerRef->position.x, playerRef->position.y), 10, 40, 20, LIGHTGRAY);
 	}
 };

@@ -7,6 +7,7 @@
 #include "Scenes/scene_test_room.h"
 
 int main() {
+
     const int screenWidth = 1280; //tymczasowo const
     const int screenHeigt = 720; //tymczasowo const
 
