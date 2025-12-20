@@ -1,17 +1,7 @@
 #pragma once
 #include "raylib.h"
-#include <algorithm>
 #include <vector>
-
-// Pomocnicza funkcja do p³ynnej zmiany wartoœci (+- Lerp)
-// Mo¿emy jej u¿ywaæ jako efekt uboczny dzia³ania jakiegoœ artefaktu czy cuœ
-inline float Approach(float current, float target, float increase) {
-	if (current < target)
-		return std::min(current + increase, target);
-
-	else
-		return std::max(current - increase, target);
-}
+#include "Entities/Entity.h"
 
 enum AnimState {
 	IDLE,
@@ -21,10 +11,10 @@ enum AnimState {
 	TURN
 };
 
-
-class Player {
+class Player : public Entity {
 public:
 	Vector2 position;
+	Vector2 prevPosition;
 	Vector2 velocity;
 	Vector2 size;
 
@@ -65,14 +55,12 @@ public:
 	bool isFacingRight = true;
 
 	//Konstruktor
-	Player(float startX, float startY) {
+	Player(float startX, float startY) : Entity({ startX, startY }, PLAYER) {
 		position = { startX, startY };
+		prevPosition = position;
 		velocity = { 0, 0 };
-
 		texture = LoadTexture("Assets/player.png");
-
 		frameRec = { 0.0f, 0.0f, 16.0f, 16.0f };
-
 		size = { 10.0f, 14.0f };
 	}
 
@@ -81,7 +69,10 @@ public:
 	}
 
 	// Update przyjmuje listê przeszkód
-	void Update(float deltaTime, const std::vector<Rectangle>& obstacles) {
+	void Update(float deltaTime) override {
+
+		// Zapisujemy prevPosition
+		prevPosition = position;
 
 		// Inputy i bufforowanie skoku
 		bool jumpPressed = IsKeyPressed(KEY_SPACE);
@@ -109,31 +100,6 @@ public:
 			velocity.x = 0;
 		}
 
-
-		//Kod do akceleracji
-		// ruch poziomy
-		/*
-		float targetSpeed = moveInput * maxSpeed;
-
-		float currentAccel;
-		float currentFriction;
-		if (isGrounded) {
-			// na ziemi
-			currentAccel = 4000.0;
-			currentFriction = 3500.0;
-		}
-		else {
-			// w powietrzu
-			currentAccel = 1500.0f;
-			currentFriction = 800.0f;
-		}
-
-		float accelRate = (moveInput != 0) ? currentAccel : currentFriction;
-
-		velocity.x = Approach(velocity.x, targetSpeed, accelRate * deltaTime);
-		*/
-
-
 		// skok
 		if (jumpBufferCounter > 0 && coyoteTimeCounter > 0)
 		{
@@ -158,34 +124,19 @@ public:
 
 		// Oœ X
 		position.x += velocity.x * deltaTime;
-		Rectangle playerRect = GetRect();
-
-		for (const auto& obs : obstacles) {
-			if (CheckCollisionRecs(playerRect, obs)) {
-				if (velocity.x > 0) position.x = obs.x - size.x;
-				else if (velocity.x < 0) position.x = obs.x + obs.width;
-				velocity.x = 0;
-				playerRect.x = position.x;
-			}
-		}
 
 		// Oœ Y
 		position.y += velocity.y * deltaTime;
-		playerRect.y = position.y;
+	}
 
-		for (const auto& obs : obstacles) {
-			if (CheckCollisionRecs(playerRect, obs)) {
-				if (velocity.y > 0) {
-					position.y = obs.y - size.y;
-					velocity.y = 0;
-					isGrounded = true;
-				}
-				else if (velocity.y < 0) {
-					position.y = obs.y + obs.height;
-					velocity.y = 0;
-				}
-			}
-		}
+	void UpdateAnimation(float deltaTime) {
+		// Kierunek ruchu
+		// -1 lewo
+		//  0 brak
+		// +1 prawo
+		float moveInput = 0.0f;
+		if (IsKeyDown(KEY_RIGHT)) moveInput = 1.0f;
+		if (IsKeyDown(KEY_LEFT)) moveInput = -1.0f;
 
 		// STATE MACHINE
 		if (moveInput != 0.0f) {
@@ -222,7 +173,6 @@ public:
 				}
 			}
 		}
-
 
 		// mapa
 
@@ -276,12 +226,54 @@ public:
 	}
 
 	//potrzebne do kolizji
-	Rectangle GetRect() {
+	Rectangle GetRect() override {
 		return { position.x, position.y, size.x, size.y };
 	}
 
+	void OnCollision(Entity* other) override {
+		if (other->type == WALL) {
+			
+			Rectangle otherRect = other->GetRect(); // prostok¹t œciany
+
+			// dolna krawêdŸ gracza w poprzedniej klatce
+			float prevBottom = prevPosition.y + size.y;
+
+			// lewa i prawa krawêdŸ w poprzedniej klatce
+			float prevRight = prevPosition.x + size.x;
+			float prevLeft = prevPosition.x;
+
+			if (prevBottom <= otherRect.y + 2.0f) { // 2.0f toleracji dla floatów 
+				// jesteœmy na ziemi
+				position.y = otherRect.y - size.y;
+				velocity.y = 0;
+				isGrounded = true;
+			}
+
+			// entity pod przeszkod¹ (sufit)
+			else if(prevPosition.y >= otherRect.y + otherRect.height - 2.0f) { // 2.0f tolerancji dla floatów
+				position.y = otherRect.y + otherRect.height;
+				velocity.y = 0;
+			}
+
+			// œciana boczna
+			else {
+				// czy entity by³o z lewej strony
+				if (prevRight <= otherRect.x + 5.0f) { // margines b³êdu
+					position.x = otherRect.x - size.x;
+				}
+				// czy entity by³o z prawej strony
+				else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) { // margines b³êdu
+					position.x = otherRect.x + otherRect.width;
+				}
+
+				velocity.x = 0;
+			}
+			
+		}
+	}
+
 	//funkcja rysuj¹ca
-	void Draw() {
+	void Draw() override {
 
 		float sourceWidth = isFacingRight ? frameRec.width : -frameRec.width;
 

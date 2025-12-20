@@ -131,12 +131,14 @@
     <ClCompile Include="src\papaya.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Entities\Entity.h" />
+    <ClInclude Include="src\Entities\Player.h" />
+    <ClInclude Include="src\Entities\Wall.h" />
     <ClInclude Include="src\GUI\GUIRayLib.h" />
-    <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\Scenes\MainMenu.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="assets\player_walk.png" />
+    <Image Include="assets\player.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
