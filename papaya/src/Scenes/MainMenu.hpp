@@ -34,6 +34,20 @@ void sceneMainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight, bool &Sh
 	ButtonTest4.storeFunction(quitFunct, std::ref(ShouldQuit));
 	ButtonTest4.addText("Quit", 40, WHITE);
 
+
+	Grid gridTest(3, 3, 200, 200, 500, 10);
+
+
+	//makes a smart pointer so theres no manual deleting
+	auto subgridTest = std::make_shared<Grid>(10, 3, 50, 50, 0, 0);
+
+	gridTest.insertWidget(1, 1, subgridTest);
+	subgridTest->setPosition(gridTest.cells[1][1].rect);
+	subgridTest->setParent(&gridTest);
+	subgridTest->expandSubgridToFillCell();
+
+
+
 	while (!WindowShouldClose() && !ShouldQuit ) {
 		BeginDrawing();
 		ButtonTest0.detectMouseInteraction();
@@ -41,7 +55,9 @@ void sceneMainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight, bool &Sh
 		ButtonTest2.detectMouseInteraction();
 		ButtonTest3.detectMouseInteraction();
 		ButtonTest4.detectMouseInteraction();
+		gridTest.draw();
 		ClearBackground(GREEN);
 		EndDrawing();
 	}
+
 }
