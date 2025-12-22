@@ -21,10 +21,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\GUI\GUIRayLib.h">
+    <ClInclude Include="src\GUI\GUIRayLib.hpp">
       <Filter>src\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="src\Scenes\MainMenu.h">
+    <ClInclude Include="src\Scenes\MainMenu.hpp">
       <Filter>src\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
