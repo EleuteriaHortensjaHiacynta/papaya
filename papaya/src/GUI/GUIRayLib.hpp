@@ -3,6 +3,9 @@
 #include <functional>
 #include <tuple>
 #include <utility>
+#include <string>
+#include <vector>
+
 
 class Button {
 private:
@@ -12,9 +15,18 @@ private:
 public:
 	Rectangle PositionSize;
 	Vector2 MousePos;
+	
 	Color ColourBase;
 	Color ColourHover;
 	Color ColourClick;
+	Color TextColour;
+	
+	std::string Text;
+	int FontSize;
+	int TextLength;
+
+	int TextX;
+	int TextY;
 
 	Button(Rectangle POSITIONSIZE, Color Base, Color Hover, Color Click) {
 		PositionSize = POSITIONSIZE;
@@ -23,8 +35,18 @@ public:
 		ColourClick = Click;
 	}
 
+	void addText(std::string PassedText, int PassedFontSize, Color PassedTextColour) {
+		Text = PassedText;
+		TextLength = MeasureText(Text.c_str(), PassedFontSize);
+		TextColour = PassedTextColour;
+		FontSize = PassedFontSize;
+		TextX = PositionSize.x + (PositionSize.width - TextLength) / 2;
+		TextY = PositionSize.y + (PositionSize.height - FontSize) / 2;
+	}
+
 	void draw(Color Colour) {
 		DrawRectangleRec(PositionSize, Colour);
+		DrawText(Text.c_str(), TextX, TextY, FontSize, TextColour);
 	}
 
 	//the template allows for passing a function of any type
@@ -51,7 +73,7 @@ public:
 		//control output
 		std::cout << MousePos.x << " " << MousePos.y << std::endl;
 		if (CheckCollisionPointRec(MousePos, PositionSize)) {
-			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 				draw(ColourClick);
 				if (mPassedFunction) {
 					mPassedFunction();
@@ -64,6 +86,36 @@ public:
 		else {
 			draw(ColourBase);
 		}
+	}
+	
+
+};
+
+class Grid {
+private:
+	const int Rows;
+	const int RowHeight;
+
+	const int Columns;
+	const int ColumnWidth;
+
+	std::vector < std::vector < Rectangle > > Cells;
+
+public:
+
+	//top left corner is the origin of the grid, everything gets set relative to it
+	int OriginX;
+	int OriginY;
+	
+	Grid(int PassedRows, int PassedColumns, int PassedRowHeight, int PassedColumnWidth,
+		int GridOriginX, int GridOriginY)
+		: Rows(PassedRows), Columns(PassedColumns),
+		RowHeight(PassedRowHeight), ColumnWidth(PassedColumnWidth) 
+	{
+		OriginX = GridOriginX;
+		OriginY = GridOriginY;
+
+
 	}
 
 

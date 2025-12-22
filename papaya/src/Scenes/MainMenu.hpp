@@ -1,6 +1,6 @@
 #pragma once
 #include <raylib.h>
-#include "GUI/GUIRayLib.h"
+#include "GUI/GUIRayLib.hpp"
 #include <iostream>
 
 
@@ -8,7 +8,11 @@ void testerFunct() {
 	std::cout << "It actually worked" << std::endl;
 }
 
-void MainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight) {
+void quitFunct(bool &ShouldQuit){
+	ShouldQuit = true;
+}
+
+void sceneMainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight, bool &ShouldQuit) {
 
 	float ExitButtonHeight = 50;
 	float ExitButtonWidth = 300;
@@ -26,9 +30,11 @@ void MainMenu(Vector2 MousePos, int WindowWidth, int WindowHeight) {
 	Button ButtonTest2(MainButtons[2], GRAY, RED, SKYBLUE);
 	Button ButtonTest3(MainButtons[3], GRAY, RED, SKYBLUE);
 	Button ButtonTest4(MainButtons[4], GRAY, RED, SKYBLUE);
-	ButtonTest4.storeFunction(testerFunct);
+	//std::ref kiedy chcemy uzyc reference aka & do guzika
+	ButtonTest4.storeFunction(quitFunct, std::ref(ShouldQuit));
+	ButtonTest4.addText("Quit", 40, WHITE);
 
-	while (!WindowShouldClose()) {
+	while (!WindowShouldClose() && !ShouldQuit ) {
 		BeginDrawing();
 		ButtonTest0.detectMouseInteraction();
 		ButtonTest1.detectMouseInteraction();
