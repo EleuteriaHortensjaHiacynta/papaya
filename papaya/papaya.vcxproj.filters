@@ -45,9 +45,15 @@
     <ClInclude Include="src\Entities\Wall.h">
       <Filter>src\Entities</Filter>
     </ClInclude>
+    <ClInclude Include="src\Entities\Dummy.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="assets\slash.png">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>
