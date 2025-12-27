@@ -4,19 +4,19 @@
 #include <iostream>
 #include <raylib.h>
 #include "Scenes/MainMenu.hpp"
+#include "Scenes/Test.hpp"
+#include "level_editor/level_editor.hpp"
 
 
 int main() {
     std::cout << "Hello World!\n";
 
-    Vector2 MousePos = { 0.0f, 0.0f };
+    int windowHeight = 900;
+    int windowWidth = 1600;
+    int state = 2;
+    bool shouldQuit = false;
 
-    const int WindowHeight = 720;
-    const int WindowWidth = 1280;
-    char State = 0;
-    bool ShouldQuit = false;
-
-    InitWindow(WindowWidth, WindowHeight, "papaya");
+    InitWindow(windowWidth, windowHeight, "papaya");
 
     SetTargetFPS(60);
 
@@ -25,13 +25,19 @@ int main() {
     // because thats the way i found to easily declare things once and not in every iteration
     // and this also makes it so for example the mouse position is only checked when required and not always
 
-    while (!WindowShouldClose() && !ShouldQuit) {
-        switch (State) {
+    while (!WindowShouldClose() && !shouldQuit) {
+        std::cout << state << std::endl;
+        switch (state) {
         case 0:
-            sceneMainMenu(MousePos, WindowWidth, WindowHeight, ShouldQuit);
+            sceneMainMenu(windowWidth, windowHeight, shouldQuit, state);
             break;
+        case 1:
+            sceneTest(shouldQuit, state);
+            break;
+        case 2:
+            sceneLevelEditor(shouldQuit, state, windowHeight, windowWidth);
         default:
-            sceneMainMenu(MousePos, WindowWidth, WindowHeight, ShouldQuit);
+            sceneMainMenu(windowWidth, windowHeight, shouldQuit, state);
         }
     }
 
