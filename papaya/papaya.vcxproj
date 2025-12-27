@@ -131,8 +131,11 @@
     <ClCompile Include="src\papaya.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\GUI\GUIRayLib.hpp" />
+    <ClInclude Include="src\GUI\GUI_raylib.hpp" />
+    <ClInclude Include="src\level_editor\level_editor.hpp" />
+    <ClInclude Include="src\Scenes\scene_functions.hpp" />
     <ClInclude Include="src\Scenes\MainMenu.hpp" />
+    <ClInclude Include="src\Scenes\Test.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

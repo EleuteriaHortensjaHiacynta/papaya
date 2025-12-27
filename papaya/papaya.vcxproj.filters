@@ -14,6 +14,9 @@
     <Filter Include="src\Scenes">
       <UniqueIdentifier>{77ac8d31-cdbc-409f-b41f-bd8a2c211b53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\level_editor">
+      <UniqueIdentifier>{8b8cf815-eada-43ed-8cb2-af3f81c31d3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\papaya.cpp">
@@ -21,11 +24,20 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\GUI\GUIRayLib.hpp">
+    <ClInclude Include="src\GUI\GUI_raylib.hpp">
       <Filter>src\GUI</Filter>
     </ClInclude>
     <ClInclude Include="src\Scenes\MainMenu.hpp">
       <Filter>src\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scenes\Test.hpp">
+      <Filter>src\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scenes\scene_functions.hpp">
+      <Filter>src\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\level_editor\level_editor.hpp">
+      <Filter>src\level_editor</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
