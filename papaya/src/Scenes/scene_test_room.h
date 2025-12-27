@@ -106,16 +106,17 @@ public:
 
 								float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
 
-								float recoilForceX = 90.0f; // lekkie odbicie do boku
-								float recoilForceY = 0.0f;
+								float pushForce = 100.0f;
 
-								pPlayer->mVelocity.x = recoilDir * recoilForceX;
+								pPlayer->mVelocity.x = recoilDir * pushForce;
 
-								pPlayer->mVelocity.y = recoilForceY;
-								pPlayer->mIsGrounded = false;
+								if (pPlayer->mIsGrounded) {
+									pPlayer->mVelocity.y = -25.0f;
+									pPlayer->mIsGrounded = false;
+								}
 
 								// Aktywujemy timer, ¿eby player.h wiedzia³, ¿e ma siê "œlizgaæ" 
-								pPlayer->mRecoilTimer = 0.25f;
+								pPlayer->mRecoilTimer = 0.20f;
 
 								pPlayer->mIsDashing = false;
 								pPlayer->mCanDash = true;
@@ -159,7 +160,7 @@ public:
 		EndMode2D();
 
 		// Debug info
-		DrawText("Sterowanie: arrow keys, \nX - sword swing,\nZ - dash,\nSPACE - jump", 5, 5, 5, DARKGRAY);
+		DrawText("Sterowanie: arrow keys, \nZ - sword swing,\nC - dash,\nSPACE - jump", 5, 5, 5, DARKGRAY);
 		DrawText("Zielone pole -> training dummy", 5, 160, 5, GREEN);
 		DrawText("Polecam przetesowac:\nSuperdash\nSkakanie po przeciwniku (POGO)", 150, 5, 5, DARKBLUE);
 		//DrawText(TextFormat("Pos: %.0f, %.0f", pPlayer->mPosition.x, pPlayer->mPosition.y), 10, 40, 20, LIGHTGRAY);
