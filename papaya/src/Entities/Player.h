@@ -182,9 +182,15 @@ private:
 			return;
 		}
 
+		if (mMomentumTimer > 0) {
+			mVelocity.x = approach(mVelocity.x, 0, mRecoilFriction * deltaTime);
+			return;
+		}
+
 		float moveDir = 0.0f;
 		if (IsKeyDown(KEY_RIGHT)) moveDir = 1.0f;
 		if (IsKeyDown(KEY_LEFT)) moveDir = -1.0;
+
 
 		if (mMomentumTimer > 0 && fabsf(mVelocity.x) > mMaxSpeed) {
 
@@ -192,7 +198,10 @@ private:
 				mVelocity.x += moveDir * mAcceleration * 0.5f * deltaTime;
 			}
 
-			mVelocity.x = approach(mVelocity.x, 0, (mFriction * 0.70f) * deltaTime);
+			float currentFriction = mIsGrounded ? 200.0f : (mFriction * 0.6f);
+
+			mVelocity.x = approach(mVelocity.x, 0, currentFriction * deltaTime);
+			
 		}
 		else {
 			if (moveDir != 0) {
