@@ -5,7 +5,7 @@
 #include <raylib.h>
 #include "Scenes/MainMenu.hpp"
 #include "Scenes/Test.hpp"
-#include "level_editor/level_editor.hpp"
+#include "level_editor/scene_level_editor.hpp"
 
 
 int main() {
@@ -19,6 +19,8 @@ int main() {
     InitWindow(windowWidth, windowHeight, "papaya");
 
     SetTargetFPS(60);
+
+
 
     // this loop only changes the state 
     // the functions called have their own while loops with drawing etc

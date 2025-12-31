@@ -8,6 +8,13 @@
 void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int windowWidth) {
 	shouldQuit = true;
 
+
+
+	Texture2D textureAtlas = LoadTexture("src/GUI/textures/testingAtlas0.png");
+	
+
+
+
 	int sidePanelWidth = 300;
 
 	Grid topGrid(1, 10, 40, windowWidth / 10, 0, 0);
@@ -25,12 +32,19 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		bottomGrid.draw();
 		tilePropertyGrid.draw();
 		test.renderLines();
-		test.interactionDetection();
+		test.draw(textureAtlas);
+		test.gridInteraction();
 
 		std::cout << "Testing." << std::endl;
-		ClearBackground(SKYBLUE);
+		
 		EndDrawing();
+		ClearBackground(SKYBLUE);
 	}
+
+	UnloadTexture(textureAtlas);
+	
+
+	test.toJson("test0.json");
 
 }
 

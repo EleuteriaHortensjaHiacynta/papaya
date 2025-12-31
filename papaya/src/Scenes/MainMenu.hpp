@@ -45,7 +45,7 @@ void sceneMainMenu(int WindowWidth, int WindowHeight, bool &shouldQuit, int &sta
 	auto subgridTest = std::make_shared<Grid>(10, 3, 50, 50, 0, 0);
 
 	gridTest.insertWidget(1, 1, subgridTest);
-	subgridTest->setPosition(gridTest.cells[1][1].rect);
+	subgridTest->setPosition(gridTest.mCells[1][1].rect);
 	subgridTest->setParent(&gridTest);
 	subgridTest->expandSubgridToFillCell();
 

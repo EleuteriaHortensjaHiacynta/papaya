@@ -131,8 +131,10 @@
     <ClCompile Include="src\papaya.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\external_headers\json.hpp" />
     <ClInclude Include="src\GUI\GUI_raylib.hpp" />
-    <ClInclude Include="src\level_editor\level_editor.hpp" />
+    <ClInclude Include="src\level_editor\functions_level_editor.hpp" />
+    <ClInclude Include="src\level_editor\scene_level_editor.hpp" />
     <ClInclude Include="src\Scenes\scene_functions.hpp" />
     <ClInclude Include="src\Scenes\MainMenu.hpp" />
     <ClInclude Include="src\Scenes\Test.hpp" />
