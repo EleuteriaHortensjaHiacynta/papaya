@@ -17,6 +17,12 @@
     <Filter Include="src\level_editor">
       <UniqueIdentifier>{8b8cf815-eada-43ed-8cb2-af3f81c31d3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="external_headers">
+      <UniqueIdentifier>{2306bf76-0461-424b-8b90-88691e59c9e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\GUI\textures">
+      <UniqueIdentifier>{f4dbad20-bb50-4546-97d9-e54e4e0bd827}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\papaya.cpp">
@@ -36,8 +42,14 @@
     <ClInclude Include="src\Scenes\scene_functions.hpp">
       <Filter>src\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="src\level_editor\level_editor.hpp">
+    <ClInclude Include="src\level_editor\scene_level_editor.hpp">
       <Filter>src\level_editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\level_editor\functions_level_editor.hpp">
+      <Filter>src\level_editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\external_headers\json.hpp">
+      <Filter>external_headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
