@@ -11,6 +11,20 @@
 
 using json = nlohmann::json;
 
+inline Rectangle fetchTexture(Texture2D atlas, int tileSize, int index) {
+	const int ATLAS_WIDTH = 8;
+	const int ATLAS_HEIGHT = 8; 
+
+	int tileX = index % ATLAS_WIDTH;
+	int tileY = index / ATLAS_HEIGHT;
+
+	return Rectangle{
+	(float)tileX * tileSize,
+	(float)tileY * tileSize,
+	(float)tileSize,
+	(float)tileSize
+	};
+}
 
 class Widget {
 public:
@@ -54,6 +68,12 @@ public:
 	Color colourClick;
 	Color textColour;
 
+	Texture2D mAtlas;
+	bool hasImage = false;
+	int mHeldID;
+	int mImHeight;
+	int mImWidth;
+
 	std::string text;
 	int fontSize = 0;
 	int textLength = 0;
@@ -66,6 +86,15 @@ public:
 		colourBase = base;
 		colourHover = hover;
 		colourClick = click;
+	}
+
+	Button(Rectangle positionSize, Texture2D atlas, int ID, int imWidth, int imHeight) {
+		this->positionSize = positionSize;
+		mAtlas = atlas;
+		hasImage = true;
+		mHeldID = ID;
+		mImWidth = imWidth;
+		mImHeight = imHeight;
 	}
 
 	//adds text to the button and roughly centers it
@@ -115,26 +144,50 @@ public:
 
 	//updates the position of the mouse 
 	void detectMouseInteraction() {
-		if (CheckCollisionPointRec(MousePosition::sMousePos, positionSize)) {
-			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-				render(colourClick);
-				if (mPassedFunction) {
-					mPassedFunction();
-				}
+
+		bool hovered = CheckCollisionPointRec(MousePosition::sMousePos, positionSize);
+		bool clicked = hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+
+		if (hasImage) {
+			Rectangle src = fetchTexture(mAtlas, 8, mHeldID);
+			Rectangle dst = {
+				positionSize.x,
+				positionSize.y,
+				(float)mImWidth,
+				(float)mImHeight
+			};
+			if (clicked) {
+				DrawTexturePro(mAtlas, src, dst, Vector2{ 0, 0 }, 0.0f, GRAY);
 			}
 			else {
+				DrawTexturePro(mAtlas, src, dst, Vector2{ 0, 0 }, 0.0f, WHITE);
+			}
+
+		}
+
+		else {
+			if (clicked) {
+				render(colourClick);
+			}
+			else if (hovered) {
 				render(colourHover);
 			}
+			else {
+				render(colourBase);
+			}
 		}
-		else {
-			render(colourBase);
+
+		if (clicked && mPassedFunction) {
+			mPassedFunction();
 		}
+				
 	}
 
 
 	void Widget::draw() override {
 		detectMouseInteraction();
 	}
+
 
 	void Widget::setPosition(Rectangle rect) override {
 		positionSize.x = rect.x;
@@ -158,11 +211,9 @@ struct Cell {
 class Grid : public Widget{
 private:
 	const int mRows;
-	int rowHeight;
-
 	const int mColumns;
+	int rowHeight;
 	int columnWidth;
-
 
 	//from what i read there's no need to use delete later 
 	// because this pointer doesnt own the parent grid so it shouldnt even delete it
@@ -174,6 +225,7 @@ public:
 	// top left corner is the origin of the grid, everything gets set relative to it
 	int mOriginX;
 	int mOriginY;
+
 
 	Grid(int passedRows,
 		int passedColumns,
@@ -285,6 +337,17 @@ struct Line {
 struct TileData {
 	int textureID;
 	int layer;
+	bool collision;
+	bool damage;
+};
+
+
+
+struct Chunk {
+	int x;
+	int y;
+
+	TileData array[64][64];
 };
 
 
@@ -293,23 +356,49 @@ struct TileData {
 void to_json(json& j, const TileData& t) {
 	j = json{
 		{"textureID", t.textureID},
-		{"layer", t.layer}
+		{"layer", t.layer},
+		{"collision", t.collision},
+		{"damage", t.damage}
 	};
 }
 
-void from_json(json& j, TileData& t) {
+void from_json(const json& j, TileData& t) {
 	j.at("textureID").get_to(t.textureID);
 	j.at("layer").get_to(t.layer);
+	j.at("collision").get_to(t.collision);
+	j.at("damage").get_to(t.damage);
 }
 
-struct InteractiveGridCell {
-	int row;
-	int column;
+//json conversion Chunk struct
 
-	Rectangle bounds;   //camera space coordinates
+void to_json(json& j, const Chunk& t) {
+	j["x"] = t.x;
+	j["y"] = t.y;
 
-	TileData tile;
-};
+	j["array"] = json::array();
+
+	for (int row = 0; row < 64; row++) {
+		json rowArray = json::array();
+		for (int column = 0; column < 64; column++) {
+			rowArray.push_back(t.array[row][column]);
+		}
+		j["array"].push_back(rowArray);
+	}
+}
+
+void from_json(const json& j, Chunk& t) {
+	j.at("x").get_to(t.x);
+	j.at("y").get_to(t.y);
+
+	const auto& arr = j.at("array");
+
+	for (int row = 0; row < 64; row++) {
+		for (int column = 0; column < 64; column++) {
+			arr[row][column].get_to(t.array[row][column]);
+		}
+	}
+}
+
 
 class InteractiveGrid {
 private:
@@ -327,7 +416,16 @@ public:
 	int mTileSize;
 	int mGridWidth;
 	int mGridHeight;
+	int mScreenWidth;
+	int mScreenHeight;
 	Rectangle mViewport;
+
+	//tile variables
+	int mCurrentlyDrawnID;
+	int mCurrentID;
+	int mCurrentLayer;
+	bool mCurrentCollision;
+	bool mCurrentDamage;
 
 	//used for visualising the center of mCells in the grid without textures
 	std::vector<Line> mVerticalLines;
@@ -339,7 +437,9 @@ public:
 		int passedColumns,
 		int gridOriginX,
 		int gridOriginY,
-		int tileSize)
+		int tileSize,
+		int screenWidth,
+		int screenHeight)
 		: mRows(passedRows),
 		mColumns(passedColumns),
 		mCells(mRows, std::vector<Cell>(mColumns)),
@@ -348,9 +448,15 @@ public:
 		mHorizontalLines(mRows),
 		mTileSize(tileSize),
 		mOriginX(gridOriginX),
-		mOriginY(gridOriginY)
+		mOriginY(gridOriginY),
+		mScreenHeight(screenHeight),
+		mScreenWidth(screenWidth)
 
 	{
+		mCurrentID = 1;
+		mCurrentLayer = 0;
+		mCurrentCollision = false;
+		mCurrentDamage = false;
 
 		giveCoordinates(mOriginX, mOriginY);
 		createLines();
@@ -359,7 +465,7 @@ public:
 		//mCamera.offset = { mViewport.x + mGridWidth / 2.0f, mViewport.y + mGridHeight / 2.0f };
 		mCamera.offset = { mViewport.x, mViewport.y };
 		mCamera.rotation = 0.0f;
-		mCamera.zoom = 1.0f;
+		mCamera.zoom = 1.5f;
 
 	}
 
@@ -368,7 +474,7 @@ public:
 		mGridHeight = mRows * mTileSize;
 		mGridWidth = mColumns * mTileSize;
 
-		mViewport = { (float) xPos, (float) yPos, (float)mGridWidth, (float)mGridHeight };
+		mViewport = { (float) xPos, (float) yPos, (float)mScreenWidth, (float)mScreenHeight };
 
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
@@ -378,7 +484,7 @@ public:
 					(float)mTileSize,
 					(float)mTileSize
 				};
-				mTileData[i][j] = { 0, 0 };
+				mTileData[i][j] = { 0, 0, 0, 0 };
 			}
 		}
 	}
@@ -404,7 +510,7 @@ public:
 	}
 
 	void renderLines() {
-		//BeginScissorMode(mViewport.x, mViewport.y, mViewport.width, mViewport.height);
+		BeginScissorMode(mViewport.x, mViewport.y, mViewport.width, mViewport.height);
 		BeginMode2D(mCamera);
 		for (int i = 0; i < mColumns; i++) {
 			DrawLineV(mVerticalLines[i].p1, mVerticalLines[i].p2, WHITE);
@@ -413,21 +519,17 @@ public:
 			DrawLineV(mHorizontalLines[i].p1, mHorizontalLines[i].p2, WHITE);
 		}
 		EndMode2D();
-		//EndScissorMode();
+		EndScissorMode();
 	}
 
 	void draw(Texture2D atlas) {
 		BeginScissorMode(mViewport.x, mViewport.y, mViewport.width, mViewport.height);
 		BeginMode2D(mCamera);
-
+		
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
-				Rectangle src = {
-					mTileData[i][j].textureID * mTileSize,
-					0,
-					(float)mTileSize,
-					(float)mTileSize
-				}; 
+				mCurrentlyDrawnID = mTileData[i][j].textureID;
+				Rectangle src = fetchTexture(atlas, mTileSize, mCurrentlyDrawnID);
 				DrawTextureRec(atlas, src, Vector2{mCells[i][j].rect.x, mCells[i][j].rect.y}, WHITE);
 			}
 		}
@@ -458,13 +560,13 @@ public:
 			Vector2 mouseBefore = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
 
 			//zooming with scroll wheel 
-			mCamera.zoom += (float)GetMouseWheelMove() * 0.1f;
+			mCamera.zoom += (float)GetMouseWheelMove() * 0.2f;
 
 			//restricting the zoom amount
-			if (mCamera.zoom < 1.0f) {
-				mCamera.zoom = 1.0;
+			if (mCamera.zoom < 1.5f) {
+				mCamera.zoom = 1.5f;
 			}
-			else if (mCamera.zoom > 5.0f) mCamera.zoom = 5.0f;
+			else if (mCamera.zoom > 7.0f) mCamera.zoom = 7.0f;
 
 			Vector2 mouseAfter = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
 
@@ -491,7 +593,7 @@ public:
 	void insertData(int row, int column) {
 		if (row < 0 || row >= mRows) return;
 		if (column < 0 || column >= mColumns) return;
-		mTileData[row][column] = { 1, 0 };
+		mTileData[row][column] = {mCurrentID, mCurrentLayer, mCurrentCollision, mCurrentDamage};
 	}
 
 	//the const after arguments says that the function cant change anything
@@ -500,6 +602,24 @@ public:
 		givenFile["gridData"] = mTileData;
 		std::ofstream file(fileName);
 		file << givenFile.dump(0);
+		return;
+	}
+
+	void chunkToJson(const std::string& fileName, int x, int y) const {
+		Chunk temp;
+		temp.x = x;
+		temp.y = y;
+
+		for (int row = 0; row < 64; row++) {
+			for (int column = 0; column < 64; column++) {
+				temp.array[row][column] = mTileData[row][column];
+			}
+		}
+		
+		json chunkFile;
+		chunkFile["chunkData"] = temp;
+		std::ofstream file(fileName);
+		file << chunkFile.dump(0);
 		return;
 	}
 

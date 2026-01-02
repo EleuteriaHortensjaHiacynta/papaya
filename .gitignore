@@ -4,8 +4,9 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 
-# Testing files
+# Testing json files
 test0.json
+test1.json
 
 # User-specific files
 *.rsuser
