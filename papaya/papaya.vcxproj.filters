@@ -28,6 +28,9 @@
     <ClCompile Include="src\papaya.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\external_headers\tinyfiledialogs.cpp">
+      <Filter>external_headers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GUI\GUI_raylib.hpp">
@@ -49,6 +52,9 @@
       <Filter>src\level_editor</Filter>
     </ClInclude>
     <ClInclude Include="src\external_headers\json.hpp">
+      <Filter>external_headers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\external_headers\tinyfiledialogs.hpp">
       <Filter>external_headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,6 +7,8 @@
 # Testing json files
 test0.json
 test1.json
+drawingScreen0.json
+drawingScreen1.json
 
 # User-specific files
 *.rsuser
