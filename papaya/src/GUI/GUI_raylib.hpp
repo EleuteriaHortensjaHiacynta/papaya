@@ -12,11 +12,11 @@
 using json = nlohmann::json;
 
 inline Rectangle fetchTexture(Texture2D atlas, int tileSize, int index) {
-	const int ATLAS_WIDTH = 8;
-	const int ATLAS_HEIGHT = 8; 
+	const int ATLAS_WIDTH = 5;
+	const int ATLAS_HEIGHT = 20; 
 
 	int tileX = index % ATLAS_WIDTH;
-	int tileY = index / ATLAS_HEIGHT;
+	int tileY = index / ATLAS_WIDTH;
 
 	return Rectangle{
 	(float)tileX * tileSize,
@@ -36,10 +36,13 @@ public:
 	//allows for setting the position of a widget after its creation
 	void virtual setPosition(Rectangle rect) = 0;
 
+
+	//for scrolling widgets
+	virtual float getHeight() const { return 0.0f; }
+
 	//from what im understanding this makes the destructor delete both widget and the derived classes when using delete
 	virtual ~Widget() = default;
 };
-
 
 //this class is used so whenever there is more than one button or item that needs to know the mouse position
 //there is only one call to update the mouse position 
@@ -52,7 +55,7 @@ public:
 	static void updateMousePos() {
 		sMousePos = GetMousePosition();
 		// control output
-		std::cout << sMousePos.x << " " << sMousePos.y << std::endl;
+		//std::cout << sMousePos.x << " " << sMousePos.y << std::endl;
 	}
 };
 
@@ -206,6 +209,80 @@ struct Cell {
 
 };
 
+class ScrollContainer : public Widget {
+private:
+	Rectangle mRect;
+	std::shared_ptr<Widget> mChild;
+
+	float mScrollY = 0.0f;
+	float mScrollSpeed = 20.f;
+
+	
+
+public:
+
+	Camera2D mCamera;
+
+	ScrollContainer(Rectangle rect)
+		: mRect(rect) {
+
+	};
+
+	void setCamera() {
+		mCamera.target = { 0.0f, mScrollY };
+		mCamera.offset = { mRect.x, 0 };
+		mCamera.zoom = 1.0f;
+		mCamera.rotation = 0.0f;
+
+	}
+
+private:
+
+	void clampScroll() {
+		if (!mChild) return;
+
+		float contentHeight = mChild->getHeight();
+		float maxScroll = std::max(0.0f, contentHeight - mRect.height);
+
+		if (mScrollY < 0) mScrollY = 0;
+		if (mScrollY > maxScroll) mScrollY = maxScroll;
+	}
+
+
+public:
+
+	void setChild(std::shared_ptr<Widget> child) {
+		mChild = child;
+	}
+
+	void setPosition(Rectangle rect) override {
+		mRect = rect;
+	}
+	
+	void draw() override {
+		if (CheckCollisionPointRec(MousePosition::sMousePos, mRect)) {
+			float wheel = GetMouseWheelMove();
+			mScrollY -= wheel * mScrollSpeed;
+		}
+
+		clampScroll();
+		setCamera();
+
+		BeginScissorMode((int)mRect.x, (int)mRect.y, (int)mRect.width, (int)mRect.height);
+		BeginMode2D(mCamera);
+		if (mChild) {
+			Vector2 prevMouse = MousePosition::sMousePos;
+			MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, mCamera);
+			mChild->draw();
+			MousePosition::sMousePos = prevMouse;
+		}
+		EndMode2D();
+		EndScissorMode();
+	}
+
+
+
+};
 
 //Grid also inherits from Widget class so that it can hold subgrids
 class Grid : public Widget{
@@ -221,6 +298,7 @@ private:
 
 
 public:
+
 	std::vector<std::vector<Cell>> mCells;
 	// top left corner is the origin of the grid, everything gets set relative to it
 	int mOriginX;
@@ -308,7 +386,13 @@ public:
 	void Widget::draw() override {
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
+				
+				/*Rectangle originOffset = mCells[i][j].rect;
+				originOffset.x += mOriginX;
+				originOffset.y += mOriginY;*/
+
 				if (mCells[i][j].widget != nullptr) {
+					//mCells[i][j].widget->setPosition(originOffset);
 					mCells[i][j].widget->draw();
 				}
 				else {
@@ -325,7 +409,9 @@ public:
 		giveCoordinates(mOriginX, mOriginY);
 	}
 
-	
+	float getHeight() const override {
+		return mRows * (rowHeight);
+	}
 	
 };
 
@@ -555,7 +641,7 @@ public:
 
 		//zoom controls
 		float wheelDelta = GetMouseWheelMove();
-		if (!wheelDelta == 0.0f) {
+		if (wheelDelta != 0.0f) {
 
 			Vector2 mouseBefore = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
 
@@ -566,7 +652,7 @@ public:
 			if (mCamera.zoom < 1.5f) {
 				mCamera.zoom = 1.5f;
 			}
-			else if (mCamera.zoom > 7.0f) mCamera.zoom = 7.0f;
+			else if (mCamera.zoom > 15.0f) mCamera.zoom = 15.0f;
 
 			Vector2 mouseAfter = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
 

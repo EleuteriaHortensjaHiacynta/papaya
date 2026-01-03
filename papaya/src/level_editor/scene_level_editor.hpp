@@ -4,13 +4,17 @@
 #include <iostream>
 #include "GUI/GUI_raylib.hpp"
 #include "Scenes/scene_functions.hpp"
+#include "level_editor/functions_level_editor.hpp"
+
 
 void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int windowWidth) {
 	shouldQuit = true;
 
 
 
-	Texture2D textureAtlas = LoadTexture("src/GUI/textures/textureAtlasV1.png");
+	Texture2D textureAtlas = LoadTexture("src/GUI/textures/texture_atlas_v3.png");
+	int chunkX = 0;
+	int chunkY = 0;
 	
 
 
@@ -38,31 +42,49 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pDamageButton->addText("Enable damage", 30, WHITE);
 
 
-	int buttonTextureSize = 62;
+	// save button
+	auto pSaveButton = std::make_shared<Button>(Rectangle{ 0, 0, 0, 0 }, GRAY, LIGHTGRAY, WHITE);
+	topGrid.insertWidget(0, 0, pSaveButton);
+	pSaveButton->setPosition(topGrid.mCells[0][0].rect);
+	pSaveButton->addText("Save chunk", 20, WHITE);
 
-	Grid textureSelection(10, 5, buttonTextureSize, buttonTextureSize, 0, 60);
+	// & in the lambda allows it to access all variables in the scope
+	pSaveButton->storeFunction([&]() {
+		std::string path = openFileDialog("Save Chunk File");
+		if (!path.empty()) {
+			//control output
+			std::cout << "Selected file to open: " << path << std::endl;
+			drawingScreen.chunkToJson(path, chunkX, chunkY);
+			//more control outputs
+			std::cout << "Saved chunk to: " << path << std::endl;
+		}
+		});
 
-	// tile selection buttons
 
-	/*auto pID0Button = std::make_shared<Button>(textureSelection.mCells[0][0].rect, textureAtlas, 0, 62, 62);
-	textureSelection.insertWidget(0, 0, pID0Button);
+	// texture selection panel
 
-	pID0Button->storeFunction([&drawingScreen]() {drawingScreen.mCurrentID = 0;});
+	int buttonSlotSize = 62;
+	int buttonTextureSize = 60;
+	int tileAmount = 100;
+	int textureColumns = 5;
 
-	auto pID1Button = std::make_shared<Button>(textureSelection.mCells[0][1].rect, textureAtlas, 1, 62, 62);
-	textureSelection.insertWidget(0, 1, pID1Button);
+	//Grid textureSelection((int) (tileAmount/textureColumns), textureColumns, buttonSlotSize, buttonSlotSize, 0, 60);
 
-	pID1Button->storeFunction([&drawingScreen]() {drawingScreen.mCurrentID = 1;});*/
+	auto textureSelection = std::make_shared<Grid>((int)(tileAmount / textureColumns), textureColumns, buttonSlotSize, buttonSlotSize, 0, 60);
+
+	auto scrollPanel = std::make_shared <ScrollContainer>(Rectangle{ 0, 60, 310, 600 });
+	scrollPanel->setChild(textureSelection);
+	scrollPanel->setCamera();
 
 	int textureID = 0;
 
-	for (size_t row = 0; row < textureSelection.mCells.size(); row++) {
-		for (size_t col = 0; col < textureSelection.mCells[row].size(); col++) {
-			auto& cell = textureSelection.mCells[row][col];
+	for (size_t row = 0; row < textureSelection->mCells.size(); row++) {
+		for (size_t col = 0; col < textureSelection->mCells[row].size(); col++) {
+			auto& cell = textureSelection->mCells[row][col];
 
 			auto pButton = std::make_shared<Button>(cell.rect, textureAtlas, textureID, buttonTextureSize, buttonTextureSize);
 			pButton->storeFunction([&drawingScreen, textureID]() {drawingScreen.mCurrentID = textureID;});
-			textureSelection.insertWidget(row, col, pButton);
+			textureSelection->insertWidget(row, col, pButton);
 			textureID++;
 		}
 		
@@ -74,26 +96,53 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	while(!WindowShouldClose()) {
 		BeginDrawing();
+		ClearBackground(SKYBLUE);
+
+
 		MousePosition::updateMousePos();
 		topGrid.draw();
 		bottomGrid.draw();
 		tilePropertyGrid.draw();
-		textureSelection.draw();
+		
+		
+		//this draws the texture selection
+		scrollPanel->draw();
+		//textureSelection.draw();
+
 		drawingScreen.renderLines();
 		drawingScreen.draw(textureAtlas);
 		drawingScreen.gridInteraction();
+		//selects a texture to the right
 		if (IsKeyPressed(KEY_E)) {
 			
 			drawingScreen.mCurrentID++;
 
 			std::cout << "Current ID: " << drawingScreen.mCurrentID << std::endl;
 		}
-		else if (drawingScreen.mCurrentID > 14) {
+		//selects the texture to the left
+		else if (IsKeyPressed(KEY_Q)) {
+			drawingScreen.mCurrentID--;
+		}
+		//selects the texture down a row
+		else if (IsKeyPressed(KEY_A)) {
+			drawingScreen.mCurrentID += textureColumns;
+		}
+		//selects the texture up a row
+		else if (IsKeyPressed(KEY_D)) {
+			drawingScreen.mCurrentID -= textureColumns;
+		}
+
+		if (drawingScreen.mCurrentID > tileAmount) {
 			drawingScreen.mCurrentID = 0;
 		}
+		if (drawingScreen.mCurrentID < 0) {
+			drawingScreen.mCurrentID = 144;
+		}
+		
+
 		
 		EndDrawing();
-		ClearBackground(SKYBLUE);
+		
 	}
 
 	UnloadTexture(textureAtlas);
