@@ -24,23 +24,33 @@ enum ExtraData : uint8_t {
     INTERACTIVE = 3,
 };
 
-uint64_t createBlock(int16_t x, int16_t y, uint8_t x_length, uint8_t y_length, uint8_t textureID, Layers layer, ExtraData extraData) {
-    if (layer < GUI || layer > BACKGROUND) {
+struct Block {
+    int16_t x;
+    int16_t y;
+    int8_t x_length;
+    int8_t y_length;
+    int8_t textureID;
+    Layers layer;
+    ExtraData extraData;
+};
+
+uint64_t createBlock(Block block) {
+    if (block.layer < GUI || block.layer > BACKGROUND) {
         throw std::invalid_argument("Invalid layer value.");
     }
-    if (extraData < NONE || extraData > INTERACTIVE) {
+    if (block.extraData < NONE || block.extraData > INTERACTIVE) {
         throw std::invalid_argument("extraData must be a valid ExtraData value.");
     }
     uint64_t blockData = 0;
     // Layout (bits): [63..48]=x (16) | [47..32]=y (16) | [31..24]=x_length (8) | [23..16]=y_length (8)
     //                 [15..8]=textureID (8) | [7..4]=extraData (4) | [3..0]=layer (4)
-    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(x)) & 0xFFFFULL) << 48;
-    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(y)) & 0xFFFFULL) << 32;
-    blockData |= (static_cast<uint64_t>(x_length) & 0xFFULL) << 24;
-    blockData |= (static_cast<uint64_t>(y_length) & 0xFFULL) << 16;
-    blockData |= (static_cast<uint64_t>(textureID) & 0xFFULL) << 8;
-    blockData |= (static_cast<uint64_t>(extraData) & 0xFULL) << 4;
-    blockData |= (static_cast<uint64_t>(layer) & 0xFULL) << 0;
+    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(block.x)) & 0xFFFFULL) << 48;
+    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(block.y)) & 0xFFFFULL) << 32;
+    blockData |= (static_cast<uint64_t>(block.x_length) & 0xFFULL) << 24;
+    blockData |= (static_cast<uint64_t>(block.y_length) & 0xFFULL) << 16;
+    blockData |= (static_cast<uint64_t>(block.textureID) & 0xFFULL) << 8;
+    blockData |= (static_cast<uint64_t>(block.extraData) & 0xFULL) << 4;
+    blockData |= (static_cast<uint64_t>(block.layer) & 0xFULL) << 0;
     return blockData;
 }
 
@@ -57,8 +67,8 @@ private:
 public:
     explicit MapSaver(std::fstream& f) : fileStream(&f) {}
 
-    void addBlock(int16_t x, int16_t y, uint8_t x_length, uint8_t y_length, uint8_t textureID, Layers layer, ExtraData extraData) {
-        uint64_t blockData = createBlock(x, y, x_length, y_length, textureID, layer, extraData);
+    void addBlock(Block block) {
+        uint64_t blockData = createBlock(block);
         fileStream->write(reinterpret_cast<const char*>(&blockData), sizeof(blockData));
         if (!(*fileStream)) throw std::runtime_error("Failed to write block data to file.");
     }
