@@ -8,6 +8,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "../Entities/Wall.h"
+
 #define BLOCK_SIZE (sizeof(int16_t) + sizeof(int16_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t))
 
 enum Layers : uint8_t {
@@ -52,6 +54,18 @@ uint64_t createBlock(Block block) {
     blockData |= (static_cast<uint64_t>(block.extraData) & 0xFULL) << 4;
     blockData |= (static_cast<uint64_t>(block.layer) & 0xFULL) << 0;
     return blockData;
+}
+
+Block decodeBlock(uint64_t blockData) {
+    Block block;
+    block.x = static_cast<int16_t>((blockData >> 48) & 0xFFFF);
+    block.y = static_cast<int16_t>((blockData >> 32) & 0xFFFF);
+    block.x_length = static_cast<int8_t>((blockData >> 24) & 0xFF);
+    block.y_length = static_cast<int8_t>((blockData >> 16) & 0xFF);
+    block.textureID = static_cast<int8_t>((blockData >> 8) & 0xFF);
+    block.extraData = static_cast<ExtraData>((blockData >> 4) & 0x0F);
+    block.layer = static_cast<Layers>(blockData & 0x0F);
+    return block;
 }
 
 bool sortByX(uint64_t a, uint64_t b) {
@@ -114,7 +128,6 @@ public:
 
     //     reference operator*() const { return currentBlock; }
     //     pointer operator->() const { return &currentBlock; }
-
     //     Iterator& operator++() {
     //         if (file) {
     //             file->read(reinterpret_cast<char*>(&currentBlock), sizeof(currentBlock));
@@ -140,4 +153,22 @@ public:
     // Iterator end() {
     //     return Iterator(fileStream, false);
     // }
+};
+
+class MapLoader {
+private:
+    std::fstream* fileStream = nullptr; 
+public:
+    explicit MapLoader(std::fstream& f) : fileStream(&f) {}
+
+    std::vector<Wall> getAll() {
+        fileStream->seekg(0, std::ios::beg);
+        std::vector<Wall> walls;
+        uint64_t blockData;
+        while (fileStream->read(reinterpret_cast<char*>(&blockData), sizeof(blockData))) {
+            Block block = decodeBlock(blockData);
+            walls.push_back(Wall(block.x, block.y, block.x_length, block.y_length));
+        }
+        return walls;
+    }
 };

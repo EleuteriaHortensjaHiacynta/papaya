@@ -18,7 +18,7 @@ int main() {
 
     // Tworzenie wirtualne ekranu
     RenderTexture2D target = LoadRenderTexture(gameWidth, gameHeight);
-    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // ¿eby pixele by³y ostre
+    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // ï¿½eby pixele byï¿½y ostre
     
     SetTargetFPS(60);
 
@@ -30,18 +30,18 @@ int main() {
         // Logika
         testLevel->Update(dt);
 
-        // Rysowanie na ma³ym ekranie
+        // Rysowanie na maï¿½ym ekranie
         BeginTextureMode(target);
             ClearBackground(RAYWHITE);
             // Rysowania sceny(gracza+mapy)
             testLevel->Draw();
         EndTextureMode();
 
-        // Rysowanie rozci¹gniêtego ekranu
+        // Rysowanie rozciï¿½gniï¿½tego ekranu
         BeginDrawing();
             ClearBackground(BLACK);
             DrawTexturePro(target.texture,
-                { 0.0f, 0.0f, (float)gameWidth, (float)-gameHeight }, // source
+                { 0.0f, 0.0f, (float)gameWidth, (float)gameHeight }, // source
                 { 0.0f, 0.0f, (float)screenWidth, (float)screenHeigt }, // dest
                 { 0.0f, 0.0f }, // origin
                 0.0f, // rotation
