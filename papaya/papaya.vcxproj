@@ -132,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Entities\Dummy.h" />
+    <ClInclude Include="src\Entities\Enemy.h" />
     <ClInclude Include="src\Entities\Entity.h" />
     <ClInclude Include="src\Entities\Player.h" />
     <ClInclude Include="src\Entities\Wall.h" />
