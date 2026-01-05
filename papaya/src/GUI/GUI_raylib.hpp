@@ -11,7 +11,7 @@
 
 using json = nlohmann::json;
 
-inline Rectangle fetchTexture(Texture2D atlas, int tileSize, int index) {
+inline Rectangle fetchTexture(Texture2D atlas, int tileSize, int index)	 {
 	const int ATLAS_WIDTH = 5;
 	const int ATLAS_HEIGHT = 20; 
 
@@ -217,11 +217,11 @@ private:
 	float mScrollY = 0.0f;
 	float mScrollSpeed = 20.f;
 
-	
+
 
 public:
 
-	Camera2D mCamera;
+	Camera2D camera;
 
 	ScrollContainer(Rectangle rect)
 		: mRect(rect) {
@@ -229,10 +229,10 @@ public:
 	};
 
 	void setCamera() {
-		mCamera.target = { 0.0f, mScrollY };
-		mCamera.offset = { mRect.x, 0 };
-		mCamera.zoom = 1.0f;
-		mCamera.rotation = 0.0f;
+		camera.target = { 0.0f, mScrollY };
+		camera.offset = { mRect.x, 0 };
+		camera.zoom = 1.0f;
+		camera.rotation = 0.0f;
 
 	}
 
@@ -258,7 +258,7 @@ public:
 	void setPosition(Rectangle rect) override {
 		mRect = rect;
 	}
-	
+
 	void draw() override {
 		if (CheckCollisionPointRec(MousePosition::sMousePos, mRect)) {
 			float wheel = GetMouseWheelMove();
@@ -269,10 +269,10 @@ public:
 		setCamera();
 
 		BeginScissorMode((int)mRect.x, (int)mRect.y, (int)mRect.width, (int)mRect.height);
-		BeginMode2D(mCamera);
+		BeginMode2D(camera);
 		if (mChild) {
 			Vector2 prevMouse = MousePosition::sMousePos;
-			MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, mCamera);
+			MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, camera);
 			mChild->draw();
 			MousePosition::sMousePos = prevMouse;
 		}
@@ -285,7 +285,7 @@ public:
 };
 
 //Grid also inherits from Widget class so that it can hold subgrids
-class Grid : public Widget{
+class Grid : public Widget {
 private:
 	const int mRows;
 	const int mColumns;
@@ -299,10 +299,10 @@ private:
 
 public:
 
-	std::vector<std::vector<Cell>> mCells;
+	std::vector<std::vector<Cell>> cells;
 	// top left corner is the origin of the grid, everything gets set relative to it
-	int mOriginX;
-	int mOriginY;
+	int originX;
+	int originY;
 
 
 	Grid(int passedRows,
@@ -315,25 +315,25 @@ public:
 		mColumns(passedColumns),
 		rowHeight(passedRowHeight),
 		columnWidth(passedColumnWidth),
-		mCells(mRows, std::vector<Cell>(mColumns))
+		cells(mRows, std::vector<Cell>(mColumns))
 	{
 
 		giveCoordinates(gridOriginX, gridOriginY);
 
 	}
 
-	
+
 	//sets the grids origin and then gives every cell its own dimensions and location
 	//based on the data stored inside the grid already
 	void giveCoordinates(int xPos, int yPos) {
-		mOriginX = xPos;
-		mOriginY = yPos;
+		originX = xPos;
+		originY = yPos;
 
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
-				mCells[i][j].rect = {
-					(float)(mOriginX + j * columnWidth),
-					(float)(mOriginY + i * rowHeight),
+				cells[i][j].rect = {
+					(float)(originX + j * columnWidth),
+					(float)(originY + i * rowHeight),
 					(float)columnWidth,
 					(float)rowHeight
 				};
@@ -363,7 +363,7 @@ public:
 			columnWidth = mpParentGrid->columnWidth / mColumns;
 			rowHeight = mpParentGrid->rowHeight / mRows;
 
-			giveCoordinates(mOriginX, mOriginY);
+			giveCoordinates(originX, originY);
 		}
 
 	}
@@ -371,7 +371,7 @@ public:
 	//using a pointer inserts a widget inside a given cell in the grid
 	void insertWidget(int row, int column, std::shared_ptr<Widget> passedWidget) {
 		if (row < mRows && row >= 0 && column < mColumns && column >= 0) {
-			mCells[row][column].widget = passedWidget;
+			cells[row][column].widget = passedWidget;
 		}
 	}
 
@@ -386,33 +386,33 @@ public:
 	void Widget::draw() override {
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
-				
-				/*Rectangle originOffset = mCells[i][j].rect;
-				originOffset.x += mOriginX;
-				originOffset.y += mOriginY;*/
 
-				if (mCells[i][j].widget != nullptr) {
-					//mCells[i][j].widget->setPosition(originOffset);
-					mCells[i][j].widget->draw();
+				/*Rectangle originOffset = cells[i][j].rect;
+				originOffset.x += originX;
+				originOffset.y += originY;*/
+
+				if (cells[i][j].widget != nullptr) {
+					//cells[i][j].widget->setPosition(originOffset);
+					cells[i][j].widget->draw();
 				}
 				else {
-					DrawRectangleLinesEx(mCells[i][j].rect, 1, GRAY);
+					DrawRectangleLinesEx(cells[i][j].rect, 1, GRAY);
 				}
 			}
 		}
 	}
 
-	//changes the origin of the grid and readjusts the mCells
+	//changes the origin of the grid and readjusts the cells
 	void Widget::setPosition(Rectangle rect) override {
-		mOriginX = rect.x;
-		mOriginY = rect.y;
-		giveCoordinates(mOriginX, mOriginY);
+		originX = rect.x;
+		originY = rect.y;
+		giveCoordinates(originX, originY);
 	}
 
 	float getHeight() const override {
 		return mRows * (rowHeight);
 	}
-	
+
 };
 
 struct Line {
@@ -497,27 +497,27 @@ private:
 public:
 	std::vector<std::vector<Cell>> mCells;
 	// top left corner is the origin of the grid, everything gets set relative to it
-	int mOriginX;
-	int mOriginY;
-	int mTileSize;
-	int mGridWidth;
-	int mGridHeight;
-	int mScreenWidth;
-	int mScreenHeight;
-	Rectangle mViewport;
+	int originX;
+	int originY;
+	int tileSize;
+	int gridWidth;
+	int gridHeight;
+	int screenWidth;
+	int screenHeight;
+	Rectangle viewport;
 
 	//tile variables
-	int mCurrentlyDrawnID;
-	int mCurrentID;
-	int mCurrentLayer;
-	bool mCurrentCollision;
-	bool mCurrentDamage;
+	int currentlyDrawnID;
+	int currentID;
+	int currentLayer;
+	bool currentCollision;
+	bool currentDamage;
 
 	//used for visualising the center of mCells in the grid without textures
-	std::vector<Line> mVerticalLines;
-	std::vector<Line> mHorizontalLines;
+	std::vector<Line> verticalLines;
+	std::vector<Line> horizontalLines;
 
-	std::vector< std::vector < TileData > > mTileData;
+	std::vector< std::vector < TileData > > tileData;
 
 	InteractiveGrid(int passedRows,
 		int passedColumns,
@@ -529,27 +529,27 @@ public:
 		: mRows(passedRows),
 		mColumns(passedColumns),
 		mCells(mRows, std::vector<Cell>(mColumns)),
-		mTileData(mRows, std::vector<TileData>(mColumns)),
-		mVerticalLines(mColumns),
-		mHorizontalLines(mRows),
-		mTileSize(tileSize),
-		mOriginX(gridOriginX),
-		mOriginY(gridOriginY),
-		mScreenHeight(screenHeight),
-		mScreenWidth(screenWidth)
+		tileData(mRows, std::vector<TileData>(mColumns)),
+		verticalLines(mColumns + 1),
+		horizontalLines(mRows + 1),
+		tileSize(tileSize),
+		originX(gridOriginX),
+		originY(gridOriginY),
+		screenHeight(screenHeight),
+		screenWidth(screenWidth)
 
 	{
-		mCurrentID = 1;
-		mCurrentLayer = 0;
-		mCurrentCollision = false;
-		mCurrentDamage = false;
+		currentID = 1;
+		currentLayer = 0;
+		currentCollision = false;
+		currentDamage = false;
 
-		giveCoordinates(mOriginX, mOriginY);
+		giveCoordinates(originX, originY);
 		createLines();
 
-		mCamera.target = {0, 0};
-		//mCamera.offset = { mViewport.x + mGridWidth / 2.0f, mViewport.y + mGridHeight / 2.0f };
-		mCamera.offset = { mViewport.x, mViewport.y };
+		mCamera.target = { 0, 0 };
+		//mCamera.offset = { viewport.x + gridWidth / 2.0f, viewport.y + gridHeight / 2.0f };
+		mCamera.offset = { viewport.x, viewport.y };
 		mCamera.rotation = 0.0f;
 		mCamera.zoom = 1.5f;
 
@@ -557,66 +557,70 @@ public:
 
 	void giveCoordinates(int xPos, int yPos) {
 
-		mGridHeight = mRows * mTileSize;
-		mGridWidth = mColumns * mTileSize;
+		gridHeight = mRows * tileSize;
+		gridWidth = mColumns * tileSize;
 
-		mViewport = { (float) xPos, (float) yPos, (float)mScreenWidth, (float)mScreenHeight };
+		viewport = { (float)xPos, (float)yPos, (float)screenWidth, (float)screenHeight };
 
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
 				mCells[i][j].rect = {
-					(float)(j * mTileSize),
-					(float)(i * mTileSize),
-					(float)mTileSize,
-					(float)mTileSize
+					(float)(j * tileSize),
+					(float)(i * tileSize),
+					(float)tileSize,
+					(float)tileSize
 				};
-				mTileData[i][j] = { 0, 0, 0, 0 };
+				tileData[i][j] = { 0, 0, 0, 0 };
 			}
 		}
 	}
 
 	void createLines() {
-		for (int i = 0; i < mColumns; i++) {
-			float pX = mTileSize / 2 + i * mTileSize;
+		for (int i = 0; i < mColumns + 1; i++) {
+			float pX = /*tileSize / 2 + */i * tileSize;
 			float p1Y = 0;
-			float p2Y = mRows * mTileSize;
+			float p2Y = mRows * tileSize;
 
-			mVerticalLines[i].p1 = { pX, p1Y };
-			mVerticalLines[i].p2 = { pX, p2Y };
+			verticalLines[i].p1 = { pX, p1Y };
+			verticalLines[i].p2 = { pX, p2Y };
 
 		}
 
-		for (int i = 0; i < mRows; i++) {
-			float pY = mTileSize / 2 + i * mTileSize;
+		for (int i = 0; i < mRows + 1; i++) {
+			float pY = /*tileSize / 2 +*/ i * tileSize;
 			float p1X = 0;
-			float p2X = mColumns * mTileSize;
-			mHorizontalLines[i].p1 = { p1X ,pY };
-			mHorizontalLines[i].p2 = { p2X, pY };
+			float p2X = mColumns * tileSize;
+			horizontalLines[i].p1 = { p1X ,pY };
+			horizontalLines[i].p2 = { p2X, pY };
 		}
 	}
 
 	void renderLines() {
-		BeginScissorMode(mViewport.x, mViewport.y, mViewport.width, mViewport.height);
+		BeginScissorMode(viewport.x, viewport.y, viewport.width, viewport.height);
 		BeginMode2D(mCamera);
-		for (int i = 0; i < mColumns; i++) {
-			DrawLineV(mVerticalLines[i].p1, mVerticalLines[i].p2, WHITE);
+		for (int i = 0; i < mColumns + 1; i++) {
+			DrawLineV(verticalLines[i].p1, verticalLines[i].p2, WHITE);
+			if(i % 4 == 0) DrawLineV(verticalLines[i].p1, verticalLines[i].p2, DARKGRAY);
+			if (i % 16 == 0) DrawLineV(verticalLines[i].p1, verticalLines[i].p2, GREEN);
 		}
-		for (int i = 0; i < mRows; i++) {
-			DrawLineV(mHorizontalLines[i].p1, mHorizontalLines[i].p2, WHITE);
+		for (int i = 0; i < mRows + 1; i++) {
+			DrawLineV(horizontalLines[i].p1, horizontalLines[i].p2, WHITE);
+			if (i % 4 == 0) DrawLineV(horizontalLines[i].p1, horizontalLines[i].p2, DARKGRAY);
+			if (i % 16 == 0) DrawLineV(horizontalLines[i].p1, horizontalLines[i].p2, GREEN);
 		}
 		EndMode2D();
 		EndScissorMode();
 	}
 
 	void draw(Texture2D atlas) {
-		BeginScissorMode(mViewport.x, mViewport.y, mViewport.width, mViewport.height);
+		BeginScissorMode(viewport.x, viewport.y, viewport.width, viewport.height);
 		BeginMode2D(mCamera);
-		
+
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
-				mCurrentlyDrawnID = mTileData[i][j].textureID;
-				Rectangle src = fetchTexture(atlas, mTileSize, mCurrentlyDrawnID);
-				DrawTextureRec(atlas, src, Vector2{mCells[i][j].rect.x, mCells[i][j].rect.y}, WHITE);
+				currentlyDrawnID = tileData[i][j].textureID;
+				Rectangle src = fetchTexture(atlas, tileSize, currentlyDrawnID);
+				DrawTextureRec(atlas, src, Vector2{ mCells[i][j].rect.x, mCells[i][j].rect.y }, WHITE);
 			}
 		}
 
@@ -625,17 +629,17 @@ public:
 	}
 
 	void gridInteraction() {
-		
+
 		int rowPos = -1;
 		int columnPos = -1;
-		if (!CheckCollisionPointRec(MousePosition::sMousePos, mViewport)) return ;
+		if (!CheckCollisionPointRec(MousePosition::sMousePos, viewport)) return;
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 			Vector2 mouse = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
-			int column = (mouse.x) / mTileSize;
-			int row = (mouse.y) / mTileSize;
+			int column = (mouse.x) / tileSize;
+			int row = (mouse.y) / tileSize;
 			insertData(row, column);
 			//std::cout << "Grid position: " << row << " ; " << column << std::endl;
-			
+
 		}
 
 
@@ -660,32 +664,32 @@ public:
 			mCamera.target.y += mouseBefore.y - mouseAfter.y;
 
 		}
-		
-		
+
+
 		//panning
-		//works for both mmd and rmb so its usable on a touchpad too
-		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+		//works for both mmd and rmb + shift so its usable on a touchpad too
+		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && IsKeyDown(KEY_LEFT_SHIFT)) {
 			Vector2 delta = GetMouseDelta();
-			mCamera.target.x -= delta.x * 0.3f;
-			mCamera.target.y -= delta.y * 0.3f;
+			mCamera.target.x -= delta.x / mCamera.zoom;
+			mCamera.target.y -= delta.y / mCamera.zoom;
 		}
 		else if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
 			Vector2 delta = GetMouseDelta();
-			mCamera.target.x -= delta.x * 0.5f;
-			mCamera.target.y -= delta.y * 0.5f;
+			mCamera.target.x -= delta.x / mCamera.zoom;
+			mCamera.target.y -= delta.y / mCamera.zoom;
 		}
 	}
 
 	void insertData(int row, int column) {
 		if (row < 0 || row >= mRows) return;
 		if (column < 0 || column >= mColumns) return;
-		mTileData[row][column] = {mCurrentID, mCurrentLayer, mCurrentCollision, mCurrentDamage};
+		tileData[row][column] = { currentID, currentLayer, currentCollision, currentDamage };
 	}
 
 	//the const after arguments says that the function cant change anything
 	void toJson(const std::string& fileName) const {
 		json givenFile;
-		givenFile["gridData"] = mTileData;
+		givenFile["gridData"] = tileData;
 		std::ofstream file(fileName);
 		file << givenFile.dump(0);
 		return;
@@ -698,15 +702,39 @@ public:
 
 		for (int row = 0; row < 64; row++) {
 			for (int column = 0; column < 64; column++) {
-				temp.array[row][column] = mTileData[row][column];
+				temp.array[row][column] = tileData[row][column];
 			}
 		}
-		
+
 		json chunkFile;
 		chunkFile["chunkData"] = temp;
 		std::ofstream file(fileName);
 		file << chunkFile.dump(0);
 		return;
+	}
+
+	void jsonToChunk(const std::string& fileName, int &x, int &y) {
+		std::ifstream chunkFile(fileName);
+
+		if (!chunkFile.is_open()) return;
+
+		json chunk;
+		chunkFile >> chunk;
+		chunkFile.close();
+
+		if (!chunk.contains("chunkData") || !chunk["chunkData"].contains("array") || !chunk["chunkData"].contains("x") || !chunk["chunkData"].contains("y") ) return;
+
+		auto& arrayData = chunk["chunkData"]["array"];
+
+		for (int row = 0; row < 64; row++) {
+			for (int column = 0; column < 64; column++) {
+				tileData[row][column] = arrayData[row][column].get<TileData>();
+			}
+		}
+
+		x = chunk["chunkData"]["x"].get<int>();
+		y = chunk["chunkData"]["y"].get<int>();
+
 	}
 
 };
