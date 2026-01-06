@@ -10,9 +10,13 @@ set(PAPAYA_SOURCES
   src/papaya.cpp
   src/Saves/map.cpp
   src/Entities/Entity.h        # optional for IDE visibility
+  src/Entities/Dummy.h
+  src/Entities/Enemy.h
   src/Entities/Player.h
   src/Entities/Wall.h
   src/GUI/GUIRayLib.h
+  src/Scenes/MainMenu.h
+  src/Scenes/scene_test_room.h
   # add other .cpp/.h here
 )
 
@@ -36,10 +40,27 @@ endif()
 
 # If you use external libs, find and link them:
 find_package(raylib REQUIRED)
-# target_include_directories(papaya PRIVATE ${RAYLIB_INCLUDE_DIRS})
-# target_link_libraries(papaya PRIVATE ${RAYLIB_LIBRARIES})
+
+# Link against raylib. Different raylib CMake packages export different targets/variables
+if (TARGET raylib)
+  target_link_libraries(papaya PRIVATE raylib)
+elseif (TARGET raylib::raylib)
+  target_link_libraries(papaya PRIVATE raylib::raylib)
+elseif (DEFINED RAYLIB_LIBRARIES)
+  target_include_directories(papaya PRIVATE ${RAYLIB_INCLUDE_DIRS})
+  target_link_libraries(papaya PRIVATE ${RAYLIB_LIBRARIES})
+else()
+  message(FATAL_ERROR "Found raylib but could not determine target to link. Please set RAYLIB_LIBRARIES or ensure raylib provides a CMake target (raylib or raylib::raylib).")
+endif()
 
 # Put binaries in build/bin
 set_target_properties(papaya PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+# Copy assets to the runtime output directory so code using "Assets/..." finds them
+add_custom_command(TARGET papaya POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/assets
+    ${CMAKE_BINARY_DIR}/bin/Assets
 )

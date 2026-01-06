@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include "Scenes/MainMenu.h"
 #include "Scenes/scene_test_room.h"
+#include <cmath>
 
 int main() {
 

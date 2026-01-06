@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include <vector>
 #include "Entities/Entity.h"
+#include <cmath>
 
 inline float approach(float current, float target, float increase) {
 	if (current < target) {
@@ -73,7 +74,7 @@ public:
 
 	// Climb
 	bool mTouchingWall = false;
-	int mWallDir = 0; // 1 - œciana po prawej ; -1 - œciana po lewej
+	int mWallDir = 0; // 1 - ï¿½ciana po prawej ; -1 - ï¿½ciana po lewej
 	float mStamina = 100.0f;
 	float mMaxStamina = 100.0f;
 	float mStaminaRegenDelay = 0.0f;
@@ -113,7 +114,7 @@ public:
 	float mAttackTimer = 0.0f;
 	float mAttackDuration = 0.33f;
 	bool mIsAttacking = false;
-	int mAttackDir = 0; // 0 - boki, 1 - góra, 2 - dó³
+	int mAttackDir = 0; // 0 - boki, 1 - gï¿½ra, 2 - dï¿½
 	int mAttackDamage = 1;
 	Rectangle mAttackArea = { 0,0,0,0 };
 
@@ -139,9 +140,9 @@ public:
 	int mCurrentFrameRelative = 0;
 	float mFrameSpeed = 0.1f;
 	float mFrameTimer = 0.0f;
-	bool mLoopAnim = true; // czy animacja siê powtarza?
+	bool mLoopAnim = true; // czy animacja siï¿½ powtarza?
 
-	// Animacja skrzyde³ (dla double jump)
+	// Animacja skrzydeï¿½ (dla double jump)
 	Texture2D mWingsTexture;
 	bool mWingsActive;
 	int mWingsFrame = 0;
@@ -153,7 +154,7 @@ public:
 	std::vector<Ghost> mGhosts;
 	float mGhostSpawnTimer = 0.0f;
 
-	// Sprawdzamy, jakich wrogów trafi³ gracz aby nie zadaæ im obra¿eñ wiêcej ni¿ raz
+	// Sprawdzamy, jakich wrogï¿½w trafiï¿½ gracz aby nie zadaï¿½ im obraï¿½eï¿½ wiï¿½cej niï¿½ raz
 	std::vector<Entity*>mHitEntities;
 
 	//Konstruktor
@@ -176,7 +177,7 @@ public:
 		UnloadTexture(mWingsTexture);
 	}
 
-	// Update przyjmuje listê przeszkód
+	// Update przyjmuje listï¿½ przeszkï¿½d
 	void update(float deltaTime) override {
 
 		if (mHealth <= 0) {
@@ -236,7 +237,7 @@ private:
 	}
 
 	void handleSacrifice() {
-		// Mechanika ta sprawia, ¿e broñ specjaln¹, któr¹ trzyma gracz zostaje zamieniona na jego punkty zdrowia
+		// Mechanika ta sprawia, ï¿½e broï¿½ specjalnï¿½, ktï¿½rï¿½ trzyma gracz zostaje zamieniona na jego punkty zdrowia
 		if (IsKeyPressed(KEY_H) && mCurrentSpecialWeapon != SWORD_DEFAULT) {
 			
 			if (mHealth < mMaxHealth) {
@@ -248,10 +249,10 @@ private:
 	}
 
 	void updateTimers(float deltaTime) {
-		// Zarz¹dzanie buforem skoku
+		// Zarzï¿½dzanie buforem skoku
 		(IsKeyPressed(KEY_SPACE)) ? mJumpBufferCounter = mJumpBufferTime : mJumpBufferCounter -= deltaTime;
 
-		// Zarz¹dzanie Coyote Time
+		// Zarzï¿½dzanie Coyote Time
 		(mIsGrounded) ? mCoyoteTimeCounter = mCoyoteTime : mCoyoteTimeCounter -= deltaTime;
 
 		if (mVelocity.y > 0) {
@@ -326,7 +327,7 @@ private:
 			if (mWallDir == 1 && IsKeyDown(KEY_RIGHT)) isGrippedInput = true;
 			else if (mWallDir == -1 && IsKeyDown(KEY_LEFT)) isGrippedInput = true;
 
-			// Gdy stoimy przy œcianie, nie chcemy siê do niej przyklejaæ
+			// Gdy stoimy przy ï¿½cianie, nie chcemy siï¿½ do niej przyklejaï¿½
 			if (mIsGrounded && !IsKeyDown(KEY_UP)) {
 				mIsClimbing = false;
 				return;
@@ -341,7 +342,7 @@ private:
 				if (IsKeyDown(KEY_UP)) climbDir = -1.0f;
 				if (IsKeyDown(KEY_DOWN)) climbDir = 1.0f;
 			
-				// Zu¿ycie staminy
+				// Zuï¿½ycie staminy
 				mStamina -= COST_CLIMB * deltaTime;
 				mStaminaRegenDelay = STAMINA_DELAY_TIME;
 
@@ -349,7 +350,7 @@ private:
 				mVelocity.y = climbDir *climbSpeed;
 			}
 			else if (!mIsGrounded){
-				// zeœlizgujemy siê ze œciany
+				// zeï¿½lizgujemy siï¿½ ze ï¿½ciany
 				mStamina -= (COST_CLIMB * 0.5f) * deltaTime;
 				mStaminaRegenDelay = STAMINA_DELAY_TIME;
 
@@ -387,9 +388,9 @@ private:
 		float momentumDragGround = 1000.0f;
 		
 		// powietrze - normalny ruch
-		float airAccel = 1200.0f; // normalne przyœpieszenie w powietrzu
+		float airAccel = 1200.0f; // normalne przyï¿½pieszenie w powietrzu
 		float airTurnAccel = 3000.0f; // szybkie hamowanie/nawracanie
-		float airDrag = 500.0f; // opór powietrza
+		float airDrag = 500.0f; // opï¿½r powietrza
 
 		// (soft cap) dla zachowania momentu dla dash'y i wavedash'y
 		bool isSuperSpeed = fabsf(mVelocity.x) > currentMaxSpeed;
@@ -397,11 +398,11 @@ private:
 		if (mIsGrounded) {
 			// ZIEMIA
 			if (isSuperSpeed) {
-				// Wavedash po ziemii <=> ma³e tarcie
+				// Wavedash po ziemii <=> maï¿½e tarcie
 				
 				float drag = momentumDragGround;
 				if ((mVelocity.x > 0 && moveDir > 0) || (mVelocity.x < 0 && moveDir < 0)) {
-					drag *= 0.5f; // przytrzymuj¹c przycisk wyd³u¿asz "œlizg"
+					drag *= 0.5f; // przytrzymujï¿½c przycisk wydï¿½uï¿½asz "ï¿½lizg"
 				}
 				
 				mVelocity.x = approach(mVelocity.x, moveDir * currentMaxSpeed, drag * deltaTime);
@@ -419,7 +420,7 @@ private:
 		else {
 			// POWIETRZE
 			if (isSuperSpeed) {
-				// powrót do normalnej prêdkoœci
+				// powrï¿½t do normalnej prï¿½dkoï¿½ci
 				mVelocity.x = approach(mVelocity.x, moveDir * currentMaxSpeed, airDrag * deltaTime);
 			}
 			else {
@@ -444,19 +445,19 @@ private:
 			
 			bool jumped = false;
 		
-			// wall jump (odbicie siê od œciany w skoku)
+			// wall jump (odbicie siï¿½ od ï¿½ciany w skoku)
 			if (mTouchingWall && !mIsGrounded) {
 				mVelocity.y = -mJumpForce;
 
 				float wallJumpKick = 180.0f;
 				mVelocity.x = -mWallDir * wallJumpKick;
 
-				// œciana po prawej, skaczemy w lewo -> facingRight = false
-				// œciana po lewej, skaczemy w prawo -> facingRight = true
+				// ï¿½ciana po prawej, skaczemy w lewo -> facingRight = false
+				// ï¿½ciana po lewej, skaczemy w prawo -> facingRight = true
 				mIsFacingRight = (mWallDir == -1);
 				
 				mIsClimbing = false;
-				mJumpCount = 1; // wall jump mo¿e resetowaæ skok
+				mJumpCount = 1; // wall jump moï¿½e resetowaï¿½ skok
 				jumped = true;
 			}
 			
@@ -475,7 +476,7 @@ private:
 				// odzyskanie kontroli nad sterowaniem
 				mMomentumTimer = 0.0f;
 
-				// aktywacja animacji skrzyde³
+				// aktywacja animacji skrzydeï¿½
 				mWingsActive = true;
 				mWingsFrame = 0;
 				mWingsTimer = 0.0f;
@@ -556,7 +557,7 @@ private:
 				mWingsTimer = 0.0f;
 				mWingsFrame++;
 
-				// gdy animacja dobie³ka koñca
+				// gdy animacja dobieï¿½ka koï¿½ca
 				if (mWingsFrame >= WINGS_NUM_FRAMES) {
 					mWingsActive = false;
 					mWingsFrame = 0;
@@ -580,7 +581,7 @@ private:
 
 			if (IsKeyDown(KEY_UP)) {
 				mAttackDir = 1;
-				// hitbox nad g³ow¹
+				// hitbox nad gï¿½owï¿½
 				mAttackArea = {
 					mPosition.x - (reachY - mSize.x) / 2,
 					mPosition.y - reachX,
@@ -590,7 +591,7 @@ private:
 			}
 			else if (IsKeyDown(KEY_DOWN) && !mIsGrounded) {
 				mAttackDir = 2;
-				// hitbox pod postaci¹
+				// hitbox pod postaciï¿½
 				mAttackArea = {
 					mPosition.x - (reachY - mSize.x) / 2,
 					mPosition.y + mSize.y,
@@ -628,10 +629,10 @@ private:
 		// Resetujemy do sprawdzania kolizji
 		mIsGrounded = false;
 
-		// Oœ X
+		// Oï¿½ X
 		mPosition.x += mVelocity.x * deltaTime;
 
-		// Oœ Y
+		// Oï¿½ Y
 		mPosition.y += mVelocity.y * deltaTime;
 	}
 
@@ -645,17 +646,17 @@ public:
 	void onCollision(Entity* pOther) override {
 		if (pOther->mType == WALL) {
 
-			Rectangle otherRect = pOther->getRect(); // prostok¹t œciany
+			Rectangle otherRect = pOther->getRect(); // prostokï¿½t ï¿½ciany
 
-			// dolna krawêdŸ gracza w poprzedniej klatce
+			// dolna krawï¿½dï¿½ gracza w poprzedniej klatce
 			float prevBottom = mPrevPosition.y + mSize.y;
 
-			// lewa i prawa krawêdŸ w poprzedniej klatce
+			// lewa i prawa krawï¿½dï¿½ w poprzedniej klatce
 			float prevRight = mPrevPosition.x + mSize.x;
 			float prevLeft = mPrevPosition.x;
 
 			// podloga
-			if (prevBottom <= otherRect.y + 2.0f) { // 2.0f toleracji dla floatów 
+			if (prevBottom <= otherRect.y + 2.0f) { // 2.0f toleracji dla floatï¿½w 
 				mPosition.y = otherRect.y - mSize.y;
 				mVelocity.y = 0;
 				mIsGrounded = true;
@@ -664,7 +665,7 @@ public:
 
 				mJumpCount = 0;
 
-				// (WAVEDASH LOGIC) jeœli dotkneliœmy ziemi podczas dash'a
+				// (WAVEDASH LOGIC) jeï¿½li dotkneliï¿½my ziemi podczas dash'a
 				if (mIsDashing) {
 					mIsDashing = false;
 
@@ -693,24 +694,24 @@ public:
 			}
 
 			// sufit
-			else if (mPrevPosition.y >= otherRect.y + otherRect.height - 2.0f) { // 2.0f tolerancji dla floatów
+			else if (mPrevPosition.y >= otherRect.y + otherRect.height - 2.0f) { // 2.0f tolerancji dla floatï¿½w
 				mPosition.y = otherRect.y + otherRect.height;
 				mVelocity.y = 0;
 			}
 
-			// œciany
+			// ï¿½ciany
 			else {
-				// czy entity by³o z lewej strony
-				if (prevRight <= otherRect.x + 5.0f) { // margines b³êdu
+				// czy entity byï¿½o z lewej strony
+				if (prevRight <= otherRect.x + 5.0f) { // margines bï¿½ï¿½du
 					mPosition.x = otherRect.x - mSize.x;
 					mTouchingWall = true;
-					mWallDir = 1.0f; // œciana po prawej
+					mWallDir = 1.0f; // ï¿½ciana po prawej
 				}
-				// czy entity by³o z prawej strony
-				else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) { // margines b³êdu
+				// czy entity byï¿½o z prawej strony
+				else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) { // margines bï¿½ï¿½du
 					mPosition.x = otherRect.x + otherRect.width;
 					mTouchingWall = true;
-					mWallDir = -1.0f; // œciana po lewej
+					mWallDir = -1.0f; // ï¿½ciana po lewej
 				}
 
 				mVelocity.x = 0;
@@ -719,7 +720,7 @@ public:
 		}
 	}
 
-	//funkcja rysuj¹ca
+	//funkcja rysujï¿½ca
 	void draw() override {
 
 
@@ -729,19 +730,19 @@ public:
 			float barX = mPosition.x + mSize.x / 2 - barWidth / 2;
 			float barY = mPosition.y - 10.0f;
 
-			//// T³o
+			//// Tï¿½o
 			//DrawRectangle(barX, barY, barWidth, barHeight, Fade(BLACK, 0.6f));
 
-			// Wype³nienie
+			// Wypeï¿½nienie
 			float percent = mStamina / mMaxStamina;
-			Color color = ColorAlpha(RED,percent); // Czerwony zanika gdy koñcówka si³
+			Color color = ColorAlpha(RED,percent); // Czerwony zanika gdy koï¿½cï¿½wka siï¿½
 			
 			if (percent < 0.50f) {
 				DrawRectangle(barX, barY, barWidth * percent, barHeight, color);
 			}
 		}
 
-		// Rysowanie duszków
+		// Rysowanie duszkï¿½w
 		for (const auto& ghost : mGhosts) {
 			// obliczamy flip
 			float ghostWidth = ghost.facingRight ? ghost.frameRec.width : -ghost.frameRec.width;
@@ -795,15 +796,15 @@ public:
 
 			if (mAttackDir == 1) {
 				offset = { 0.0f, -10.0f };
-				rotation = mIsFacingRight ? -90.0f : 90.0f; // góra
+				rotation = mIsFacingRight ? -90.0f : 90.0f; // gï¿½ra
 			}
 			else if (mAttackDir == 2) {
 				offset = { 0.0f,10.0f };
-				rotation = mIsFacingRight ? 90.0f : -90.0f; // dó³
+				rotation = mIsFacingRight ? 90.0f : -90.0f; // dï¿½
 			}
 			
 			Rectangle dest = { playerCenter.x + offset.x, playerCenter.y + offset.y, spriteSize, spriteSize};
-			Vector2 origin = { spriteSize/2.0f, spriteSize/2.0f }; // Œrodek obrotu
+			Vector2 origin = { spriteSize/2.0f, spriteSize/2.0f }; // ï¿½rodek obrotu
 
 			DrawTexturePro(mSlashTexture, slashSource, dest, origin, rotation, WHITE);
 		}
@@ -829,11 +830,11 @@ public:
 		Rectangle dest = {
 			(float)floor(drawPos.x),
 			(float)floor(drawPos.y),
-			16.0f, // rozmiar wyœwietlania
+			16.0f, // rozmiar wyï¿½wietlania
 			16.0f,
 		};
 
-		// MRUGANIE PO OTRZYMANIU OBRA¯EÑ
+		// MRUGANIE PO OTRZYMANIU OBRAï¿½Eï¿½
 		Color drawColor = WHITE;
 		if (mInvincibilityTimer > 0.0f) {
 			if ((int)(mInvincibilityTimer * 20.0f) % 2 == 0) {
@@ -971,10 +972,10 @@ public:
 				else {
 					mCurrentFrameRelative = mLengthFrames - 1;
 
-					// LOGIKA WYJŒCIA Z TURN
-					// Gdy animacja obrotu siê skoñczy³a, decydujemy co dalej
+					// LOGIKA WYJï¿½CIA Z TURN
+					// Gdy animacja obrotu siï¿½ skoï¿½czyï¿½a, decydujemy co dalej
 					if (mCurrentState == TURN) {
-						// Jeœli nadal biegnie lub trzyma klawisz -> WALK, w przeciwnym razie IDLE
+						// Jeï¿½li nadal biegnie lub trzyma klawisz -> WALK, w przeciwnym razie IDLE
 						if (shouldWalk) mCurrentState = WALK;
 						else mCurrentState = IDLE;
 
@@ -1004,13 +1005,13 @@ public:
 				newGhost.position = mPosition;
 				newGhost.frameRec = mFrameRec;
 				newGhost.facingRight = mIsFacingRight;
-				newGhost.alpha = 0.5f; // startowa przeŸroczystoœæ
+				newGhost.alpha = 0.5f; // startowa przeï¿½roczystoï¿½ï¿½
 
 				mGhosts.push_back(newGhost);
 			}
 		}
 		else {
-			mGhostSpawnTimer = 0; // reset, aby po wciœniêciu dasha duch pojawi³ siê od razu
+			mGhostSpawnTimer = 0; // reset, aby po wciï¿½niï¿½ciu dasha duch pojawiï¿½ siï¿½ od razu
 		}
 
 		for (int i = 0; i < mGhosts.size(); i++) {
@@ -1020,7 +1021,7 @@ public:
 			mGhosts[i].position.x += (mPosition.x - mGhosts[i].position.x) * lerpSpeed;
 			mGhosts[i].position.y += (mPosition.y - mGhosts[i].position.y) * lerpSpeed;*/
 
-			// usuwanie martwych duszków
+			// usuwanie martwych duszkï¿½w
 			if (mGhosts[i].alpha <= 0.0f) {
 				mGhosts.erase(mGhosts.begin() + i);
 				i--;
