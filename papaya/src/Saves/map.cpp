@@ -27,10 +27,10 @@ enum ExtraData : uint8_t {
 };
 
 struct Block {
-    int16_t x;
-    int16_t y;
-    int8_t x_length;
-    int8_t y_length;
+    uint16_t x;
+    uint16_t y;
+    uint8_t x_length;
+    uint8_t y_length;
     int8_t textureID;
     Layers layer;
     ExtraData extraData;
