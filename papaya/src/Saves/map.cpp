@@ -12,14 +12,14 @@
 
 #define BLOCK_SIZE (sizeof(int16_t) + sizeof(int16_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t))
 
-enum Layers : uint8_t {
+enum class Layers : uint8_t {
     GUI = 0,
     PLAYER = 1,
     ENEMIES = 2,
     BACKGROUND = 3,
 };
 
-enum ExtraData : uint8_t {
+enum class ExtraData : uint8_t {
     NONE = 0,
     COLLIDABLE = 1,
     DAMAGING = 2,
@@ -37,10 +37,10 @@ struct Block {
 };
 
 uint64_t createBlock(Block block) {
-    if (block.layer < GUI || block.layer > BACKGROUND) {
+    if (block.layer < Layers::GUI || block.layer > Layers::BACKGROUND) {
         throw std::invalid_argument("Invalid layer value.");
     }
-    if (block.extraData < NONE || block.extraData > INTERACTIVE) {
+    if (block.extraData < ExtraData::NONE || block.extraData > ExtraData::INTERACTIVE) {
         throw std::invalid_argument("extraData must be a valid ExtraData value.");
     }
     uint64_t blockData = 0;
