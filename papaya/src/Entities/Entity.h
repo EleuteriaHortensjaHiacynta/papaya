@@ -2,29 +2,22 @@
 #include "raylib.h"
 #include <vector>
 
-enum EntityType {
-	PLAYER,
-	WALL,
-	BULLET,
-	ENEMY
-};
+enum EntityType { PLAYER, WALL, BULLET, ENEMY };
 
 class Entity {
 public:
-	EntityType type;
-	Vector2 position;
-	bool active = true;
+	Vector2 mPosition;
+	EntityType mType;
+	bool mActive = true;
 
 	// konstruktor
-	Entity(Vector2 pos, EntityType t) : position(pos), type(t) {}
+	Entity(Vector2 pos, EntityType t) : mPosition(pos), mType(t) {}
+	
+	virtual ~Entity() {} // wirtualny destruktor
 
-	// wirtualny destruktor
-	virtual ~Entity() {}
-
-	virtual void Update(float deltaTime) = 0;
-	virtual void Draw() = 0;
-	virtual Rectangle GetRect() = 0;
-
-	// odpowiednik on_hit
-	virtual void OnCollision(Entity* other) = 0;
+	virtual void update(float deltaTime) = 0;
+	virtual void draw() = 0;
+	virtual Rectangle getRect() = 0;
+	
+	virtual void onCollision(Entity* other) = 0; // odpowiednik on_hit
 };

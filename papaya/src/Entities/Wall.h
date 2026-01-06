@@ -3,24 +3,24 @@
 
 class Wall : public Entity {
 public:
-	Vector2 size;
+	Vector2 mSize;
 
 	Wall(float x, float y, float w, float h) : Entity({ x,y }, WALL) {
-		size = { w,h };
+		mSize = { w,h };
 	}
 
-	void Update(float deltaTime) override {
+	void update(float deltaTime) override {
 	} // welp œciana œcianuje
 
-	void Draw() override {
-		DrawRectangleV(position, size, GRAY);
+	void draw() override {
+		DrawRectangleV(mPosition, mSize, GRAY);
 	}
 
-	Rectangle GetRect() override {
-		return { position.x, position.y, size.x, size.y };
+	Rectangle getRect() override {
+		return { mPosition.x, mPosition.y, mSize.x, mSize.y };
 	}
 
-	void OnCollision(Entity* other) override {
+	void onCollision(Entity* other) override {
 		// chwilowo œciany ignoruj¹ obra¿enia
 	}
 };
