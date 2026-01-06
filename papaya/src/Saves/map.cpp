@@ -1,4 +1,3 @@
-#pragma once
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -44,36 +43,38 @@ bool sortByX(uint64_t a, uint64_t b) {
     return ax < bx;
 }
 
-class MapSaver {
-private:
-    std::fstream* fileStream = nullptr; 
+// MapSaver method implementations
+MapSaver::MapSaver(std::fstream& f) : fileStream(&f) {}
 
-public:
-    explicit MapSaver(std::fstream& f) : fileStream(&f) {}
+void MapSaver::addBlock(Block block) {
+    uint64_t blockData = createBlock(block);
+    fileStream->write(reinterpret_cast<const char*>(&blockData), sizeof(blockData));
+    if (!(*fileStream)) throw std::runtime_error("Failed to write block data to file.");
+}
 
-    void addBlock(Block block) {
-        uint64_t blockData = createBlock(block);
-        fileStream->write(reinterpret_cast<const char*>(&blockData), sizeof(blockData));
-        if (!(*fileStream)) throw std::runtime_error("Failed to write block data to file.");
-    }
+// Sort blocks by their x coordinate
+void MapSaver::sortBlocks() {
+    fileStream->seekg(0, std::ios::end);
+    std::streamsize fileSize = fileStream->tellg();
+    if (fileSize <= 0) return;
+    size_t blockCount = static_cast<size_t>(fileSize) / sizeof(uint64_t);
+    fileStream->seekg(0, std::ios::beg);
+    std::vector<uint64_t> blocks(blockCount);
+    fileStream->read(reinterpret_cast<char*>(blocks.data()), fileSize);
+    if (!(*fileStream)) throw std::runtime_error("Failed to read block data from file.");
 
-    // Sort blocks by their x and y coordinates
-    void sortBlocks() {
-        fileStream->seekg(0, std::ios::end);
-        std::streamsize fileSize = fileStream->tellg();
-        size_t blockCount = fileSize / sizeof(uint64_t);
-        fileStream->seekg(0, std::ios::beg);
-        std::vector<uint64_t> blocks(blockCount);
-        fileStream->read(reinterpret_cast<char*>(blocks.data()), fileSize);
-        if (!(*fileStream)) throw std::runtime_error("Failed to read block data from file.");
+    std::sort(blocks.begin(), blocks.end(), sortByX);
 
-        std::sort(blocks.begin(), blocks.end(), sortByX);
-    }
+    // (optional) write sorted data back to file
+    fileStream->clear();
+    fileStream->seekp(0, std::ios::beg);
+    fileStream->write(reinterpret_cast<const char*>(blocks.data()), static_cast<std::streamsize>(blocks.size() * sizeof(uint64_t)));
+    if (!(*fileStream)) throw std::runtime_error("Failed to write sorted block data to file.");
+}
 
-    // nie wiem czy to dobra praktyka
-    ~MapSaver() {
-        this->sortBlocks();
-    }
+MapSaver::~MapSaver() {
+    try { this->sortBlocks(); } catch (...) {}
+}
 
     // dziala ale w sumie komu to potrzebne 
     // struct Iterator {
@@ -123,22 +124,19 @@ public:
     // Iterator end() {
     //     return Iterator(fileStream, false);
     // }
-};
 
-class MapLoader {
-private:
-    std::fstream* fileStream = nullptr; 
-public:
-    explicit MapLoader(std::fstream& f) : fileStream(&f) {}
+// MapLoader method implementations
+MapLoader::MapLoader(std::fstream& f) : fileStream(&f) {}
 
-    std::vector<Wall> getAll() {
-        fileStream->seekg(0, std::ios::beg);
-        std::vector<Wall> walls;
-        uint64_t blockData;
-        while (fileStream->read(reinterpret_cast<char*>(&blockData), sizeof(blockData))) {
-            Block block = decodeBlock(blockData);
-            walls.push_back(Wall(block.x, block.y, block.x_length, block.y_length));
-        }
-        return walls;
+MapLoader::~MapLoader() {}
+
+std::vector<Wall> MapLoader::getAll() {
+    fileStream->seekg(0, std::ios::beg);
+    std::vector<Wall> walls;
+    uint64_t blockData;
+    while (fileStream->read(reinterpret_cast<char*>(&blockData), sizeof(blockData))) {
+        Block block = decodeBlock(blockData);
+        walls.push_back(Wall(block.x, block.y, block.x_length * 10, block.y_length * 10));
     }
-};
+    return walls;
+}

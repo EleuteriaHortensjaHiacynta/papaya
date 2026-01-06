@@ -5,10 +5,11 @@
 #include "Entities/Player.h"
 #include "Entities/Wall.h"
 #include "Entities/Dummy.h"
+#include "Saves/map.hpp"
 
 // --- POPRAWIONA KLASA ENEMY ---
-// Wklejam j¹ tutaj w ca³oœci, bo zmiany by³y w œrodku metod.
-// Upewnij siê, ¿e podmienisz swoj¹ star¹ definicjê Enemy na tê.
+// Wklejam jï¿½ tutaj w caï¿½oï¿½ci, bo zmiany byï¿½y w ï¿½rodku metod.
+// Upewnij siï¿½, ï¿½e podmienisz swojï¿½ starï¿½ definicjï¿½ Enemy na tï¿½.
 class Enemy : public Entity {
 public:
 	Vector2 mPosition;
@@ -71,19 +72,19 @@ public:
 			float prevRight = mPrevPosition.x + mSize.x;
 			float prevLeft = mPrevPosition.x;
 
-			// Pod³oga
+			// Podï¿½oga
 			if (prevBottom <= otherRect.y + 5.0f) {
 				mPosition.y = otherRect.y - mSize.y;
 				mVelocity.y = 0;
 			}
-			// Œciany boczne (Zawracanie)
+			// ï¿½ciany boczne (Zawracanie)
 			else {
-				if (prevRight <= otherRect.x + 5.0f) { // Uderzy³ z lewej
+				if (prevRight <= otherRect.x + 5.0f) { // Uderzyï¿½ z lewej
 					mPosition.x = otherRect.x - mSize.x;
 					mVelocity.x *= -1;
 					mIsFacingRight = !mIsFacingRight;
 				}
-				else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) { // Uderzy³ z prawej
+				else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) { // Uderzyï¿½ z prawej
 					mPosition.x = otherRect.x + otherRect.width;
 					mVelocity.x *= -1;
 					mIsFacingRight = !mIsFacingRight;
@@ -117,24 +118,21 @@ public:
 
 		mEntities.push_back(new Dummy(180, 128));
 
-		auto addWall = [&](float x, float y, float w, float h) {
-			Wall* wObj = new Wall(x, y, w, h);
+		auto f = std::fstream("Assets/maps/test.map", std::ios::in | std::ios::binary);
+		auto map = MapLoader(f);
+		auto w = map.getAll();
+		for (auto& wall : w) {
+			Wall* wObj = new Wall(wall.mPosition.x, wall.mPosition.y, wall.mSize.x, wall.mSize.y);
 			mEntities.push_back(wObj);
 			walls.push_back(wObj);
-			};
-
-		// MAPA
-		addWall(0, 160, 320, 40);       // Pod³oga lewa
-		addWall(100, 110, 80, 10);      // Platforma œrodkowa
-		addWall(220, 70, 400, 11110);   // Wielka œciana prawa (zaczyna siê na X=220)
-		addWall(0, 0, 20, 200);
+		}
 
 		// WROGOWIE
-		// Wróg 1: Nad lew¹ pod³og¹ (OK)
+		// Wrï¿½g 1: Nad lewï¿½ podï¿½ogï¿½ (OK)
 		enemies.push_back(new Enemy(50, 100));
 
-		// Wróg 2: POPRAWIONY SPAWN
-		// Musi byæ na lewo od X=220. Dajemy go na X=180, nad Dummy.
+		// Wrï¿½g 2: POPRAWIONY SPAWN
+		// Musi byï¿½ na lewo od X=220. Dajemy go na X=180, nad Dummy.
 		enemies.push_back(new Enemy(180, 50));
 
 		mCamera.target = { pPlayer->mPosition.x, pPlayer->mPosition.y };
@@ -158,14 +156,14 @@ public:
 			}
 		}
 
-		// LOGIKA WROGÓW
+		// LOGIKA WROGï¿½W
 		for (int i = 0; i < enemies.size(); i++) {
 			Enemy* e = enemies[i];
 
-			// 1. Fizyka (Tu dzia³a nowa grawitacja i mPrevPosition)
+			// 1. Fizyka (Tu dziaï¿½a nowa grawitacja i mPrevPosition)
 			e->update(deltaTime);
 
-			// 2. Kolizje (Tu dzia³a nowa funkcja onCollision)
+			// 2. Kolizje (Tu dziaï¿½a nowa funkcja onCollision)
 			for (auto& wall : walls) {
 				if (CheckCollisionRecs(e->getRect(), wall->getRect())) {
 					e->onCollision(wall);
@@ -179,7 +177,7 @@ public:
 			}
 		}
 
-		// KOLIZJA GRACZ VS WRÓG
+		// KOLIZJA GRACZ VS WRï¿½G
 		for (Enemy* e : enemies) {
 			if (!e->mIsDead && CheckCollisionRecs(pPlayer->getRect(), e->getRect())) {
 
