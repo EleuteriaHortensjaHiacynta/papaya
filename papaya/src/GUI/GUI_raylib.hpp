@@ -260,7 +260,9 @@ public:
 	}
 
 	void draw() override {
-		if (CheckCollisionPointRec(MousePosition::sMousePos, mRect)) {
+
+		bool mouseInside = CheckCollisionPointRec(MousePosition::sMousePos, mRect);
+		if (mouseInside) {
 			float wheel = GetMouseWheelMove();
 			mScrollY -= wheel * mScrollSpeed;
 		}
@@ -272,7 +274,14 @@ public:
 		BeginMode2D(camera);
 		if (mChild) {
 			Vector2 prevMouse = MousePosition::sMousePos;
-			MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, camera);
+			if (mouseInside) {
+				MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, camera);
+			}
+			else {
+				//this is simultaneously the smartest and dumbest way to avoid interacting with buttons that arent visible 
+				MousePosition::sMousePos = { -10000000000.0f, -10000000000.0f };
+			}
+			
 			mChild->draw();
 			MousePosition::sMousePos = prevMouse;
 		}
@@ -495,7 +504,11 @@ private:
 	Camera2D mCamera;
 
 public:
-	std::vector<std::vector<Cell>> mCells;
+
+	bool collisionOverlayEnabled = false;
+	bool damageOverlayEnabled = false;
+
+	std::vector<std::vector<Cell>> cells;
 	// top left corner is the origin of the grid, everything gets set relative to it
 	int originX;
 	int originY;
@@ -513,7 +526,7 @@ public:
 	bool currentCollision;
 	bool currentDamage;
 
-	//used for visualising the center of mCells in the grid without textures
+	//used for visualising the center of cells in the grid without textures
 	std::vector<Line> verticalLines;
 	std::vector<Line> horizontalLines;
 
@@ -528,7 +541,7 @@ public:
 		int screenHeight)
 		: mRows(passedRows),
 		mColumns(passedColumns),
-		mCells(mRows, std::vector<Cell>(mColumns)),
+		cells(mRows, std::vector<Cell>(mColumns)),
 		tileData(mRows, std::vector<TileData>(mColumns)),
 		verticalLines(mColumns + 1),
 		horizontalLines(mRows + 1),
@@ -555,6 +568,10 @@ public:
 
 	}
 
+	float getCameraZoom() {
+		return mCamera.zoom;
+	}
+
 	void giveCoordinates(int xPos, int yPos) {
 
 		gridHeight = mRows * tileSize;
@@ -564,7 +581,7 @@ public:
 
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
-				mCells[i][j].rect = {
+				cells[i][j].rect = {
 					(float)(j * tileSize),
 					(float)(i * tileSize),
 					(float)tileSize,
@@ -620,12 +637,48 @@ public:
 			for (int j = 0; j < mColumns; j++) {
 				currentlyDrawnID = tileData[i][j].textureID;
 				Rectangle src = fetchTexture(atlas, tileSize, currentlyDrawnID);
-				DrawTextureRec(atlas, src, Vector2{ mCells[i][j].rect.x, mCells[i][j].rect.y }, WHITE);
+				DrawTextureRec(atlas, src, Vector2{ cells[i][j].rect.x, cells[i][j].rect.y }, WHITE);
+			}
+		}
+
+		if (collisionOverlayEnabled) {
+			for (int i = 0; i < mRows; i++) {
+				for (int j = 0; j < mColumns; j++) {
+					if (tileData[i][j].collision) {
+						DrawRectangle(cells[i][j].rect.x, cells[i][j].rect.y, tileSize / 2, tileSize / 2, WHITE);
+					}
+					
+				}
+			}
+		}
+
+		if (damageOverlayEnabled) {
+			for (int i = 0; i < mRows; i++) {
+				for (int j = 0; j < mColumns; j++) {
+					if (tileData[i][j].damage) {
+						DrawRectangle(cells[i][j].rect.x + (tileSize / 2), cells[i][j].rect.y + (tileSize / 2), tileSize / 2, tileSize / 2, LIGHTGRAY);
+					}
+
+				}
 			}
 		}
 
 		EndMode2D();
 		EndScissorMode();
+	}
+
+	Vector2 hoveredCell() {
+		Vector2 mouse = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
+		Vector2 pos;
+		pos.x = (mouse.x) / tileSize;
+		pos.y = (mouse.y) / tileSize;
+		return pos;
+	}
+
+	void insertData(int row, int column) {
+		if (row < 0 || row >= mRows) return;
+		if (column < 0 || column >= mColumns) return;
+		tileData[row][column] = { currentID, currentLayer, currentCollision, currentDamage };
 	}
 
 	void gridInteraction() {
@@ -634,12 +687,20 @@ public:
 		int columnPos = -1;
 		if (!CheckCollisionPointRec(MousePosition::sMousePos, viewport)) return;
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-			Vector2 mouse = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
-			int column = (mouse.x) / tileSize;
-			int row = (mouse.y) / tileSize;
+			Vector2 position = hoveredCell();
+			int column = position.x;
+			int row = position.y;
 			insertData(row, column);
 			//std::cout << "Grid position: " << row << " ; " << column << std::endl;
-
+		}
+		// lmb is used as erase mode
+		else if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+			Vector2 position = hoveredCell();
+			int column = position.x;
+			int row = position.y;
+			if (row < 0 || row >= mRows) return;
+			if (column < 0 || column >= mColumns) return;
+			tileData[row][column] = { 0, 0, 0, 0};
 		}
 
 
@@ -678,12 +739,6 @@ public:
 			mCamera.target.x -= delta.x / mCamera.zoom;
 			mCamera.target.y -= delta.y / mCamera.zoom;
 		}
-	}
-
-	void insertData(int row, int column) {
-		if (row < 0 || row >= mRows) return;
-		if (column < 0 || column >= mColumns) return;
-		tileData[row][column] = { currentID, currentLayer, currentCollision, currentDamage };
 	}
 
 	//the const after arguments says that the function cant change anything
