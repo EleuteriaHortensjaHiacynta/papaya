@@ -1,40 +1,10 @@
 #pragma once
 #include <string>
 #include <iostream>
-#include <stdexcept>
-#include <cstdint>
 #include <fstream>
-#include <iterator>
-#include <vector>
 #include <algorithm>
 
-#include "../Entities/Wall.h"
-
-#define BLOCK_SIZE (sizeof(int16_t) + sizeof(int16_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t))
-
-enum class Layers : uint8_t {
-    GUI = 0,
-    PLAYER = 1,
-    ENEMIES = 2,
-    BACKGROUND = 3,
-};
-
-enum class ExtraData : uint8_t {
-    NONE = 0,
-    COLLIDABLE = 1,
-    DAMAGING = 2,
-    INTERACTIVE = 3,
-};
-
-struct Block {
-    uint16_t x;
-    uint16_t y;
-    uint8_t x_length;
-    uint8_t y_length;
-    int8_t textureID;
-    Layers layer;
-    ExtraData extraData;
-};
+#include "map.hpp"
 
 uint64_t createBlock(Block block) {
     if (block.layer < Layers::GUI || block.layer > Layers::BACKGROUND) {
