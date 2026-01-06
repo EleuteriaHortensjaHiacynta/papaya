@@ -24,9 +24,9 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	InteractiveGrid drawingScreen(64, 64, 310, 50, 8, 1200, 800);
 
-	Grid topGrid(1, 10, 40, windowWidth / 10, 0, 0);
+	auto pTopGrid = std::make_shared<Grid>(1, 10, 40, windowWidth / 10, 0, 0);
 	//InteractiveGrid blockPanel()
-	Grid bottomGrid(1, 4, 40, (windowWidth - sidePanelWidth) / 4, sidePanelWidth, windowHeight - 40);
+	auto pBottomGrid = std::make_shared<Grid>(1, 8, 40, (windowWidth - sidePanelWidth) / 8, sidePanelWidth, windowHeight - 40);
 
 
 	Grid tilePropertyGrid(4, 1, 50, sidePanelWidth, 0, windowHeight - 200);
@@ -81,21 +81,6 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	//=====================================================================================================================
 	//chunk coordinate changing
 	//=====================================================================================================================
-	auto pChunkXInfo = std::make_shared<Grid>(1, 2, 0, 0, 0, 0);
-
-	bottomGrid.insertWidget(0, 0, pChunkXInfo);
-	pChunkXInfo->setParent(&bottomGrid);
-	pChunkXInfo->setPosition(bottomGrid.cells[0][0].rect);
-	pChunkXInfo->expandSubgridToFillCell();
-
-
-	auto pChunkYInfo = std::make_shared<Grid>(1, 2, 0, 0, 0, 0);
-
-	bottomGrid.insertWidget(0, 1, pChunkYInfo);
-	pChunkYInfo->setParent(&bottomGrid);
-	pChunkYInfo->setPosition(bottomGrid.cells[0][1].rect);
-	pChunkYInfo->expandSubgridToFillCell();
-
 
 	auto pChunkXControls = std::make_shared<Grid>(2, 1, 0, 0, 0, 0);
 
@@ -103,14 +88,14 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	auto pXDown = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
 
 
-	subgridSetup(pChunkXControls, pChunkXInfo, 0, 1);
+	subgridSetup(pChunkXControls, pBottomGrid, 0, 1);
 
 	gridButtonSetup(pChunkXControls, pXUp, 0, 0);
 	gridButtonSetup(pChunkXControls, pXDown, 1, 0);
 
 	auto pChunkYControls = std::make_shared<Grid>(2, 1, 0, 0, 0, 0);
 
-	subgridSetup(pChunkYControls, pChunkYInfo, 0, 1);
+	subgridSetup(pChunkYControls, pBottomGrid, 0, 3);
 
 	auto pYUp = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
 	auto pYDown = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
@@ -127,25 +112,25 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	//=====================================================================================================================
 
 	auto pXDisplay = std::make_shared<Button>(b, DARKGRAY, DARKGRAY, DARKGRAY);
-	gridButtonSetup(pChunkXInfo, pXDisplay, 0, 0);
+	gridButtonSetup(pBottomGrid, pXDisplay, 0, 0);
 	
 	pXDisplay->addText("Chunk X: " + std::to_string(chunkX), 26, WHITE);
 
 	pXUp->storeFunction([&]() {
-		chunkChangeAndDisplay(chunkX, 1, pXDisplay, "X");
+		chunkChangeAndDisplay(chunkX, 1, pXDisplay, "Chunk X:");
 		});
 
 	pXUp->addText("++", 20, WHITE);
 	
 	pXDown->storeFunction([&]() {
-		chunkChangeAndDisplay(chunkX, -1, pXDisplay, "X");
+		chunkChangeAndDisplay(chunkX, -1, pXDisplay, "Chunk X:");
 		});
 
 	pXDown->addText("--", 20, WHITE);
 	
 
 	auto pYDisplay = std::make_shared<Button>(b, DARKGRAY, DARKGRAY, DARKGRAY);
-	gridButtonSetup(pChunkYInfo, pYDisplay, 0, 0);
+	gridButtonSetup(pBottomGrid, pYDisplay, 0, 2);
 
 	pYDisplay->addText("Chunk Y: " + std::to_string(chunkY), 26, WHITE);
 
@@ -162,14 +147,43 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pYDown->addText("--", 20, WHITE);
 
 	//=====================================================================================================================
+	// zoom display
+	//=====================================================================================================================
+
+	auto pZoomDisplay = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+
+	gridButtonSetup(pBottomGrid, pZoomDisplay, 0, 4);
+
+	//=====================================================================================================================
+	// collision, damage and position of hovered over tile
+	//=====================================================================================================================
+
+
+	auto pTileCollisionDisplay = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+	auto pTileDamageDisplay = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+
+	gridButtonSetup(pBottomGrid, pTileCollisionDisplay, 0, 5);
+	gridButtonSetup(pBottomGrid, pTileDamageDisplay, 0, 6);
+
+	auto pTilePosDiv = std::make_shared<Grid>(1, 2, 0, 0, 0, 0);
+	auto pTileXDisplay = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+	auto pTileYDisplay = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+
+	subgridSetup(pTilePosDiv, pBottomGrid, 0, 7);
+	gridButtonSetup(pTilePosDiv, pTileXDisplay, 0, 0);
+	gridButtonSetup(pTilePosDiv, pTileYDisplay, 0, 1);
+
+	pTileXDisplay->addText("X", 28, WHITE);
+	pTileYDisplay->addText("Y", 28, WHITE);
+
+	//=====================================================================================================================
 	// save and load buttons
 	//=====================================================================================================================
 
 	// save button
 	auto pSaveButton = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
-	topGrid.insertWidget(0, 0, pSaveButton);
-	pSaveButton->setPosition(topGrid.cells[0][0].rect);
-	pSaveButton->addText("Save chunk", 20, WHITE);
+	gridButtonSetup(pTopGrid, pSaveButton, 0, 0);
+	pSaveButton->addText("Save chunk", 25, WHITE);
 
 	// & in the lambda allows it to access all variables in the scope
 	pSaveButton->storeFunction([&]() {
@@ -186,9 +200,8 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	// load button 
 	auto pLoadButton = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
-	topGrid.insertWidget(0, 1, pLoadButton);
-	pLoadButton->addText("Load chunk", 20, WHITE);
-	pLoadButton->setPosition(topGrid.cells[0][1].rect);
+	gridButtonSetup(pTopGrid, pLoadButton, 0, 1);
+	pLoadButton->addText("Load chunk", 25, WHITE);
 
 	pLoadButton->storeFunction([&]() {
 		std::string path = openFileDialog("Load Chunk File");
@@ -197,16 +210,26 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 			drawingScreen.jsonToChunk(path, chunkX, chunkY);
 
 			//update the displays
-			changeDisplayedText(pXDisplay, "X", chunkX);
-			changeDisplayedText(pYDisplay, "Y", chunkY);
+			changeDisplayedCoordinate(pXDisplay, "Chunk X:", chunkX);
+			changeDisplayedCoordinate(pYDisplay, "Chunk Y:", chunkY);
 		}
 		});
+
+	//=====================================================================================================================
+	// damage and collision overlay buttons
+	//=====================================================================================================================
+
+	auto pDamageOverlayButton = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+	auto pCollisionOverlayButton = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+
+	gridButtonSetup(pTopGrid, pCollisionOverlayButton, 0, 2);
+	gridButtonSetup(pTopGrid, pDamageOverlayButton, 0, 3);
+
 
 
 	//=====================================================================================================================
 	//main loop
 	//=====================================================================================================================
-
 
 	while(!WindowShouldClose()) {
 		BeginDrawing();
@@ -214,14 +237,40 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 
 		MousePosition::updateMousePos();
-		topGrid.draw();
-		bottomGrid.draw();
+		pTopGrid->draw();
+		pBottomGrid->draw();
 		tilePropertyGrid.draw();
 		
 		
 		//this draws the texture selection
 		scrollPanel->draw();
-		//textureSelection.draw();
+
+		zoomChangeDisplay(pZoomDisplay, drawingScreen.getCameraZoom());
+
+
+		Vector2 hoveredTilePos= drawingScreen.hoveredCell();
+		if (hoveredTilePos.x >= 0 && hoveredTilePos.y >= 0 && hoveredTilePos.x <= 63 && hoveredTilePos.y <= 63) {
+			changeDisplayedCoordinate(pTileXDisplay, "X: ", hoveredTilePos.x);
+			changeDisplayedCoordinate(pTileYDisplay, "Y: ", hoveredTilePos.y);
+			
+			std::string collision;
+			if (drawingScreen.tileData[hoveredTilePos.y][hoveredTilePos.x].collision == 0) collision = "no collision";
+			else collision = "has collision";
+			pTileCollisionDisplay->addText(collision, 20, WHITE);
+			
+			std::string damage;
+			if (drawingScreen.tileData[hoveredTilePos.y][hoveredTilePos.x].damage == 0) damage = "no damage";
+			else damage = "deals damage";
+			pTileDamageDisplay->addText(damage, 20, WHITE);
+
+		}
+
+		//im so tired that like an hour after making these i realised that i couldve just put functions inside the buttons
+		collisionSelection(drawingScreen, pCollisionButton);
+		damageSelection(drawingScreen, pDamageButton);
+		enableCollisionOvelay(drawingScreen, pCollisionOverlayButton);
+		enableDamageOvelay(drawingScreen, pDamageOverlayButton);
+		toggleDamageCollisionAndOverlaysKeyboard(drawingScreen);
 
 		drawingScreen.renderLines();
 		drawingScreen.draw(textureAtlas);
