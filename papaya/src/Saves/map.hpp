@@ -4,7 +4,7 @@
 #include <vector>
 #include "../Entities/Wall.h"
 
-#define BLOCK_SIZE (sizeof(int16_t) + sizeof(int16_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t))
+#define BLOCK_SIZE sizeof(uint64_t)
 
 enum class Layers : uint8_t {
     GUI = 0,
@@ -32,21 +32,24 @@ struct Block {
 
 uint64_t createBlock(Block block);
 Block decodeBlock(uint64_t blockData);  
+
+// Class to save blocks to a file
 class MapSaver {
 private:
     std::fstream* fileStream = nullptr;
 public:
-    explicit MapSaver(std::fstream& f) : fileStream(&f) {}
+    explicit MapSaver(std::fstream& f);
     void addBlock(Block block);
-    void sortBlocksByX();
-    ~MapSaver() {}
+    void sortBlocks();
+    ~MapSaver();
 };
 
+// Class to load blocks from a file
 class MapLoader {
 private:
     std::fstream* fileStream = nullptr;
 public:
-    explicit MapLoader(std::fstream& f) : fileStream(&f) {}
+    explicit MapLoader(std::fstream& f);
     std::vector<Wall> getAll();
-    ~MapLoader() {}
+    ~MapLoader();
 };

@@ -7,6 +7,24 @@
 #include "Scenes/scene_test_room.h"
 #include <cmath>
 
+#include "Saves/map.hpp"
+#include <fstream>
+
+// int main() {
+//     std::fstream file("test.map", std::ios::out | std::ios::trunc);
+//     auto map = MapSaver(file);
+//     Block block1 = { 0, 160, 32, 4, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
+//     Block block2 = { 100, 110, 8, 1, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
+//     Block block3 = { 220, 70, 40, 255, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
+//     Block block4 = { 0, 0, 2, 20, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
+//     map.addBlock(block1);
+//     map.addBlock(block2);
+//     map.addBlock(block3);
+//     map.addBlock(block4);
+
+//     return 0;
+// }
+
 int main() {
 
     const int screenWidth = 1280; //tymczasowo const
