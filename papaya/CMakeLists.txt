@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.16..4.18)
+project(papaya LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# sources (add or remove files as appropriate)
+set(PAPAYA_SOURCES
+  src/papaya.cpp
+  src/Saves/map.cpp
+  src/Entities/Entity.h        # optional for IDE visibility
+  src/Entities/Player.h
+  src/Entities/Wall.h
+  src/GUI/GUIRayLib.h
+  # add other .cpp/.h here
+)
+
+# Prefer listing .cpp files explicitly; adjust to match your tree:
+set(PAPAYA_CPP
+  src/papaya.cpp
+  # add other .cpp files
+)
+
+add_executable(papaya ${PAPAYA_CPP} ${PAPAYA_SOURCES})
+
+# Include directories so headers are found with #include "..."
+target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# Example: enable more warnings (optional)
+if (MSVC)
+  target_compile_options(papaya PRIVATE /W4)
+else()
+  target_compile_options(papaya PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# If you use external libs, find and link them:
+find_package(raylib REQUIRED)
+# target_include_directories(papaya PRIVATE ${RAYLIB_INCLUDE_DIRS})
+# target_link_libraries(papaya PRIVATE ${RAYLIB_LIBRARIES})
+
+# Put binaries in build/bin
+set_target_properties(papaya PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
