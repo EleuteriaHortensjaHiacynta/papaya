@@ -42,7 +42,7 @@ int main() {
         BeginDrawing();
             ClearBackground(BLACK);
             DrawTexturePro(target.texture,
-                { 0.0f, 0.0f, (float)gameWidth, (float)gameHeight }, // source
+                { 0.0f, 0.0f, (float)gameWidth, -(float)gameHeight }, // source
                 { 0.0f, 0.0f, (float)screenWidth, (float)screenHeigt }, // dest
                 { 0.0f, 0.0f }, // origin
                 0.0f, // rotation
