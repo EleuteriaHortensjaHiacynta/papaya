@@ -41,6 +41,7 @@ public:
     explicit MapSaver(std::fstream& f);
     void addBlock(Block block);
     void sortBlocks();
+    void fromEditor(std::string json, int chunkX, int chunkY);
     ~MapSaver();
 };
 
@@ -51,5 +52,7 @@ private:
 public:
     explicit MapLoader(std::fstream& f);
     std::vector<Wall> getAll();
+    std::string toEditor();
+
     ~MapLoader();
 };
