@@ -137,9 +137,13 @@
     <ClInclude Include="src\GUI\GUI_raylib.hpp" />
     <ClInclude Include="src\level_editor\functions_level_editor.hpp" />
     <ClInclude Include="src\level_editor\scene_level_editor.hpp" />
+    <ClInclude Include="src\Scenes\main_menu.hpp" />
     <ClInclude Include="src\Scenes\scene_functions.hpp" />
     <ClInclude Include="src\Scenes\MainMenu.hpp" />
     <ClInclude Include="src\Scenes\Test.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\textures\texture_atlas_v3.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,7 +13,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	const int TILE_SIZE = 8;
 
-	Texture2D textureAtlas = LoadTexture("assets/tiles/texture_atlas_v4.png");
+	Texture2D textureAtlas = LoadTexture("assets/tiles/texture_atlas_stars.png");
 	int chunkX = 0;
 	int chunkY = 0;
 	

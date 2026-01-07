@@ -7,16 +7,14 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include "external_headers/json.hpp"
 
 using json = nlohmann::json;
 
 inline Rectangle fetchTexture(Texture2D atlas, int tileSize, int index)	 {
-	const int ATLAS_WIDTH = 5;
-	const int ATLAS_HEIGHT = 20; 
-
-	int tileX = index % ATLAS_WIDTH;
-	int tileY = index / ATLAS_WIDTH;
+	int tileX = index % (atlas.width / tileSize);
+	int tileY = index / (atlas.width / tileSize);
 
 	return Rectangle{
 	(float)tileX * tileSize,
@@ -39,9 +37,11 @@ public:
 
 	//for scrolling widgets
 	virtual float getHeight() const { return 0.0f; }
+	virtual float getWidth() const { return 0.0f; }
 
 	//from what im understanding this makes the destructor delete both widget and the derived classes when using delete
 	virtual ~Widget() = default;
+
 };
 
 //this class is used so whenever there is more than one button or item that needs to know the mouse position
@@ -209,89 +209,6 @@ struct Cell {
 
 };
 
-class ScrollContainer : public Widget {
-private:
-	Rectangle mRect;
-	std::shared_ptr<Widget> mChild;
-
-	float mScrollY = 0.0f;
-	float mScrollSpeed = 20.f;
-
-
-
-public:
-
-	Camera2D camera;
-
-	ScrollContainer(Rectangle rect)
-		: mRect(rect) {
-
-	};
-
-	void setCamera() {
-		camera.target = { 0.0f, mScrollY };
-		camera.offset = { mRect.x, 0 };
-		camera.zoom = 1.0f;
-		camera.rotation = 0.0f;
-
-	}
-
-private:
-
-	void clampScroll() {
-		if (!mChild) return;
-
-		float contentHeight = mChild->getHeight();
-		float maxScroll = std::max(0.0f, contentHeight - mRect.height);
-
-		if (mScrollY < 0) mScrollY = 0;
-		if (mScrollY > maxScroll) mScrollY = maxScroll;
-	}
-
-
-public:
-
-	void setChild(std::shared_ptr<Widget> child) {
-		mChild = child;
-	}
-
-	void setPosition(Rectangle rect) override {
-		mRect = rect;
-	}
-
-	void draw() override {
-
-		bool mouseInside = CheckCollisionPointRec(MousePosition::sMousePos, mRect);
-		if (mouseInside) {
-			float wheel = GetMouseWheelMove();
-			mScrollY -= wheel * mScrollSpeed;
-		}
-
-		clampScroll();
-		setCamera();
-
-		BeginScissorMode((int)mRect.x, (int)mRect.y, (int)mRect.width, (int)mRect.height);
-		BeginMode2D(camera);
-		if (mChild) {
-			Vector2 prevMouse = MousePosition::sMousePos;
-			if (mouseInside) {
-				MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, camera);
-			}
-			else {
-				//this is simultaneously the smartest and dumbest way to avoid interacting with buttons that arent visible 
-				MousePosition::sMousePos = { -10000000000.0f, -10000000000.0f };
-			}
-			
-			mChild->draw();
-			MousePosition::sMousePos = prevMouse;
-		}
-		EndMode2D();
-		EndScissorMode();
-	}
-
-
-
-};
 
 //Grid also inherits from Widget class so that it can hold subgrids
 class Grid : public Widget {
@@ -312,6 +229,10 @@ public:
 	// top left corner is the origin of the grid, everything gets set relative to it
 	int originX;
 	int originY;
+
+	int selectedColumn = -1;
+	int selectedRow = -1;
+	Rectangle selectedCell = {-1, -1, -1, -1};
 
 
 	Grid(int passedRows,
@@ -389,10 +310,27 @@ public:
 	//overriden Widget functions ====================================================
 	//===============================================================================
 
+	void selectCell( int tileSize, int index) {
+		selectedColumn = index % mColumns;
+		selectedRow = index / mColumns;
+		if (selectedRow >= mRows) selectedRow = mRows - 1;
+		if (selectedColumn >= mColumns) selectedColumn = mColumns - 1;
+		//selectedCell.x = originX + selectedColumn * columnWidth;
+		//selectedCell.y = originX + selectedRow * rowHeight;
+		//selectedCell.width = columnWidth;
+		//selectedCell.height = rowHeight;
+		selectedCell = cells[selectedRow][selectedColumn].rect;
+		selectedCell.x -= 1;
+		selectedCell.y -= 1;
+	}
+
+	void drawSelectedCell() {
+		DrawRectangleLinesEx(selectedCell, 2, WHITE);
+	}
 
 	//loops through the grid and calls the draw function on every widget inside
 	//if there is no widget it draws a gray square border instead
-	void Widget::draw() override {
+	void draw() override {
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
 
@@ -412,7 +350,7 @@ public:
 	}
 
 	//changes the origin of the grid and readjusts the cells
-	void Widget::setPosition(Rectangle rect) override {
+	void setPosition(Rectangle rect) override {
 		originX = rect.x;
 		originY = rect.y;
 		giveCoordinates(originX, originY);
@@ -422,7 +360,125 @@ public:
 		return mRows * (rowHeight);
 	}
 
+	float getWidth() const override {
+		return mColumns * columnWidth;
+	}
+
 };
+
+class ScrollContainer : public Widget {
+private:
+	Rectangle mRect;
+	std::shared_ptr<Widget> mChild;
+	std::shared_ptr<Grid> mChildGrid;
+
+	float mScrollY = 0.0f;
+	float mScrollSpeed = 20.f;
+	float mScrollX = 0.0f;
+
+
+public:
+
+	Camera2D camera;
+
+	ScrollContainer(Rectangle rect)
+		: mRect(rect) {
+
+	};
+
+	void setCamera() {
+		camera.target = { mScrollX, mScrollY };
+		camera.offset = { mRect.x , 0 };
+		camera.zoom = 1.0f;
+		camera.rotation = 0.0f;
+
+	}
+
+	Rectangle getRect() {
+		return mRect;
+	}
+
+	void setRect(Rectangle rect) {
+		mRect = rect;
+	}
+
+private:
+
+	void clampScroll() {
+		if (!mChild) return;
+
+		float contentHeight = mChild->getHeight();
+		float contentWidth = mChild->getWidth();
+		float maxScrollY = std::max(0.0f, contentHeight - mRect.height);
+		float maxScrollX = std::max(0.0f, contentWidth - mRect.width);
+
+		if (mScrollY < 0) mScrollY = 0;
+		if (mScrollY > maxScrollY) mScrollY = maxScrollY;
+
+		if (mScrollX < 0) mScrollX = 0;
+		if (mScrollX > maxScrollX) mScrollX = maxScrollX;
+	}
+
+
+public:
+
+	void setChild(std::shared_ptr<Widget> child) {
+		mChild = child;
+	}
+
+	void setGridChild(std::shared_ptr<Grid> grid) {
+		mChildGrid = grid;
+	}
+
+	void setPosition(Rectangle rect) override {
+		mRect = rect;
+	}
+
+	void draw() override {
+
+		bool mouseInside = CheckCollisionPointRec(MousePosition::sMousePos, mRect);
+		if (mouseInside) {
+			if (IsKeyDown(KEY_LEFT_SHIFT)) {
+				float wheel = GetMouseWheelMove();
+				mScrollX -= wheel * mScrollSpeed;
+			}
+			else {
+				float wheel = GetMouseWheelMove();
+				mScrollY -= wheel * mScrollSpeed;
+			}
+		}
+
+		clampScroll();
+		setCamera();
+
+		BeginScissorMode((int)mRect.x, (int)mRect.y, (int)mRect.width, (int)mRect.height);
+		BeginMode2D(camera);
+		DrawRectangle(mRect.x, mRect.y, mChild->getWidth(), mChild->getWidth(), SKYBLUE);
+		if (mChild) {
+			Vector2 prevMouse = MousePosition::sMousePos;
+			if (mouseInside) {
+				MousePosition::sMousePos = GetScreenToWorld2D(prevMouse, camera);
+			}
+			else {
+				//this is simultaneously the smartest and dumbest way to avoid interacting with buttons that arent visible 
+				MousePosition::sMousePos = { -10000000000.0f, -10000000000.0f };
+			}
+			
+			mChild->draw();
+			if (mChildGrid) {
+				mChildGrid->drawSelectedCell();
+			}
+			
+			MousePosition::sMousePos = prevMouse;
+		}
+		EndMode2D();
+		EndScissorMode();
+	}
+
+
+
+};
+
 
 struct Line {
 	Vector2 p1;
@@ -431,7 +487,8 @@ struct Line {
 
 struct TileData {
 	int textureID;
-	int layer;
+	//not needed anymore
+	//int layer;
 	bool collision;
 	bool damage;
 };
@@ -451,7 +508,7 @@ struct Chunk {
 void to_json(json& j, const TileData& t) {
 	j = json{
 		{"textureID", t.textureID},
-		{"layer", t.layer},
+		//{"layer", t.layer},
 		{"collision", t.collision},
 		{"damage", t.damage}
 	};
@@ -459,7 +516,7 @@ void to_json(json& j, const TileData& t) {
 
 void from_json(const json& j, TileData& t) {
 	j.at("textureID").get_to(t.textureID);
-	j.at("layer").get_to(t.layer);
+	//j.at("layer").get_to(t.layer);
 	j.at("collision").get_to(t.collision);
 	j.at("damage").get_to(t.damage);
 }
@@ -522,7 +579,7 @@ public:
 	//tile variables
 	int currentlyDrawnID;
 	int currentID;
-	int currentLayer;
+	//int currentLayer;
 	bool currentCollision;
 	bool currentDamage;
 
@@ -553,7 +610,7 @@ public:
 
 	{
 		currentID = 1;
-		currentLayer = 0;
+		//currentLayer = 0;
 		currentCollision = false;
 		currentDamage = false;
 
@@ -587,7 +644,7 @@ public:
 					(float)tileSize,
 					(float)tileSize
 				};
-				tileData[i][j] = { 0, 0, 0, 0 };
+				tileData[i][j] = { 0, 0, 0 };
 			}
 		}
 	}
@@ -667,6 +724,16 @@ public:
 		EndScissorMode();
 	}
 
+	void drawToImage(Texture2D atlas) {
+		for (int i = 0; i < mRows; i++) {
+			for (int j = 0; j < mColumns; j++) {
+				currentlyDrawnID = tileData[i][j].textureID;
+				Rectangle src = fetchTexture(atlas, tileSize, currentlyDrawnID);
+				DrawTextureRec(atlas, src, Vector2{ cells[i][j].rect.x, cells[i][j].rect.y }, WHITE);
+			}
+		}
+	}
+
 	Vector2 hoveredCell() {
 		Vector2 mouse = GetScreenToWorld2D(MousePosition::sMousePos, mCamera);
 		Vector2 pos;
@@ -678,7 +745,7 @@ public:
 	void insertData(int row, int column) {
 		if (row < 0 || row >= mRows) return;
 		if (column < 0 || column >= mColumns) return;
-		tileData[row][column] = { currentID, currentLayer, currentCollision, currentDamage };
+		tileData[row][column] = { currentID/*, currentLayer*/, currentCollision, currentDamage };
 	}
 
 	void gridInteraction() {
@@ -700,7 +767,7 @@ public:
 			int row = position.y;
 			if (row < 0 || row >= mRows) return;
 			if (column < 0 || column >= mColumns) return;
-			tileData[row][column] = { 0, 0, 0, 0};
+			tileData[row][column] = { 0, 0, 0};
 		}
 
 

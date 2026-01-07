@@ -10,18 +10,25 @@
 #include "external_headers/tinyfiledialogs.hpp"
 
 
-inline std::string openFileDialog(const char *tittle = "Select file to open") {
+inline std::string openChunkDialog(const char *tittle = "Select file to open") {
 
+	std::filesystem::path currentPath = std::filesystem::current_path();
+
+	std::filesystem::path saveDir = currentPath / "saved_chunks/";
+
+	if (!std::filesystem::exists(saveDir)) {
+		std::filesystem::create_directory(saveDir);
+	}
 
 	const char* patterns[] = { "*.json" };
 
-	const char* result = tinyfd_openFileDialog(tittle, "", 1, patterns, "JSON files", 0);
+	const char* result = tinyfd_openFileDialog(tittle, saveDir.string().c_str(), 1, patterns, "JSON files", 0);
 	if (result) return std::string(result);
 	return "";
 }
 
 // either all arguments need default values or none of them have defaults
-inline std::string saveFileDialog(const char* tittle = "Select file to save", int x = 0, int y = 0) {
+inline std::string saveChunkDialog(const char* title = "Select file to save", int x = 0, int y = 0) {
 
 	std::filesystem::path currentPath = std::filesystem::current_path();
 
@@ -41,9 +48,21 @@ inline std::string saveFileDialog(const char* tittle = "Select file to save", in
 	
 	const char* patterns[] = { "*.json" };
 	
-	const char* result = tinyfd_saveFileDialog(tittle, defaultName.c_str(), 1, patterns, "JSON files");
+	const char* result = tinyfd_saveFileDialog(title, defaultName.c_str(), 1, patterns, "JSON files");
 	if (result) return std::string(result);
 	return "";
+}
+
+inline std::string saveChunkToImage(const char* title) {
+
+	const char* patterns[] = { "*.png" };
+
+	std::string text = "image.png";
+
+	const char* result = tinyfd_saveFileDialog(title, text.c_str(), 1, patterns, "PNG files");
+	if (result) return std::string(result);
+	return "";
+
 }
 
 inline void subgridSetup(std::shared_ptr<Grid> subGrid, std::shared_ptr<Grid> grid, int row, int column) {
@@ -135,19 +154,40 @@ inline void enableDamageOvelay(InteractiveGrid& grid, std::shared_ptr<Button> bu
 }
 
 //allows to toggle tile collision, damage and their corresponding overlays
-// "1" for toggling tile collision, "Shift + 1" for collision overlay
-// "2" for toggling tile damage, "Shift + 2" for damage overlay
+// "Q" for toggling tile collision, "Shift + Q" for collision overlay
+// "E" for toggling tile damage, "Shift + E" for damage overlay
 inline void toggleDamageCollisionAndOverlaysKeyboard(InteractiveGrid &grid) {
-	if (IsKeyPressed(KEY_ONE)) {
+	if (IsKeyPressed(KEY_Q)) {
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
 			grid.collisionOverlayEnabled = !grid.collisionOverlayEnabled;
 		}
 		else grid.currentCollision = !grid.currentCollision;
 	}
-	else if (IsKeyPressed(KEY_TWO)) {
+	else if (IsKeyPressed(KEY_E)) {
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
 			grid.damageOverlayEnabled = !grid.damageOverlayEnabled;
 		}
 		else grid.currentDamage = !grid.currentDamage;
 	}
+}
+
+
+inline void turnChunkToImage(int tileSize, InteractiveGrid grid, Texture2D atlas, const std::string &path) {
+	RenderTexture2D mapTarget = LoadRenderTexture(64 * tileSize, 64 * tileSize);
+
+	BeginTextureMode(mapTarget);
+	ClearBackground(BLANK);
+
+	grid.drawToImage(atlas);
+
+	EndTextureMode();
+
+	Image mapImage = LoadImageFromTexture(mapTarget.texture);
+
+	ImageFlipVertical(&mapImage);
+	ExportImage(mapImage, path.c_str());
+
+	UnloadImage(mapImage);
+	UnloadRenderTexture(mapTarget);
+
 }
