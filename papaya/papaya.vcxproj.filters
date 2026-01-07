@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{83b99a06-f666-4ac1-83ba-1a4744bb4266}</UniqueIdentifier>
     </Filter>
@@ -20,8 +16,11 @@
     <Filter Include="external_headers">
       <UniqueIdentifier>{2306bf76-0461-424b-8b90-88691e59c9e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\GUI\textures">
-      <UniqueIdentifier>{f4dbad20-bb50-4546-97d9-e54e4e0bd827}</UniqueIdentifier>
+    <Filter Include="src\assets">
+      <UniqueIdentifier>{502729fd-96e9-4020-9594-e7826740cae6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\assets\tiles">
+      <UniqueIdentifier>{4ba4543d-9dae-43f2-b49f-5b9c2ad066f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -57,5 +56,13 @@
     <ClInclude Include="src\external_headers\tinyfiledialogs.hpp">
       <Filter>external_headers</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scenes\main_menu.hpp">
+      <Filter>src\Scenes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\textures\texture_atlas_v3.png">
+      <Filter>src\assets\tiles</Filter>
+    </Image>
   </ItemGroup>
 </Project>

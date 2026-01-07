@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <raylib.h>
-#include "Scenes/MainMenu.hpp"
+#include "Scenes/main_menu.hpp"
 #include "Scenes/Test.hpp"
 #include "level_editor/scene_level_editor.hpp"
 
