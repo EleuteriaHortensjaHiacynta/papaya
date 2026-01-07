@@ -35,7 +35,17 @@ add_executable(papaya ${PAPAYA_CPP} ${PAPAYA_SOURCES})
 
 # Include directories so headers are found with #include "..."
 target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external_headers)
+
+include(FetchContent)
+
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+target_link_libraries(papaya PRIVATE nlohmann_json::nlohmann_json)
+
+# Note that the namespaced target will always be available regardless of the
+# import method
+target_link_libraries(papaya PRIVATE nlohmann_json::nlohmann_json)
 
 # Example: enable more warnings (optional)
 if (MSVC)
