@@ -5,6 +5,8 @@
 
 #include "map.hpp"
 
+const int TILE_SIZE = 8;
+
 uint64_t createBlock(Block block) {
     if (block.layer < Layers::GUI || block.layer > Layers::BACKGROUND) {
         throw std::invalid_argument("Invalid layer value.");
@@ -75,57 +77,6 @@ void MapSaver::sortBlocks() {
 MapSaver::~MapSaver() {
     try { this->sortBlocks(); } catch (...) {}
 }
-
-    // dziala ale w sumie komu to potrzebne 
-    // struct Iterator {
-    //     using iterator_category = std::forward_iterator_tag;
-    //     using difference_type = std::ptrdiff_t;
-    //     using value_type = uint64_t;
-    //     using pointer = const uint64_t*;
-    //     using reference = const uint64_t&;
-
-    //     std::istream* file = nullptr;
-    //     uint64_t currentBlock = 0;
-    //     bool at_end = true;
-
-    //     Iterator(std::istream* f, bool readFirst) : file(f), currentBlock(0), at_end(false) {
-    //         if (readFirst) {
-    //             file->read(reinterpret_cast<char*>(&currentBlock), sizeof(currentBlock));
-    //             if (static_cast<std::streamsize>(sizeof(currentBlock)) != file->gcount()) at_end = true;
-    //         } else {
-    //             at_end = true;
-    //         }
-    //     }
-
-    //     reference operator*() const { return currentBlock; }
-    //     pointer operator->() const { return &currentBlock; }
-    //     Iterator& operator++() {
-    //         if (file) {
-    //             file->read(reinterpret_cast<char*>(&currentBlock), sizeof(currentBlock));
-    //             if (static_cast<std::streamsize>(sizeof(currentBlock)) != file->gcount()) at_end = true;
-    //             return *this;
-    //         }
-    //         at_end = true;
-    //         return *this;
-    //     }
-
-    //     Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
-
-    //     bool operator==(const Iterator& other) const { return at_end == other.at_end; }
-    //     bool operator!=(const Iterator& other) const { return !(*this == other); }
-    // };
-
-    // Iterator begin() {
-    //     fileStream->clear();
-    //     fileStream->seekg(0, std::ios::beg);
-    //     return Iterator(fileStream, true);
-    // }
-
-    // Iterator end() {
-    //     return Iterator(fileStream, false);
-    // }
-
-// MapLoader method implementations
 MapLoader::MapLoader(std::fstream& f) : fileStream(&f) {}
 
 MapLoader::~MapLoader() {}
@@ -136,7 +87,7 @@ std::vector<Wall> MapLoader::getAll() {
     uint64_t blockData;
     while (fileStream->read(reinterpret_cast<char*>(&blockData), sizeof(blockData))) {
         Block block = decodeBlock(blockData);
-        walls.push_back(Wall(block.x, block.y, block.x_length * 10, block.y_length * 10));
+        walls.push_back(Wall(block.x * TILE_SIZE, block.y * TILE_SIZE, block.x_length * TILE_SIZE, block.y_length * TILE_SIZE));
     }
     return walls;
 }
