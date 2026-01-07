@@ -35,6 +35,7 @@ add_executable(papaya ${PAPAYA_CPP} ${PAPAYA_SOURCES})
 
 # Include directories so headers are found with #include "..."
 target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external_headers)
 
 # Example: enable more warnings (optional)
 if (MSVC)
