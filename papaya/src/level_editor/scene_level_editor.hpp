@@ -12,8 +12,12 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 
 	const int TILE_SIZE = 8;
+	const int SPRITE_SIZE = 16;
+
+	bool isInTileMode = true;
 
 	Texture2D textureAtlas = LoadTexture("assets/tiles/texture_atlas_v4.png");
+	Texture2D spriteAtlas = LoadTexture("assets/sprites/entity_atlas_v0.png");
 	int chunkX = 0;
 	int chunkY = 0;
 	
@@ -43,31 +47,40 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pDamageButton->setPosition(tilePropertyGrid.cells[1][0].rect);
 	pDamageButton->addText("Enable damage", 30, WHITE);
 
+	//=====================================================================================================================
+	//=====================================================================================================================
+	// selection panels
+	//=====================================================================================================================
+	//=====================================================================================================================
+
+
+	Rectangle panelBaseRect = { 0, 40, 300, 760 };
+	Rectangle panelEnlargedRect = { 0, 40, 1100, 760 };
+	Rectangle panelHiddenRect = {10000000.0f, 10000000.0f, 0.0f, 0.0f};
+	bool scrollPanelEnlarged = false;
+	int buttonSlotSize = 64;
+	int buttonTextureSize = 60;
+
 
 	//=====================================================================================================================
 	// texture selection panel
 	//=====================================================================================================================
-
 	
-	int buttonSlotSize = 64;
-	int buttonTextureSize = 60;
 	int textureColumns = textureAtlas.width / TILE_SIZE;
 	int textureRows = textureAtlas.height / TILE_SIZE;
 	int tileAmount = textureColumns * textureRows;
-	int maxIndex = tileAmount - 1;
+	int maxTileIndex = tileAmount - 1;
 
 
 	auto textureSelection = std::make_shared<Grid>(textureRows, textureColumns, buttonSlotSize, buttonSlotSize, 0, 60);
 
-	bool scrollPanelEnlarged = false;
-	Rectangle scrollPanelSizeBase = { 0, 40, 300, 760 };
-	Rectangle scrollPanelSizeEnlarged = { 0, 40, 1100, 760 };
+	
 
-	auto scrollPanel = std::make_shared <ScrollContainer>(scrollPanelSizeBase);
-	scrollPanel->setChild(textureSelection);
-	scrollPanel->setGridChild(textureSelection);
-	scrollPanel->setCamera();
-	Rectangle temp = scrollPanel->getRect();
+	auto pScrollPanel = std::make_shared <ScrollContainer>(panelBaseRect);
+	pScrollPanel->setChild(textureSelection);
+	pScrollPanel->setGridChild(textureSelection);
+	pScrollPanel->setCamera();
+	Rectangle temp = pScrollPanel->getRect();
 	temp.y += 2;
 	textureSelection->setPosition(temp);
 
@@ -77,7 +90,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		for (size_t col = 0; col < textureSelection->cells[row].size(); col++) {
 			auto& cell = textureSelection->cells[row][col];
 
-			auto pButton = std::make_shared<Button>(cell.rect, textureAtlas, textureID, buttonTextureSize, buttonTextureSize);
+			auto pButton = std::make_shared<Button>(cell.rect, textureAtlas, textureID, buttonTextureSize, buttonTextureSize, TILE_SIZE);
 			pButton->storeFunction([&drawingScreen, textureID]() {drawingScreen.currentID = textureID;});
 			textureSelection->insertWidget(row, col, pButton);
 			textureID++;
@@ -85,8 +98,55 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		
 	}
 
+	//=====================================================================================================================
+	// entity selection panel
+	//=====================================================================================================================
 
+	int spriteColumns = spriteAtlas.width / SPRITE_SIZE;
+	int spriteRows = spriteAtlas.height / SPRITE_SIZE;
+	int spriteAmount = spriteColumns * spriteRows;
+	int maxSpriteIndex = spriteAmount - 1;
 
+	auto pEntityPanel = std::make_shared<ScrollContainer>(panelBaseRect);
+
+	auto pSpriteGrid = std::make_shared<Grid>(spriteRows, spriteColumns, buttonSlotSize, buttonSlotSize, 0, 60);
+
+	pEntityPanel->setChild(pSpriteGrid);
+	pEntityPanel->setGridChild(pSpriteGrid);
+	pEntityPanel->setCamera();
+
+	temp = pEntityPanel->getRect();
+	temp.y += 2;
+	pSpriteGrid->setPosition(temp);
+
+	int spriteID = 0;
+
+	for (size_t row = 0; row < pSpriteGrid->cells.size(); row++) {
+		for (size_t col = 0; col < pSpriteGrid->cells[row].size(); col++) {
+			auto& cell = pSpriteGrid->cells[row][col];
+
+			auto pButton = std::make_shared<Button>(cell.rect, spriteAtlas, spriteID, buttonTextureSize, buttonTextureSize, SPRITE_SIZE);
+			pButton->storeFunction([&drawingScreen, spriteID]() {drawingScreen.currentSpriteID = spriteID;});
+			pSpriteGrid->insertWidget(row, col, pButton);
+			spriteID++;
+		}
+
+	}
+	
+
+	//=====================================================================================================================
+	// change between inserting entities and tiles
+	//=====================================================================================================================
+
+	auto pTileEntityChange = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+	gridButtonSetup(pTopGrid, pTileEntityChange, 0, 5);
+	pTileEntityChange->addText("Change to entity", 18, WHITE);
+	pTileEntityChange->storeFunction([&]() {
+		isInTileMode = !isInTileMode;
+		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, drawingScreen);
+		if (isInTileMode) pTileEntityChange->addText("Change to entity", 18, WHITE);
+		else pTileEntityChange->addText("Change to tile", 20, WHITE);
+		});
 
 
 	//=====================================================================================================================
@@ -283,22 +343,33 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		//drawn first so it doesnt interfere with the rest of ui
 		drawingScreen.renderLines();
 		drawingScreen.draw(textureAtlas);
-		if (!CheckCollisionPointRec(MousePosition::sMousePos, scrollPanel->getRect())) {
+		drawingScreen.drawEntities(spriteAtlas, SPRITE_SIZE);
+		if (!CheckCollisionPointRec(MousePosition::sMousePos, pScrollPanel->getRect())) {
+			drawingScreen.gridInteraction();
+		}
+		if (!CheckCollisionPointRec(MousePosition::sMousePos, pEntityPanel->getRect())) {
 			drawingScreen.gridInteraction();
 		}
 		
 		//this draws the texture selection
 		
-		scrollPanel->draw();
+		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, drawingScreen);
+		if (IsKeyPressed(KEY_ONE)) {
+			isInTileMode = !isInTileMode;
+			if (isInTileMode) pTileEntityChange->addText("Change to entity", 18, WHITE);
+			else pTileEntityChange->addText("Change to tile", 20, WHITE);
+		}
 
+		pScrollPanel->draw();
+		//pEntityPanel->draw();
 		
 
 		if (IsKeyPressed(KEY_TAB)) {
 			scrollPanelEnlarged = !scrollPanelEnlarged;
 			if (scrollPanelEnlarged) {
-				scrollPanel->setRect(scrollPanelSizeEnlarged);
+				pScrollPanel->setRect(panelHiddenRect);
 			}
-			else scrollPanel->setRect(scrollPanelSizeBase);
+			else pScrollPanel->setRect(panelBaseRect);
 		}
 
 		pTopGrid->draw();
@@ -338,28 +409,39 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		//selects a texture to the right
 		if (IsKeyPressed(KEY_D)) {
 			drawingScreen.currentID++;
+			drawingScreen.currentSpriteID++;
 		}
 		//selects the texture to the left
 		else if (IsKeyPressed(KEY_A)) {
 			drawingScreen.currentID--;
+			drawingScreen.currentSpriteID--;
 		}
 		//selects the texture down a row
 		else if (IsKeyPressed(KEY_S)) {
 			drawingScreen.currentID += textureColumns;
+			drawingScreen.currentSpriteID += spriteColumns;
 		}
 		//selects the texture up a row
 		else if (IsKeyPressed(KEY_W)) {
 			drawingScreen.currentID -= textureColumns;
+			drawingScreen.currentSpriteID -= spriteColumns;
 		}
 
-		if (drawingScreen.currentID > maxIndex) {
+		if (drawingScreen.currentID > maxTileIndex) {
 			drawingScreen.currentID = 0;
 		}
 		if (drawingScreen.currentID < 0) {
-			drawingScreen.currentID = maxIndex;
+			drawingScreen.currentID = maxTileIndex;
+		}
+		if (drawingScreen.currentSpriteID > maxSpriteIndex) {
+			drawingScreen.currentSpriteID = 0;
+		}
+		if (drawingScreen.currentSpriteID < 0) {
+			drawingScreen.currentSpriteID = maxSpriteIndex;
 		}
 
-		textureSelection->selectCell(8, drawingScreen.currentID);
+		textureSelection->selectCell(TILE_SIZE, drawingScreen.currentID);
+		pSpriteGrid->selectCell(SPRITE_SIZE, drawingScreen.currentSpriteID);
 		//textureSelection->drawSelectedCell();
 
 		

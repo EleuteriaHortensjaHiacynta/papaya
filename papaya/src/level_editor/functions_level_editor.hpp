@@ -191,3 +191,25 @@ inline void turnChunkToImage(int tileSize, InteractiveGrid grid, Texture2D atlas
 	UnloadRenderTexture(mapTarget);
 
 }
+
+
+inline void changeTileEntitySelector(bool isTile, bool enlarged, std::shared_ptr<ScrollContainer> tilePanel, std::shared_ptr<ScrollContainer> entityPanel, Rectangle tempLocation, Rectangle normalLocation, Rectangle enlargedLocation, InteractiveGrid &screen) {
+	if (isTile) {
+		screen.isTileMode = true;
+		tilePanel->setRect(normalLocation);
+		entityPanel->setRect(tempLocation);
+		if (enlarged) {
+			tilePanel->setRect(enlargedLocation);
+		}
+		tilePanel->draw();
+	}
+	else {
+		screen.isTileMode = false;
+		tilePanel->setRect(tempLocation);
+		entityPanel->setRect(normalLocation);
+		if (enlarged) {
+			entityPanel->setRect(enlargedLocation);
+		}
+		entityPanel->draw();
+	}
+}
