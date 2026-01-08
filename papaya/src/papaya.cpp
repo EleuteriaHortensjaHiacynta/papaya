@@ -45,6 +45,7 @@ int main() {
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
+        if (dt > 0.05f) dt = 0.05f; // Nigdy nie licz więcej niż 1/20 sekundy na klatkę     
 
         // Logika
         testLevel->Update(dt);

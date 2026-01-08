@@ -42,7 +42,6 @@ enum AnimState {
 
 class Player : public Entity {
 public:
-	Vector2 mPosition;
 	Vector2 mPrevPosition;
 	Vector2 mVelocity;
 	Vector2 mSize;

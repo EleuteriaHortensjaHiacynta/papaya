@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Saves\map.cpp" />
     <ClCompile Include="src\Scenes\scene_test_room.h" />
     <ClCompile Include="src\papaya.cpp" />
   </ItemGroup>
@@ -135,12 +136,16 @@
     <ClInclude Include="src\Entities\Enemy.h" />
     <ClInclude Include="src\Entities\Entity.h" />
     <ClInclude Include="src\Entities\Player.h" />
+    <ClInclude Include="src\Entities\RabbitEnemy.h" />
     <ClInclude Include="src\Entities\Wall.h" />
     <ClInclude Include="src\GUI\GUIRayLib.h" />
+    <ClInclude Include="src\Saves\map.hpp" />
     <ClInclude Include="src\Scenes\MainMenu.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="assets\jump_wings.png" />
     <Image Include="assets\player.png" />
+    <Image Include="assets\rabbit.png" />
     <Image Include="assets\slash.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

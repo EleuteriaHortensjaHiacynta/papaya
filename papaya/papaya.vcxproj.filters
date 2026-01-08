@@ -28,6 +28,7 @@
     <ClCompile Include="src\Scenes\scene_test_room.h">
       <Filter>src\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="src\Saves\map.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GUI\GUIRayLib.h">
@@ -51,12 +52,22 @@
     <ClInclude Include="src\Entities\Enemy.h">
       <Filter>src\Entities</Filter>
     </ClInclude>
+    <ClInclude Include="src\Saves\map.hpp" />
+    <ClInclude Include="src\Entities\RabbitEnemy.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.png">
       <Filter>Assets</Filter>
     </Image>
     <Image Include="assets\slash.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="assets\rabbit.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\jump_wings.png">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>
