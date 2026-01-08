@@ -76,6 +76,7 @@ public:
 	int mHeldID;
 	int mImHeight;
 	int mImWidth;
+	int textureSize;
 
 	std::string text;
 	int fontSize = 0;
@@ -91,13 +92,14 @@ public:
 		colourClick = click;
 	}
 
-	Button(Rectangle positionSize, Texture2D atlas, int ID, int imWidth, int imHeight) {
+	Button(Rectangle positionSize, Texture2D atlas, int ID, int imWidth, int imHeight, int TextureSize) {
 		this->positionSize = positionSize;
 		mAtlas = atlas;
 		hasImage = true;
 		mHeldID = ID;
 		mImWidth = imWidth;
 		mImHeight = imHeight;
+		textureSize = TextureSize;
 	}
 
 	//adds text to the button and roughly centers it
@@ -152,7 +154,7 @@ public:
 		bool clicked = hovered && IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
 
 		if (hasImage) {
-			Rectangle src = fetchTexture(mAtlas, 8, mHeldID);
+			Rectangle src = fetchTexture(mAtlas, textureSize, mHeldID);
 			Rectangle dst = {
 				positionSize.x,
 				positionSize.y,
@@ -500,6 +502,7 @@ struct Chunk {
 	int y;
 
 	TileData array[64][64];
+	int entities[64][64];
 };
 
 
@@ -536,6 +539,16 @@ void to_json(json& j, const Chunk& t) {
 		}
 		j["array"].push_back(rowArray);
 	}
+
+	j["entities"] = json::array();
+
+	for (int row = 0; row < 64; row++) {
+		json rowArray = json::array();
+		for (int column = 0; column < 64; column++) {
+			rowArray.push_back(t.entities[row][column]);
+		}
+		j["entities"].push_back(rowArray);
+	}
 }
 
 void from_json(const json& j, Chunk& t) {
@@ -549,8 +562,21 @@ void from_json(const json& j, Chunk& t) {
 			arr[row][column].get_to(t.array[row][column]);
 		}
 	}
-}
 
+	const auto& entities = j.at("entities");
+
+	for (int row = 0; row < 64; row++) {
+		for (int column = 0; column < 64; column++) {
+			entities[row][column].get_to(t.entities[row][column]);
+		}
+	}
+}
+// not needed as of now
+//struct EntityData {
+//	int ID;
+//	int x;
+//	int y;
+//};
 
 class InteractiveGrid {
 private:
@@ -577,17 +603,22 @@ public:
 	Rectangle viewport;
 
 	//tile variables
+	int currentSpriteID;
 	int currentlyDrawnID;
 	int currentID;
 	//int currentLayer;
 	bool currentCollision;
 	bool currentDamage;
 
+	bool isTileMode = true;
+
 	//used for visualising the center of cells in the grid without textures
 	std::vector<Line> verticalLines;
 	std::vector<Line> horizontalLines;
 
 	std::vector< std::vector < TileData > > tileData;
+	std::vector<std::vector <int> > entityData;
+
 
 	InteractiveGrid(int passedRows,
 		int passedColumns,
@@ -606,7 +637,8 @@ public:
 		originX(gridOriginX),
 		originY(gridOriginY),
 		screenHeight(screenHeight),
-		screenWidth(screenWidth)
+		screenWidth(screenWidth),
+		entityData(mRows, std::vector<int>(mColumns))
 
 	{
 		currentID = 1;
@@ -623,6 +655,7 @@ public:
 		mCamera.rotation = 0.0f;
 		mCamera.zoom = 1.5f;
 
+		
 	}
 
 	float getCameraZoom() {
@@ -693,6 +726,7 @@ public:
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
 				currentlyDrawnID = tileData[i][j].textureID;
+				if (currentlyDrawnID == 0) continue;
 				Rectangle src = fetchTexture(atlas, tileSize, currentlyDrawnID);
 				DrawTextureRec(atlas, src, Vector2{ cells[i][j].rect.x, cells[i][j].rect.y }, WHITE);
 			}
@@ -724,6 +758,24 @@ public:
 		EndScissorMode();
 	}
 
+	void drawEntities(Texture2D atlas, int spriteSize) {
+		BeginScissorMode(viewport.x, viewport.y, viewport.width, viewport.height);
+		BeginMode2D(mCamera);
+
+		for (int i = 0; i < mRows; i++) {
+			for (int j = 0; j < mColumns; j++) {
+				currentlyDrawnID = entityData[i][j];
+				if (currentlyDrawnID == 0) continue;
+				Rectangle src = fetchTexture(atlas, spriteSize, currentlyDrawnID);
+				DrawTexturePro(atlas, src, cells[i][j].rect, Vector2{0, 0}, 0.0f, WHITE);
+			}
+		}
+
+
+		EndMode2D();
+		EndScissorMode();
+	}
+
 	void drawToImage(Texture2D atlas) {
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
@@ -748,27 +800,45 @@ public:
 		tileData[row][column] = { currentID/*, currentLayer*/, currentCollision, currentDamage };
 	}
 
+	void insertEntityData(int row, int column) {
+		if (row < 0 || row >= mRows) return;
+		if (column < 0 || column >= mColumns) return;
+		entityData[row][column] = currentSpriteID;
+	}
+
 	void gridInteraction() {
 
 		int rowPos = -1;
 		int columnPos = -1;
 		if (!CheckCollisionPointRec(MousePosition::sMousePos, viewport)) return;
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-			Vector2 position = hoveredCell();
-			int column = position.x;
-			int row = position.y;
-			insertData(row, column);
-			//std::cout << "Grid position: " << row << " ; " << column << std::endl;
+		Vector2 position = hoveredCell();
+		int column = position.x;
+		int row = position.y;
+		if (isTileMode) {
+			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+				insertData(row, column);
+				//std::cout << "Grid position: " << row << " ; " << column << std::endl;
+			}
+			// lmb is used as erase mode
+			else if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+				if (row < 0 || row >= mRows) return;
+				if (column < 0 || column >= mColumns) return;
+				tileData[row][column] = { 0, 0, 0 };
+			}
 		}
-		// lmb is used as erase mode
-		else if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !IsKeyDown(KEY_LEFT_SHIFT)) {
-			Vector2 position = hoveredCell();
-			int column = position.x;
-			int row = position.y;
-			if (row < 0 || row >= mRows) return;
-			if (column < 0 || column >= mColumns) return;
-			tileData[row][column] = { 0, 0, 0};
+		else {
+			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+				insertEntityData(row, column);
+				//std::cout << "Grid position: " << row << " ; " << column << std::endl;
+			}
+			// lmb is used as erase mode
+			else if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !IsKeyDown(KEY_LEFT_SHIFT)) {
+				if (row < 0 || row >= mRows) return;
+				if (column < 0 || column >= mColumns) return;
+				entityData[row][column] = 0;
+			}
 		}
+		
 
 
 		//zoom controls
@@ -828,6 +898,12 @@ public:
 			}
 		}
 
+		for (int row = 0; row < 64; row++) {
+			for (int column = 0; column < 64; column++) {
+				temp.entities[row][column] = entityData[row][column];
+			}
+		}
+
 		json chunkFile;
 		chunkFile["chunkData"] = temp;
 		std::ofstream file(fileName);
@@ -856,6 +932,18 @@ public:
 
 		x = chunk["chunkData"]["x"].get<int>();
 		y = chunk["chunkData"]["y"].get<int>();
+
+
+		//so it for sure doesnt break when loading a file without entities stored
+		if (!chunk["chunkData"].contains("entities")) return;
+
+		auto& entityDataJson = chunk["chunkData"]["entities"];
+
+		for (int row = 0; row < 64; row++) {
+			for (int column = 0; column < 64; column++) {
+				entityData[row][column] = entityDataJson[row][column].get<int>();
+			}
+		}
 
 	}
 
