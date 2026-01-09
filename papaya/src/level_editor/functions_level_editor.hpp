@@ -65,6 +65,19 @@ inline std::string saveChunkToImage(const char* title) {
 
 }
 
+inline void autoSave(std::shared_ptr<InteractiveGrid> grid) {
+	std::filesystem::path currentPath = std::filesystem::current_path();
+
+	std::filesystem::path saveDir = currentPath / "saved_chunks/";
+
+	if (!std::filesystem::exists(saveDir)) {
+		std::filesystem::create_directory(saveDir);
+	}
+	saveDir = saveDir / "last_edited_chunk.autosave.json";
+
+	grid->chunkToJson(saveDir.string().c_str(), 0, 0);
+}
+
 inline void subgridSetup(std::shared_ptr<Grid> subGrid, std::shared_ptr<Grid> grid, int row, int column) {
 	grid->insertWidget(row, column, subGrid);
 

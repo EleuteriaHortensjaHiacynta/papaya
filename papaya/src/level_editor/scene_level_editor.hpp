@@ -2,6 +2,8 @@
 
 #include <raylib.h>
 #include <iostream>
+#include <ctime>
+
 #include "GUI/GUI_raylib.hpp"
 #include "Scenes/scene_functions.hpp"
 #include "level_editor/functions_level_editor.hpp"
@@ -10,11 +12,17 @@
 void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int windowWidth) {
 	shouldQuit = true;
 
-
 	const int TILE_SIZE = 8;
 	const int SPRITE_SIZE = 16;
 
 	bool isInTileMode = true;
+
+	//for autosaves and showing the time at which they were made in the console
+	float autoSaveTimer = 0.0f;
+	
+	std::time_t currentTime;
+	std::tm localTime;
+
 
 	Texture2D textureAtlas = LoadTexture("assets/tiles/atlas_512x512.png");
 	Texture2D spriteAtlas = LoadTexture("assets/sprites/entity_atlas_v0.png");
@@ -373,6 +381,21 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	//=====================================================================================================================
 
 	while(!WindowShouldClose()) {
+
+		autoSaveTimer += GetFrameTime();
+		// time between auto saves
+		float autoSaveInterval = 5 * 60.0f;
+		currentTime = std::time(nullptr);
+
+		localtime_s(&localTime, &currentTime);
+
+		if (autoSaveTimer >= autoSaveInterval) {
+			autoSave(pDrawingScreen);
+			std::cout << "Auto save complete. " << std::put_time(&localTime, "%H:%M:%S") << std::endl;
+			autoSaveTimer = 0.0f;
+		}
+
+
 		BeginDrawing();
 		ClearBackground(SKYBLUE);
 
@@ -505,18 +528,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	UnloadTexture(textureAtlas);
 	
-	{
-		std::filesystem::path currentPath = std::filesystem::current_path();
-
-		std::filesystem::path saveDir = currentPath / "saved_chunks/";
-
-		if (!std::filesystem::exists(saveDir)) {
-			std::filesystem::create_directory(saveDir);
-		}
-		saveDir = saveDir / "last_edited_chunk.json";
-
-		pDrawingScreen->chunkToJson(saveDir.string().c_str() , 0, 0);
-	}
+	autoSave(pDrawingScreen);
 	
 
 }
