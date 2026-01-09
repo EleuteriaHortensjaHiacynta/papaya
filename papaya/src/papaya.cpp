@@ -10,20 +10,27 @@
 #include "Saves/map.hpp"
 #include <fstream>
 
-// int main() {
-//     std::fstream file("test.map", std::ios::out | std::ios::trunc);
-//     auto map = MapSaver(file);
-//     Block block1 = { 0, 160, 32, 4, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
-//     Block block2 = { 100, 110, 8, 1, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
-//     Block block3 = { 220, 70, 40, 255, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
-//     Block block4 = { 0, 0, 2, 20, 0, Layers::BACKGROUND, ExtraData::COLLIDABLE };
-//     map.addBlock(block1);
-//     map.addBlock(block2);
-//     map.addBlock(block3);
-//     map.addBlock(block4);
+int main2() {
+    std::fstream f("chunk-0-0.json", std::ios::in | std::ios::binary);
+    std::fstream f2("test.map", std::ios::out | std::ios::trunc);
+    MapSaver saver(f2);
+    std::string json;
+    {
+        std::string line;
+        while (std::getline(f, line)) {
+            json += line + "\n";
+        }
+    }
+    saver.fromEditor(json, 0, 0);
+    saver.~MapSaver();
+    f2.close();
+    std::fstream f3("test.map", std::ios::in | std::ios::binary);
 
-//     return 0;
-// }
+    MapLoader loader(f3);
+    auto walls = loader.getAll();
+    std::cout << "Loaded " << walls.size() << " walls from map file.\n";
+    return 0;
+}
 
 int main() {
 

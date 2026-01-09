@@ -118,7 +118,7 @@ public:
 
 		mEntities.push_back(new Dummy(180, 128));
 
-		auto f = std::fstream("Assets/maps/test.map", std::ios::in | std::ios::binary);
+		auto f = std::fstream("test.map", std::ios::in | std::ios::binary);
 		auto map = MapLoader(f);
 		auto w = map.getAll();
 		for (auto& wall : w) {

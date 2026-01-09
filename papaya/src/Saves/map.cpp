@@ -2,11 +2,46 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <stdexcept>
 #include <nlohmann/json.hpp>
 
 #include "map.hpp"
 
 const int TILE_SIZE = 8;
+
+struct EditorBlock {
+    bool collision;
+    bool damage;
+    int layer; // Chyba do wywalenia?
+    uint8_t textureID;
+};
+
+Block EditorBlockToBlock(const EditorBlock& eBlock, uint16_t x, uint16_t y, uint8_t x_length, uint8_t y_length) {
+    Block block;
+    block.x = x;
+    block.y = y;
+    block.x_length = x_length;
+    block.y_length = y_length;
+    block.textureID = static_cast<int8_t>(eBlock.textureID);
+    block.layer = Layers::BACKGROUND; // Domy�lnie
+    if (eBlock.collision) {
+        block.extraData = ExtraData::COLLIDABLE;
+    } else if (eBlock.damage) {
+        block.extraData = ExtraData::DAMAGING;
+    } else {
+        block.extraData = ExtraData::NONE;
+    }
+    return block;
+}
+
+EditorBlock BlockToEditorBlock(const Block& block) {
+    EditorBlock eBlock;
+    eBlock.textureID = static_cast<uint8_t>(block.textureID);
+    eBlock.collision = (block.extraData == ExtraData::COLLIDABLE);
+    eBlock.damage = (block.extraData == ExtraData::DAMAGING);
+    eBlock.layer = static_cast<int>(block.layer);
+    return eBlock;
+}
 
 uint64_t createBlock(Block block) {
     if (block.layer < Layers::GUI || block.layer > Layers::BACKGROUND) {
@@ -73,6 +108,38 @@ void MapSaver::sortBlocks() {
     fileStream->seekp(0, std::ios::beg);
     fileStream->write(reinterpret_cast<const char*>(blocks.data()), static_cast<std::streamsize>(blocks.size() * sizeof(uint64_t)));
     if (!(*fileStream)) throw std::runtime_error("Failed to write sorted block data to file.");
+}
+
+void MapSaver::fromEditor(std::string json, int chunkX, int chunkY) {
+    using jsonn = nlohmann::json;
+        auto doc = jsonn::parse(json);
+        auto arr = doc["chunkData"]["array"];
+    if (arr.is_null() || !arr.is_array() || arr.size() == 0) {
+        throw std::invalid_argument("Invalid JSON: 'chunkData.array' is missing or not an array.");
+    }
+
+    std::cout << "Parsed " << arr.size() << " blocks from JSON.\n";
+
+    for (long unsigned int i = 0; i < arr.size(); ++i) {
+        for (long unsigned int j = 0; j < arr[i].size(); ++j) {
+            auto item = arr[i][j];
+        EditorBlock eBlock;
+        eBlock.collision = item.value("collision", false);
+        eBlock.damage = item.value("damage", false);
+        eBlock.layer = item.value("layer", 0); // Default to BACKGROUND
+        eBlock.textureID = item.value("textureID", 0);
+
+        uint16_t x = j + static_cast<uint16_t>(chunkX * 64);
+        uint16_t y = i + static_cast<uint16_t>(chunkY * 64);
+        uint8_t x_length = 1;
+        uint8_t y_length = 1;
+
+        Block block = EditorBlockToBlock(eBlock, x, y, x_length, y_length);
+        if (block.textureID == 0 && (block.extraData == ExtraData::NONE)) continue; // Skip empty blocks
+        std::cout << "Adding block at (" << block.x << ", " << block.y << ") with textureID " << static_cast<int>(block.textureID) << "\n";
+        this->addBlock(block);
+        }
+    }
 }
 
 MapSaver::~MapSaver() {

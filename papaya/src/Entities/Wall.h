@@ -10,7 +10,7 @@ public:
 	}
 
 	void update(float deltaTime) override {
-	} // welp œciana œcianuje
+	} // welp ï¿½ciana ï¿½cianuje
 
 	void draw() override {
 		DrawRectangleV(mPosition, mSize, GRAY);
@@ -21,6 +21,6 @@ public:
 	}
 
 	void onCollision(Entity* other) override {
-		// chwilowo œciany ignoruj¹ obra¿enia
+		// chwilowo ï¿½ciany ignorujï¿½ obraï¿½enia
 	}
 };
