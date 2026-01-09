@@ -30,7 +30,6 @@ public:
 	//the function from the class is used instead of the widgets
 	void virtual draw() = 0;
 
-
 	//allows for setting the position of a widget after its creation
 	void virtual setPosition(Rectangle rect) = 0;
 
@@ -112,6 +111,14 @@ public:
 		textY = positionSize.y + (positionSize.height - fontSize) / 2;
 	}
 
+	void addTextManual(std::string passedText, int passedFontSize, Color passedTextColour, int x, int y) {
+		text = passedText;
+		textColour = passedTextColour;
+		fontSize = passedFontSize;
+		textX = x + positionSize.x;
+		textY = y + positionSize.y;
+	}
+
 
 	//draws the button on screen
 	void render(Color colour) {
@@ -145,6 +152,7 @@ public:
 			};
 
 	}
+
 
 
 	//updates the position of the mouse 
@@ -188,13 +196,16 @@ public:
 				
 	}
 
+	void triggerFunction() {
+		if (mPassedFunction) mPassedFunction();
+	}
 
-	void Widget::draw() override {
+	void draw() override {
 		detectMouseInteraction();
 	}
 
 
-	void Widget::setPosition(Rectangle rect) override {
+	void setPosition(Rectangle rect) override {
 		positionSize.x = rect.x;
 		positionSize.y = rect.y;
 		positionSize.width = rect.width;
@@ -375,7 +386,7 @@ private:
 	std::shared_ptr<Grid> mChildGrid;
 
 	float mScrollY = 0.0f;
-	float mScrollSpeed = 20.f;
+	float mScrollSpeed = 64.f;
 	float mScrollX = 0.0f;
 
 
@@ -436,6 +447,7 @@ public:
 		mRect = rect;
 	}
 
+
 	void draw() override {
 
 		bool mouseInside = CheckCollisionPointRec(MousePosition::sMousePos, mRect);
@@ -455,7 +467,8 @@ public:
 
 		BeginScissorMode((int)mRect.x, (int)mRect.y, (int)mRect.width, (int)mRect.height);
 		BeginMode2D(camera);
-		DrawRectangle(mRect.x, mRect.y, mChild->getWidth(), mChild->getWidth(), SKYBLUE);
+		if (!mChild) return;
+		DrawRectangle(mRect.x, mRect.y, mChild->getWidth(), mChild->getHeight(), Color { 102, 191, 255, 130});
 		if (mChild) {
 			Vector2 prevMouse = MousePosition::sMousePos;
 			if (mouseInside) {
@@ -463,7 +476,7 @@ public:
 			}
 			else {
 				//this is simultaneously the smartest and dumbest way to avoid interacting with buttons that arent visible 
-				MousePosition::sMousePos = { -10000000000.0f, -10000000000.0f };
+				MousePosition::sMousePos = { -100000.0f, -100000.0f };
 			}
 			
 			mChild->draw();
@@ -812,8 +825,8 @@ public:
 		int columnPos = -1;
 		if (!CheckCollisionPointRec(MousePosition::sMousePos, viewport)) return;
 		Vector2 position = hoveredCell();
-		int column = position.x;
-		int row = position.y;
+		int column = (int)position.x;
+		int row = (int)position.y;
 		if (isTileMode) {
 			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 				insertData(row, column);

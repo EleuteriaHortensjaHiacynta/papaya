@@ -5,7 +5,7 @@
 
 inline void sceneMainMenu(int WindowWidth, int WindowHeight, bool& shouldQuit, int& state) {
 	bool shouldLeave = false;
-	Texture2D starBackground = LoadTexture("assets/tiles/star_background.png");
+	Texture2D starBackground = LoadTexture("assets/backgrounds/star_background.png");
 
 
 
