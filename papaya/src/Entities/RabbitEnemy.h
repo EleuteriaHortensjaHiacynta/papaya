@@ -61,11 +61,28 @@ public:
         : Entity({ x, y }, ENEMY)
     {
         mPosition = { x, y };
+        mPrevPosition = mPosition;
         mTexture = tex;
         pTarget = target;
+
         mSize = RABBIT_SIZE;
         mState = RABBIT_IDLE;
         mActive = true;
+
+        mCurrentFrame = 0;
+        mFrameTimer = 0.0f;
+
+        mVelocity = { 0, 0 };
+        mHopCooldown = 0.0f;
+        mHurtTimer = 0.0f;
+        mTurnCooldown = 0.0f;
+        mFollowTimer = 0.0f;
+        mUnmorphTimer = 0.0f;
+
+        mIsFacingRight = false;
+        mIsGrounded = false;
+        mIsDead = false;
+        mHitWallThisFrame = false;
     }
 
     void takeDamage(int amount) {

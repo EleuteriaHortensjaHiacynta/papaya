@@ -51,7 +51,7 @@ public:
 	}
 
 	void onCollision(Entity* pOther) override{
-		if (pOther->mType = WALL) {
+		if (pOther->mType == WALL) {
 			Rectangle otherRect = pOther->getRect();
 
 			// kolizja pionowa
