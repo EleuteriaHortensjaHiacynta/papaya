@@ -16,18 +16,18 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	bool isInTileMode = true;
 
-	Texture2D textureAtlas = LoadTexture("assets/tiles/texture_atlas_v4.png");
+	Texture2D textureAtlas = LoadTexture("assets/tiles/atlas_512x512.png");
 	Texture2D spriteAtlas = LoadTexture("assets/sprites/entity_atlas_v0.png");
 	int chunkX = 0;
 	int chunkY = 0;
 	
 	//for giving buttons their size when theyre gonna have it changed immediately after creation
-	Rectangle b = { 0, 0, 0, 0 };
+	Rectangle b = { 1, 1, 1, 1 };
 
 
 	int sidePanelWidth = 300;
 
-	InteractiveGrid drawingScreen(64, 64, 310, 50, 8, 1200, 800);
+	auto pDrawingScreen = std::make_shared<InteractiveGrid>(64, 64, 310, 50, 8, 1200, 800);
 
 	auto pTopGrid = std::make_shared<Grid>(1, 10, 40, windowWidth / 10, 0, 0);
 	//InteractiveGrid blockPanel()
@@ -91,7 +91,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 			auto& cell = textureSelection->cells[row][col];
 
 			auto pButton = std::make_shared<Button>(cell.rect, textureAtlas, textureID, buttonTextureSize, buttonTextureSize, TILE_SIZE);
-			pButton->storeFunction([&drawingScreen, textureID]() {drawingScreen.currentID = textureID;});
+			pButton->storeFunction([&pDrawingScreen, textureID]() {pDrawingScreen->currentID = textureID;});
 			textureSelection->insertWidget(row, col, pButton);
 			textureID++;
 		}
@@ -126,7 +126,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 			auto& cell = pSpriteGrid->cells[row][col];
 
 			auto pButton = std::make_shared<Button>(cell.rect, spriteAtlas, spriteID, buttonTextureSize, buttonTextureSize, SPRITE_SIZE);
-			pButton->storeFunction([&drawingScreen, spriteID]() {drawingScreen.currentSpriteID = spriteID;});
+			pButton->storeFunction([&pDrawingScreen, spriteID]() {pDrawingScreen->currentSpriteID = spriteID;});
 			pSpriteGrid->insertWidget(row, col, pButton);
 			spriteID++;
 		}
@@ -143,7 +143,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pTileEntityChange->addText("Change to entity", 18, WHITE);
 	pTileEntityChange->storeFunction([&]() {
 		isInTileMode = !isInTileMode;
-		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, drawingScreen);
+		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, pDrawingScreen);
 		if (isInTileMode) pTileEntityChange->addText("Change to entity", 18, WHITE);
 		else pTileEntityChange->addText("Change to tile", 20, WHITE);
 		});
@@ -262,7 +262,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		if (!path.empty()) {
 			//control output
 			std::cout << "Selected file to open: " << path << std::endl;
-			drawingScreen.chunkToJson(path, chunkX, chunkY);
+			pDrawingScreen->chunkToJson(path, chunkX, chunkY);
 			//more control outputs
 			std::cout << "Saved chunk to: " << path << std::endl;
 		}
@@ -278,7 +278,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		std::string path = openChunkDialog("Load Chunk File");
 		if (!path.empty()) {
 			std::cout << "Selected file: " << path << std::endl;
-			drawingScreen.jsonToChunk(path, chunkX, chunkY);
+			pDrawingScreen->jsonToChunk(path, chunkX, chunkY);
 
 			//update the displays
 			changeDisplayedCoordinate(pXDisplay, "Chunk X:", chunkX);
@@ -301,7 +301,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	//	if (!path.empty()) {
 	//		//control output
 	//		std::cout << "Selected file to open: " << path << std::endl;
-	//		drawingScreen.chunkToJson(path, chunkX, chunkY);
+	//		pDrawingScreen->chunkToJson(path, chunkX, chunkY);
 	//		//more control outputs
 	//		std::cout << "Saved chunk to: " << path << std::endl;
 	//	}
@@ -311,7 +311,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pSaveToImage->storeFunction([&]() {
 		std::string path = saveChunkToImage("Save chunk as image");
 		if (!path.empty()) {
-			turnChunkToImage(TILE_SIZE, drawingScreen, textureAtlas, path);
+			turnChunkToImage(TILE_SIZE, pDrawingScreen, textureAtlas, path);
 		}
 		});
 
@@ -327,6 +327,46 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	gridButtonSetup(pTopGrid, pDamageOverlayButton, 0, 3);
 
 
+	//=====================================================================================================================
+	//keybinds cheatsheet
+	//=====================================================================================================================
+	
+	auto pToggleSheet = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+
+	bool isCheatsheetVisible = false;
+
+	gridButtonSetup(pTopGrid, pToggleSheet, 0, 9);
+	pToggleSheet->addText("Cheatsheet", 20, WHITE);
+	pToggleSheet->storeFunction([&]() {
+		isCheatsheetVisible = !isCheatsheetVisible;
+		});
+
+
+	Rectangle cheatsheetRect = { 1050, 50, 560, 700 };
+	auto pCheatsheet = std::make_shared<Button>(cheatsheetRect, GRAY, GRAY, GRAY);
+
+	pCheatsheet->addTextManual (
+		"Q allows to toggle collision \nE allows to toggle damage \
+		\nHolding Q/E + Shift toggles the respective Overlay \n\n1 allows to switch between: \
+		\nentity and tile selector \n\nW - move selection up \nS - move selection down\
+		\nA - move selection left \nD - move selection right \n\nWhile changing chunk position holding\nShift - change by 10\
+		\nControl - change by 5 \n\nScroll to zoom in and out\nHold Scroll or Shift + Right mouse button to pan\
+		\nLeft mouse button for painting\nRight mouse button for erasing\
+		\nEsc closes the editor\n\n\n\n\nTry closing the editor without saving\nGo ahead, see what happens",
+		20, WHITE, 10, 5
+	);
+
+	//=====================================================================================================================
+	// filler buttons for the top grid
+	//=====================================================================================================================
+
+	auto pSlot7 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+	auto pSlot8 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+	auto pSlot9 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+
+	gridButtonSetup(pTopGrid, pSlot7, 0, 6);
+	gridButtonSetup(pTopGrid, pSlot8, 0, 7);
+	gridButtonSetup(pTopGrid, pSlot9, 0, 8);
 
 	//=====================================================================================================================
 	//main loop
@@ -336,24 +376,34 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		BeginDrawing();
 		ClearBackground(SKYBLUE);
 
+		//pCheatsheet->draw();
 
 		MousePosition::updateMousePos();
 
 		//the panel where the drawing is done
 		//drawn first so it doesnt interfere with the rest of ui
-		drawingScreen.renderLines();
-		drawingScreen.draw(textureAtlas);
-		drawingScreen.drawEntities(spriteAtlas, SPRITE_SIZE);
-		if (!CheckCollisionPointRec(MousePosition::sMousePos, pScrollPanel->getRect())) {
-			drawingScreen.gridInteraction();
+		pDrawingScreen->renderLines();
+		pDrawingScreen->draw(textureAtlas);
+		pDrawingScreen->drawEntities(spriteAtlas, SPRITE_SIZE);
+
+		bool shouldpDrawingScreenInteract = true;
+
+		if (
+			!CheckCollisionPointRec(MousePosition::sMousePos, pScrollPanel->getRect()) &&
+			!CheckCollisionPointRec(MousePosition::sMousePos, pEntityPanel->getRect()) &&
+			(!CheckCollisionPointRec(MousePosition::sMousePos, cheatsheetRect) || !isCheatsheetVisible)
+			) {
+			shouldpDrawingScreenInteract = true;
 		}
-		if (!CheckCollisionPointRec(MousePosition::sMousePos, pEntityPanel->getRect())) {
-			drawingScreen.gridInteraction();
+		else shouldpDrawingScreenInteract = false;
+
+		if (shouldpDrawingScreenInteract) {
+			pDrawingScreen->gridInteraction();
 		}
 		
 		//this draws the texture selection
 		
-		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, drawingScreen);
+		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, pDrawingScreen);
 		if (IsKeyPressed(KEY_ONE)) {
 			isInTileMode = !isInTileMode;
 			if (isInTileMode) pTileEntityChange->addText("Change to entity", 18, WHITE);
@@ -377,73 +427,77 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		tilePropertyGrid.draw();
 		
 
-		zoomChangeDisplay(pZoomDisplay, drawingScreen.getCameraZoom());
+		zoomChangeDisplay(pZoomDisplay, pDrawingScreen->getCameraZoom());
 
 
-		Vector2 hoveredTilePos= drawingScreen.hoveredCell();
+		Vector2 hoveredTilePos= pDrawingScreen->hoveredCell();
 		if (hoveredTilePos.x >= 0 && hoveredTilePos.y >= 0 && hoveredTilePos.x <= 63 && hoveredTilePos.y <= 63) {
 			changeDisplayedCoordinate(pTileXDisplay, "X: ", hoveredTilePos.x);
 			changeDisplayedCoordinate(pTileYDisplay, "Y: ", hoveredTilePos.y);
 			
 			std::string collision;
-			if (drawingScreen.tileData[hoveredTilePos.y][hoveredTilePos.x].collision == 0) collision = "no collision";
+			if (pDrawingScreen->tileData[(int)hoveredTilePos.y][(int)hoveredTilePos.x].collision == 0) collision = "no collision";
 			else collision = "has collision";
 			pTileCollisionDisplay->addText(collision, 20, WHITE);
 			
 			std::string damage;
-			if (drawingScreen.tileData[hoveredTilePos.y][hoveredTilePos.x].damage == 0) damage = "no damage";
+			if (pDrawingScreen->tileData[(int)hoveredTilePos.y][(int)hoveredTilePos.x].damage == 0) damage = "no damage";
 			else damage = "deals damage";
 			pTileDamageDisplay->addText(damage, 20, WHITE);
 
 		}
 
 		//im so tired that like an hour after making these i realised that i couldve just put functions inside the buttons
-		collisionSelection(drawingScreen, pCollisionButton);
-		damageSelection(drawingScreen, pDamageButton);
-		enableCollisionOvelay(drawingScreen, pCollisionOverlayButton);
-		enableDamageOvelay(drawingScreen, pDamageOverlayButton);
-		toggleDamageCollisionAndOverlaysKeyboard(drawingScreen);
+		collisionSelection(pDrawingScreen, pCollisionButton);
+		damageSelection(pDrawingScreen, pDamageButton);
+		enableCollisionOvelay(pDrawingScreen, pCollisionOverlayButton);
+		enableDamageOvelay(pDrawingScreen, pDamageOverlayButton);
+		toggleDamageCollisionAndOverlaysKeyboard(pDrawingScreen);
 
 
 
 		//selects a texture to the right
 		if (IsKeyPressed(KEY_D)) {
-			drawingScreen.currentID++;
-			drawingScreen.currentSpriteID++;
+			pDrawingScreen->currentID++;
+			pDrawingScreen->currentSpriteID++;
 		}
 		//selects the texture to the left
 		else if (IsKeyPressed(KEY_A)) {
-			drawingScreen.currentID--;
-			drawingScreen.currentSpriteID--;
+			pDrawingScreen->currentID--;
+			pDrawingScreen->currentSpriteID--;
 		}
 		//selects the texture down a row
 		else if (IsKeyPressed(KEY_S)) {
-			drawingScreen.currentID += textureColumns;
-			drawingScreen.currentSpriteID += spriteColumns;
+			pDrawingScreen->currentID += textureColumns;
+			pDrawingScreen->currentSpriteID += spriteColumns;
 		}
 		//selects the texture up a row
 		else if (IsKeyPressed(KEY_W)) {
-			drawingScreen.currentID -= textureColumns;
-			drawingScreen.currentSpriteID -= spriteColumns;
+			pDrawingScreen->currentID -= textureColumns;
+			pDrawingScreen->currentSpriteID -= spriteColumns;
 		}
 
-		if (drawingScreen.currentID > maxTileIndex) {
-			drawingScreen.currentID = 0;
+		if (pDrawingScreen->currentID > maxTileIndex) {
+			pDrawingScreen->currentID = 0;
 		}
-		if (drawingScreen.currentID < 0) {
-			drawingScreen.currentID = maxTileIndex;
+		if (pDrawingScreen->currentID < 0) {
+			pDrawingScreen->currentID = maxTileIndex;
 		}
-		if (drawingScreen.currentSpriteID > maxSpriteIndex) {
-			drawingScreen.currentSpriteID = 0;
+		if (pDrawingScreen->currentSpriteID > maxSpriteIndex) {
+			pDrawingScreen->currentSpriteID = 0;
 		}
-		if (drawingScreen.currentSpriteID < 0) {
-			drawingScreen.currentSpriteID = maxSpriteIndex;
+		if (pDrawingScreen->currentSpriteID < 0) {
+			pDrawingScreen->currentSpriteID = maxSpriteIndex;
 		}
 
-		textureSelection->selectCell(TILE_SIZE, drawingScreen.currentID);
-		pSpriteGrid->selectCell(SPRITE_SIZE, drawingScreen.currentSpriteID);
+		textureSelection->selectCell(TILE_SIZE, pDrawingScreen->currentID);
+		pSpriteGrid->selectCell(SPRITE_SIZE, pDrawingScreen->currentSpriteID);
 		//textureSelection->drawSelectedCell();
 
+		//coordinate shower for gui setup
+		if (IsKeyPressed(KEY_F1)) std::cout << MousePosition::sMousePos.x << " : " << MousePosition::sMousePos.y << std::endl;
+
+		if (isCheatsheetVisible) pCheatsheet->draw();
 		
 		EndDrawing();
 		
@@ -451,9 +505,19 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	UnloadTexture(textureAtlas);
 	
+	{
+		std::filesystem::path currentPath = std::filesystem::current_path();
 
-	//drawingScreen.toJson("drawingScreen0.json");
-	//drawingScreen.chunkToJson("drawingScreen1.json",0 ,0);
+		std::filesystem::path saveDir = currentPath / "saved_chunks/";
+
+		if (!std::filesystem::exists(saveDir)) {
+			std::filesystem::create_directory(saveDir);
+		}
+		saveDir = saveDir / "last_edited_chunk.json";
+
+		pDrawingScreen->chunkToJson(saveDir.string().c_str() , 0, 0);
+	}
+	
 
 }
 

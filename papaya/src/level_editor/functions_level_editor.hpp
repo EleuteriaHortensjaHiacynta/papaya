@@ -101,54 +101,54 @@ inline void zoomChangeDisplay(std::shared_ptr<Button> button, float zoom) {
 	button->addText(zoomString.str(), 28, WHITE);
 }
 
-inline void collisionSelection(InteractiveGrid &grid, std::shared_ptr<Button> button) {
-	if (grid.currentCollision == false) button->addText("Enable collision", 25, WHITE);
+inline void collisionSelection(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->currentCollision == false) button->addText("Enable collision", 25, WHITE);
 	else button->addText("Disable collision", 25, WHITE);
 	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-		if (grid.currentCollision == false) {
-			grid.currentCollision = true;
+		if (grid->currentCollision == false) {
+			grid->currentCollision = true;
 		}
 		else {
-			grid.currentCollision = false;
+			grid->currentCollision = false;
 		}
 	}
 }
 
-inline void damageSelection(InteractiveGrid& grid, std::shared_ptr<Button> button) {
-	if (grid.currentDamage == false) button->addText("Enable damage", 25, WHITE);
+inline void damageSelection(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->currentDamage == false) button->addText("Enable damage", 25, WHITE);
 	else button->addText("Disable damage", 25, WHITE);
 	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-		if (grid.currentDamage == false) {
-			grid.currentDamage = true;
+		if (grid->currentDamage == false) {
+			grid->currentDamage = true;
 		}
 		else {
-			grid.currentDamage = false;
+			grid->currentDamage = false;
 		}
 	}
 }
 
-inline void enableCollisionOvelay(InteractiveGrid& grid, std::shared_ptr<Button> button) {
-	if (grid.collisionOverlayEnabled == false) button->addText("Collision overlay", 18, WHITE);
+inline void enableCollisionOvelay(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->collisionOverlayEnabled == false) button->addText("Collision overlay", 18, WHITE);
 	else button->addText("Collision overlay", 18, BLACK);
 	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-		if (grid.collisionOverlayEnabled == false) {
-			grid.collisionOverlayEnabled = true;
+		if (grid->collisionOverlayEnabled == false) {
+			grid->collisionOverlayEnabled = true;
 		}
 		else {
-			grid.collisionOverlayEnabled = false;
+			grid->collisionOverlayEnabled = false;
 		}
 	}
 }
 
-inline void enableDamageOvelay(InteractiveGrid& grid, std::shared_ptr<Button> button) {
-	if (grid.damageOverlayEnabled == false) button->addText("Damage overlay", 18, WHITE);
+inline void enableDamageOvelay(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->damageOverlayEnabled == false) button->addText("Damage overlay", 18, WHITE);
 	else button->addText("Damage overlay", 18, BLACK);
 	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-		if (grid.damageOverlayEnabled == false) {
-			grid.damageOverlayEnabled = true;
+		if (grid->damageOverlayEnabled == false) {
+			grid->damageOverlayEnabled = true;
 		}
 		else {
-			grid.damageOverlayEnabled = false;
+			grid->damageOverlayEnabled = false;
 		}
 	}
 }
@@ -156,29 +156,29 @@ inline void enableDamageOvelay(InteractiveGrid& grid, std::shared_ptr<Button> bu
 //allows to toggle tile collision, damage and their corresponding overlays
 // "Q" for toggling tile collision, "Shift + Q" for collision overlay
 // "E" for toggling tile damage, "Shift + E" for damage overlay
-inline void toggleDamageCollisionAndOverlaysKeyboard(InteractiveGrid &grid) {
+inline void toggleDamageCollisionAndOverlaysKeyboard(std::shared_ptr<InteractiveGrid> grid) {
 	if (IsKeyPressed(KEY_Q)) {
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
-			grid.collisionOverlayEnabled = !grid.collisionOverlayEnabled;
+			grid->collisionOverlayEnabled = !grid->collisionOverlayEnabled;
 		}
-		else grid.currentCollision = !grid.currentCollision;
+		else grid->currentCollision = !grid->currentCollision;
 	}
 	else if (IsKeyPressed(KEY_E)) {
 		if (IsKeyDown(KEY_LEFT_SHIFT)) {
-			grid.damageOverlayEnabled = !grid.damageOverlayEnabled;
+			grid->damageOverlayEnabled = !grid->damageOverlayEnabled;
 		}
-		else grid.currentDamage = !grid.currentDamage;
+		else grid->currentDamage = !grid->currentDamage;
 	}
 }
 
 
-inline void turnChunkToImage(int tileSize, InteractiveGrid grid, Texture2D atlas, const std::string &path) {
+inline void turnChunkToImage(int tileSize, std::shared_ptr<InteractiveGrid> grid, Texture2D atlas, const std::string &path) {
 	RenderTexture2D mapTarget = LoadRenderTexture(64 * tileSize, 64 * tileSize);
 
 	BeginTextureMode(mapTarget);
 	ClearBackground(BLANK);
 
-	grid.drawToImage(atlas);
+	grid->drawToImage(atlas);
 
 	EndTextureMode();
 
@@ -193,9 +193,9 @@ inline void turnChunkToImage(int tileSize, InteractiveGrid grid, Texture2D atlas
 }
 
 
-inline void changeTileEntitySelector(bool isTile, bool enlarged, std::shared_ptr<ScrollContainer> tilePanel, std::shared_ptr<ScrollContainer> entityPanel, Rectangle tempLocation, Rectangle normalLocation, Rectangle enlargedLocation, InteractiveGrid &screen) {
+inline void changeTileEntitySelector(bool isTile, bool enlarged, std::shared_ptr<ScrollContainer> tilePanel, std::shared_ptr<ScrollContainer> entityPanel, Rectangle tempLocation, Rectangle normalLocation, Rectangle enlargedLocation, std::shared_ptr<InteractiveGrid> screen) {
 	if (isTile) {
-		screen.isTileMode = true;
+		screen->isTileMode = true;
 		tilePanel->setRect(normalLocation);
 		entityPanel->setRect(tempLocation);
 		if (enlarged) {
@@ -204,7 +204,7 @@ inline void changeTileEntitySelector(bool isTile, bool enlarged, std::shared_ptr
 		tilePanel->draw();
 	}
 	else {
-		screen.isTileMode = false;
+		screen->isTileMode = false;
 		tilePanel->setRect(tempLocation);
 		entityPanel->setRect(normalLocation);
 		if (enlarged) {
