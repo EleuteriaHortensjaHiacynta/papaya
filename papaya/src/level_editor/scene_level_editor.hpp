@@ -359,13 +359,17 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 	pCheatsheet->addTextManual (
 		"Q allows to toggle collision \nE allows to toggle damage \
-		\nHolding Q/E + Shift toggles the respective Overlay \n\n1 allows to switch between: \
+		\nHolding Q/E + CTRL toggles the respective Overlay \n\n1 allows to switch between: \
 		\nentity and tile selector \n\nW - move selection up \nS - move selection down\
 		\nA - move selection left \nD - move selection right\
 		\nHolding shift causes continous scroll \n\nWhile changing chunk position holding\nShift - change by 10\
 		\nControl - change by 5 \n\nScroll to zoom in and out\nHold Scroll or Shift + Right mouse button to pan\
-		\nLeft mouse button for painting\nRight mouse button for erasing\
-		\nEsc closes the editor\n\n\n\n\nTry closing the editor without saving\nGo ahead, see what happens",
+		\n\nLeft mouse button for painting\nRight mouse button for erasing\
+		\nAlt + Right/Left changes tile collision/damage\
+		\nLeft/Right mouse button + space to select a box\nSpace to show the selected box\
+		\n\nCTRL + X/C to cut/copy selected box\nCTRL + V to paste\
+		\nWARNING ABOVE FUNCTIONS COUNT EMPTY TILES\
+		\n\nEsc closes the editor",
 		20, WHITE, 10, 5
 	);
 
@@ -529,7 +533,18 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		}
 
 		if (isCheatsheetVisible) pCheatsheet->draw();
+
 		
+
+		if (IsKeyDown(KEY_LEFT_CONTROL)) {
+			if (IsKeyPressed(KEY_X)) pDrawingScreen->cutSelectionBox();
+			if (IsKeyPressed(KEY_C)) pDrawingScreen->copySelectionBox();
+			if (IsKeyPressed(KEY_V)) pDrawingScreen->pasteSelectionBox();
+		}
+		
+		
+
+
 		EndDrawing();
 		
 	}

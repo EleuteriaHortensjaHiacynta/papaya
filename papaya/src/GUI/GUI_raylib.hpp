@@ -535,7 +535,20 @@ struct TileData {
 	bool damage;
 };
 
+struct TileDataSwapper {
+	TileData takenData;
+	TileData replacementData;
+	int x;
+	int y;
+};
 
+struct SelectionBox {
+	int row1;
+	int column1;
+
+	int row2;
+	int column2;
+};
 
 struct Chunk {
 	int x;
@@ -618,8 +631,11 @@ void from_json(const json& j, Chunk& t) {
 //	int y;
 //};
 
+
+
 class InteractiveGrid {
 private:
+	//have to be converted when used as index e.g. (mRows - 1)
 	const int mRows;
 
 	const int mColumns;
@@ -652,6 +668,7 @@ public:
 
 	bool isTileMode = true;
 
+
 	//used for visualising the center of cells in the grid without textures
 	std::vector<Line> verticalLines;
 	std::vector<Line> horizontalLines;
@@ -659,6 +676,18 @@ public:
 	std::vector< std::vector < TileData > > tileData;
 	std::vector<std::vector <int> > entityData;
 
+
+	Vector2 selectedPoint1 = {0, 0};
+	Vector2 selectedPoint2 = {0, 0};
+
+	Rectangle selectionBoxVisual = { 1,1,1,1 };
+	SelectionBox selectionBoxTiles = { 1, 1, 1, 1 };
+
+	//have to be converted when used as index like mRows etc
+	int selectionBoxRows;
+	int selectionBoxColumns;
+
+	std::vector <std::vector <TileData> > cutSelection;
 
 	InteractiveGrid(int passedRows,
 		int passedColumns,
@@ -831,13 +860,128 @@ public:
 		Vector2 pos;
 		pos.x = (mouse.x) / tileSize;
 		pos.y = (mouse.y) / tileSize;
+
+		if (pos.x >= mColumns) pos.x = mColumns - 1;
+		if (pos.x < 0) pos.x = 0;
+
+		if (pos.y >= mRows) pos.y = mRows - 1;
+		if (pos.y < 0) pos.y = 0;
 		return pos;
+	}
+
+	Vector2 hoveredCellOrigin() {
+		Vector2 temp = hoveredCell();
+		int x = (float)temp.x;
+		int y = (float)temp.y;
+		if (x < 0) x = 0;
+		if (y < 0) y = 0;
+		if (x >= mColumns) x = mColumns - 1;
+		if (y >= mRows) y = mRows - 1;
+
+		float newX = cells[y][x].rect.x;
+		float newY = cells[y][x].rect.y;
+		temp = { newX, newY };
+		return temp;
+	}
+
+	void createSelectionBox() {
+		selectionBoxVisual.x = std::min(selectedPoint1.x, selectedPoint2.x);
+		selectionBoxVisual.y = std::min(selectedPoint1.y, selectedPoint2.y);
+		
+		selectionBoxVisual.width = std::abs(selectedPoint2.x - selectedPoint1.x) + tileSize;
+		selectionBoxVisual.height = std::abs(selectedPoint2.y - selectedPoint1.y) + tileSize;
+
+		selectionBoxTiles.row1 = selectionBoxVisual.y / tileSize;
+		selectionBoxTiles.column1 = selectionBoxVisual.x / tileSize;
+
+		selectionBoxTiles.row2 = (selectionBoxVisual.y + selectionBoxVisual.height - 1) / tileSize;
+		selectionBoxTiles.column2 = (selectionBoxVisual.x + selectionBoxVisual.width - 1) / tileSize;
+
+		selectionBoxRows = std::abs(selectionBoxTiles.row2 - selectionBoxTiles.row1) + 1;
+		selectionBoxColumns = std::abs(selectionBoxTiles.column2 - selectionBoxTiles.column1) + 1;
+	}
+
+	void cutSelectionBox() {
+		int row1 = selectionBoxTiles.row1;
+		int row2 = selectionBoxTiles.row2;
+		int col1 = selectionBoxTiles.column1;
+		int col2 = selectionBoxTiles.column2;
+
+		int rows = row2 - row1 + 1;
+		int columns = col2 - col1 + 1;
+
+		cutSelection.assign(rows, std::vector<TileData>(columns, TileData {0, false, false}));
+
+		for (int row = row1; row <= row2; row++) {
+			for (int col = col1 ; col <= col2; col++) {
+				cutSelection[row - row1][col - col1] = tileData[row][col];
+				tileData[row][col] = TileData{ 0, false, false };
+			}
+		}
+	}
+
+	void copySelectionBox() {
+		int row1 = selectionBoxTiles.row1;
+		int row2 = selectionBoxTiles.row2;
+		int col1 = selectionBoxTiles.column1;
+		int col2 = selectionBoxTiles.column2;
+
+		int rows = row2 - row1 + 1;
+		int columns = col2 - col1 + 1;
+
+		cutSelection.assign(rows, std::vector<TileData>(columns, TileData{ 0, false, false }));
+
+		for (int row = row1; row <= row2; row++) {
+			for (int col = col1; col <= col2; col++) {
+				cutSelection[row - row1][col - col1] = tileData[row][col];
+			}
+		}
+	}
+
+	void pasteSelectionBox() {
+
+		if (cutSelection.empty()) return;
+
+		int rows = cutSelection.size();
+		int columns = cutSelection[0].size();
+		Vector2 origin = hoveredCell();
+		int originX = (int)origin.x;
+		int originY = (int)origin.y;
+
+
+		//at first it looked like this but could be reduced    rows -= std::abs((originY + rows - mRows))
+		if (originY + rows > mRows) rows = mRows - originY;
+		if (originX + columns > mColumns) columns = mColumns - originX;
+
+		for (int row = 0; row < rows; row++) {
+			for (int col = 0; col < columns; col++) {
+				tileData[row + originY][col + originX] = cutSelection[row][col];
+			}
+		}
+
+	}
+
+	void drawSelectionBox() {
+		BeginScissorMode(viewport.x, viewport.y, viewport.width, viewport.height);
+		BeginMode2D(mCamera);
+		
+		DrawRectangleLinesEx(selectionBoxVisual, 2, WHITE);
+		
+		EndMode2D();
+		EndScissorMode();
 	}
 
 	void insertData(int row, int column) {
 		if (row < 0 || row >= mRows) return;
 		if (column < 0 || column >= mColumns) return;
 		tileData[row][column] = { currentID/*, currentLayer*/, currentCollision, currentDamage };
+	}
+
+	void insertCollisionDamage(int row, int column) {
+		if (row < 0 || row >= mRows) return;
+		if (column < 0 || column >= mColumns) return;
+		tileData[row][column].collision = currentCollision;
+		tileData[row][column].damage = currentDamage;
 	}
 
 	void insertEntityData(int row, int column) {
@@ -855,15 +999,45 @@ public:
 		int column = (int)position.x;
 		int row = (int)position.y;
 		if (isTileMode) {
+
+			if (IsKeyDown(KEY_SPACE)) {
+				drawSelectionBox();
+				/*std::cout << "Triggering" << std::endl;
+				std::cout << pDrawingScreen->selectionBoxTiles.row1 << " " << pDrawingScreen->selectionBoxTiles.column1 << std::endl;
+				std::cout << pDrawingScreen->selectionBoxTiles.row2 << " " << pDrawingScreen->selectionBoxTiles.column2 << std::endl;
+				std::cout << pDrawingScreen->selectionBoxRows << " " << pDrawingScreen->selectionBoxColumns << std::endl;*/
+			}
+			
 			if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-				insertData(row, column);
-				//std::cout << "Grid position: " << row << " ; " << column << std::endl;
+				if (IsKeyDown(KEY_LEFT_ALT)) {
+					insertCollisionDamage(row, column);
+				}
+				else if (IsKeyDown(KEY_SPACE)) {
+					selectedPoint1 = hoveredCellOrigin();
+					createSelectionBox();
+				}
+				else {
+					insertData(row, column);
+					//std::cout << "Grid position: " << row << " ; " << column << std::endl;
+				}
 			}
 			// lmb is used as erase mode
 			else if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !IsKeyDown(KEY_LEFT_SHIFT)) {
-				if (row < 0 || row >= mRows) return;
-				if (column < 0 || column >= mColumns) return;
-				tileData[row][column] = { 0, 0, 0 };
+				if (IsKeyDown(KEY_LEFT_ALT)) {
+					if (row < 0 || row >= mRows) return;
+					if (column < 0 || column >= mColumns) return;
+					tileData[row][column].collision = false;
+					tileData[row][column].damage = false;
+				} 
+				else if (IsKeyDown(KEY_SPACE)) {
+					selectedPoint2 = hoveredCellOrigin();
+					createSelectionBox();
+				}
+				else {
+					if (row < 0 || row >= mRows) return;
+					if (column < 0 || column >= mColumns) return;
+					tileData[row][column] = { 0, 0, 0 };
+				}
 			}
 		}
 		else {

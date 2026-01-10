@@ -171,13 +171,13 @@ inline void enableDamageOvelay(std::shared_ptr<InteractiveGrid> grid, std::share
 // "E" for toggling tile damage, "Shift + E" for damage overlay
 inline void toggleDamageCollisionAndOverlaysKeyboard(std::shared_ptr<InteractiveGrid> grid) {
 	if (IsKeyPressed(KEY_Q)) {
-		if (IsKeyDown(KEY_LEFT_SHIFT)) {
+		if (IsKeyDown(KEY_LEFT_CONTROL)) {
 			grid->collisionOverlayEnabled = !grid->collisionOverlayEnabled;
 		}
 		else grid->currentCollision = !grid->currentCollision;
 	}
 	else if (IsKeyPressed(KEY_E)) {
-		if (IsKeyDown(KEY_LEFT_SHIFT)) {
+		if (IsKeyDown(KEY_LEFT_CONTROL)) {
 			grid->damageOverlayEnabled = !grid->damageOverlayEnabled;
 		}
 		else grid->currentDamage = !grid->currentDamage;
