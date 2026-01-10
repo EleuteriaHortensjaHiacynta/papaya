@@ -16,9 +16,13 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	const int SPRITE_SIZE = 16;
 
 	bool isInTileMode = true;
+	bool selectionMoved = false;
 
-	//for autosaves and showing the time at which they were made in the console
+
+	//variables that deal with time
 	float autoSaveTimer = 0.0f;
+	float deltaTime = 0.0f;
+	float selectionScrollTimer = 0.0f;
 	
 	std::time_t currentTime;
 	std::tm localTime;
@@ -357,7 +361,8 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		"Q allows to toggle collision \nE allows to toggle damage \
 		\nHolding Q/E + Shift toggles the respective Overlay \n\n1 allows to switch between: \
 		\nentity and tile selector \n\nW - move selection up \nS - move selection down\
-		\nA - move selection left \nD - move selection right \n\nWhile changing chunk position holding\nShift - change by 10\
+		\nA - move selection left \nD - move selection right\
+		\nHolding shift causes continous scroll \n\nWhile changing chunk position holding\nShift - change by 10\
 		\nControl - change by 5 \n\nScroll to zoom in and out\nHold Scroll or Shift + Right mouse button to pan\
 		\nLeft mouse button for painting\nRight mouse button for erasing\
 		\nEsc closes the editor\n\n\n\n\nTry closing the editor without saving\nGo ahead, see what happens",
@@ -380,9 +385,11 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	//main loop
 	//=====================================================================================================================
 
+
 	while(!WindowShouldClose()) {
 
-		autoSaveTimer += GetFrameTime();
+		deltaTime = GetFrameTime();
+		autoSaveTimer += deltaTime;
 		// time between auto saves
 		float autoSaveInterval = 5 * 60.0f;
 		currentTime = std::time(nullptr);
@@ -399,9 +406,32 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		BeginDrawing();
 		ClearBackground(SKYBLUE);
 
-		//pCheatsheet->draw();
-
 		MousePosition::updateMousePos();
+
+		selectionMoveOne(pDrawingScreen, selectionMoved, textureColumns, spriteColumns);
+		selectionMoveFast(pDrawingScreen, selectionMoved, textureColumns, spriteColumns, deltaTime, selectionScrollTimer);
+
+		if (pDrawingScreen->currentID > maxTileIndex) {
+			pDrawingScreen->currentID = 0;
+		}
+		if (pDrawingScreen->currentID < 0) {
+			pDrawingScreen->currentID = maxTileIndex;
+		}
+		if (pDrawingScreen->currentSpriteID > maxSpriteIndex) {
+			pDrawingScreen->currentSpriteID = 0;
+		}
+		if (pDrawingScreen->currentSpriteID < 0) {
+			pDrawingScreen->currentSpriteID = maxSpriteIndex;
+		}
+
+		if (selectionMoved) adjustScrollView(pScrollPanel);
+
+		selectionMoved = false;
+
+		pScrollPanel->handleScrolling();
+		pEntityPanel->handleScrolling();
+
+		
 
 		//the panel where the drawing is done
 		//drawn first so it doesnt interfere with the rest of ui
@@ -426,14 +456,17 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		
 		//this draws the texture selection
 		
-		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, pDrawingScreen);
 		if (IsKeyPressed(KEY_ONE)) {
 			isInTileMode = !isInTileMode;
 			if (isInTileMode) pTileEntityChange->addText("Change to entity", 18, WHITE);
 			else pTileEntityChange->addText("Change to tile", 20, WHITE);
 		}
 
-		pScrollPanel->draw();
+
+		changeTileEntitySelector(isInTileMode, scrollPanelEnlarged, pScrollPanel, pEntityPanel, panelHiddenRect, panelBaseRect, panelEnlargedRect, pDrawingScreen);
+
+
+		//pScrollPanel->draw();
 		//pEntityPanel->draw();
 		
 
@@ -479,39 +512,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 
 
-		//selects a texture to the right
-		if (IsKeyPressed(KEY_D)) {
-			pDrawingScreen->currentID++;
-			pDrawingScreen->currentSpriteID++;
-		}
-		//selects the texture to the left
-		else if (IsKeyPressed(KEY_A)) {
-			pDrawingScreen->currentID--;
-			pDrawingScreen->currentSpriteID--;
-		}
-		//selects the texture down a row
-		else if (IsKeyPressed(KEY_S)) {
-			pDrawingScreen->currentID += textureColumns;
-			pDrawingScreen->currentSpriteID += spriteColumns;
-		}
-		//selects the texture up a row
-		else if (IsKeyPressed(KEY_W)) {
-			pDrawingScreen->currentID -= textureColumns;
-			pDrawingScreen->currentSpriteID -= spriteColumns;
-		}
-
-		if (pDrawingScreen->currentID > maxTileIndex) {
-			pDrawingScreen->currentID = 0;
-		}
-		if (pDrawingScreen->currentID < 0) {
-			pDrawingScreen->currentID = maxTileIndex;
-		}
-		if (pDrawingScreen->currentSpriteID > maxSpriteIndex) {
-			pDrawingScreen->currentSpriteID = 0;
-		}
-		if (pDrawingScreen->currentSpriteID < 0) {
-			pDrawingScreen->currentSpriteID = maxSpriteIndex;
-		}
+	
 
 		textureSelection->selectCell(TILE_SIZE, pDrawingScreen->currentID);
 		pSpriteGrid->selectCell(SPRITE_SIZE, pDrawingScreen->currentSpriteID);
@@ -519,6 +520,13 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 
 		//coordinate shower for gui setup
 		if (IsKeyPressed(KEY_F1)) std::cout << MousePosition::sMousePos.x << " : " << MousePosition::sMousePos.y << std::endl;
+		//hot reload of the atlas
+		if (IsKeyPressed(KEY_F2)) {
+			UnloadTexture(textureAtlas);
+			UnloadTexture(spriteAtlas);
+			textureAtlas = LoadTexture("assets/tiles/atlas_512x512.png");
+			Texture2D spriteAtlas = LoadTexture("assets/sprites/entity_atlas_v0.png");
+		}
 
 		if (isCheatsheetVisible) pCheatsheet->draw();
 		
@@ -527,6 +535,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	}
 
 	UnloadTexture(textureAtlas);
+	UnloadTexture(spriteAtlas);
 	
 	autoSave(pDrawingScreen);
 	

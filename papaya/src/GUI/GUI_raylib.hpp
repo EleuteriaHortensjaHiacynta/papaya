@@ -228,8 +228,7 @@ class Grid : public Widget {
 private:
 	const int mRows;
 	const int mColumns;
-	int rowHeight;
-	int columnWidth;
+	
 
 	//from what i read there's no need to use delete later 
 	// because this pointer doesnt own the parent grid so it shouldnt even delete it
@@ -237,6 +236,8 @@ private:
 
 
 public:
+	int rowHeight;
+	int columnWidth;
 
 	std::vector<std::vector<Cell>> cells;
 	// top left corner is the origin of the grid, everything gets set relative to it
@@ -443,14 +444,33 @@ public:
 		mChildGrid = grid;
 	}
 
+	std::shared_ptr<Grid> getChildGrid() {
+		return mChildGrid;
+	}
+
 	void setPosition(Rectangle rect) override {
 		mRect = rect;
 	}
 
+	void adjustView(int x, int y) {
+		mScrollX = x;
+		mScrollY = y;
+		clampScroll();
+		setCamera();
+	}
 
-	void draw() override {
+	//void nudgeView(int x, int y) {
+	//	mScrollX += x;
+	//	mScrollY += y;
 
+	//	clampScroll();
+	//	setCamera();
+	//}
+
+
+	void handleScrolling() {
 		bool mouseInside = CheckCollisionPointRec(MousePosition::sMousePos, mRect);
+		if (GetMouseWheelMove() == 0.0f) return;
 		if (mouseInside) {
 			if (IsKeyDown(KEY_LEFT_SHIFT)) {
 				float wheel = GetMouseWheelMove();
@@ -463,6 +483,13 @@ public:
 		}
 
 		clampScroll();
+		setCamera();
+	}
+
+	void draw() override {
+
+		bool mouseInside = CheckCollisionPointRec(MousePosition::sMousePos, mRect);
+
 		setCamera();
 
 		BeginScissorMode((int)mRect.x, (int)mRect.y, (int)mRect.width, (int)mRect.height);

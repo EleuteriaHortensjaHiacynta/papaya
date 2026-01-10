@@ -226,3 +226,87 @@ inline void changeTileEntitySelector(bool isTile, bool enlarged, std::shared_ptr
 		entityPanel->draw();
 	}
 }
+
+inline void adjustScrollView(std::shared_ptr<ScrollContainer> scroll) {
+	auto childGrid = scroll->getChildGrid();
+	int x = (childGrid->selectedColumn - 3) * childGrid->columnWidth;
+	int y = (childGrid->selectedRow - 3) * childGrid->rowHeight;
+
+	scroll->adjustView(x, y);
+}
+
+//inline void nudgeScrollView(std::shared_ptr<ScrollContainer> scroll, int x, int y) {
+//	scroll->nudgeView(x, y);
+//}
+
+inline void selectionMoveOne(std::shared_ptr<InteractiveGrid> grid, bool &selectionMoved, int textureColumns, int spriteColumns) {
+	//selects a texture to the right
+	if (IsKeyPressed(KEY_D)) {
+		grid->currentID++;
+		grid->currentSpriteID++;
+		selectionMoved = true;
+	}
+	//selects the texture to the left
+	else if (IsKeyPressed(KEY_A)) {
+		grid->currentID--;
+		grid->currentSpriteID--;
+		selectionMoved = true;
+	}
+	//selects the texture down a row
+	else if (IsKeyPressed(KEY_S)) {
+		grid->currentID += textureColumns;
+		grid->currentSpriteID += spriteColumns;
+		selectionMoved = true;
+	}
+	//selects the texture up a row
+	else if (IsKeyPressed(KEY_W)) {
+		grid->currentID -= textureColumns;
+		grid->currentSpriteID -= spriteColumns;
+		selectionMoved = true;
+	}
+}
+
+inline void selectionMoveFast(std::shared_ptr<InteractiveGrid> grid, bool& selectionMoved, int textureColumns, int spriteColumns, float deltaTime, float& selectionScrollTimer) {
+
+	float scrollDelay = 0.05f;
+
+
+	if (IsKeyDown(KEY_LEFT_SHIFT)) {
+
+		selectionScrollTimer += deltaTime;
+
+		if (selectionScrollTimer >= scrollDelay) {
+
+			selectionScrollTimer = 0.0f;
+
+			//selects a texture to the right
+			if (IsKeyDown(KEY_D)) {
+				grid->currentID++;
+				grid->currentSpriteID++;
+				selectionMoved = true;
+			}
+			//selects the texture to the left
+			else if (IsKeyDown(KEY_A)) {
+				grid->currentID--;
+				grid->currentSpriteID--;
+				selectionMoved = true;
+			}
+			//selects the texture down a row
+			else if (IsKeyDown(KEY_S)) {
+				grid->currentID += textureColumns;
+				grid->currentSpriteID += spriteColumns;
+				selectionMoved = true;
+			}
+			//selects the texture up a row
+			else if (IsKeyDown(KEY_W)) {
+				grid->currentID -= textureColumns;
+				grid->currentSpriteID -= spriteColumns;
+				selectionMoved = true;
+
+			}
+
+		}
+		
+	}
+	else selectionScrollTimer = scrollDelay;
+}
