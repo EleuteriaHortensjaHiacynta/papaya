@@ -5,6 +5,12 @@
 #include <raylib.h>
 #include <cmath>
 #include <fstream>
+#include "Scenes/scene_test_room.h"
+
+#include "Scenes/scene_test_room.h"
+#include "Scenes/main_menu.hpp"
+#include "level_editor/scene_level_editor.hpp"
+#include "Saves/map.hpp"
 
 int main() {
 
