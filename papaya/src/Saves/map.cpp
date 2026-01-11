@@ -2,8 +2,46 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <stdexcept>
+#include <nlohmann/json.hpp>
 
 #include "map.hpp"
+
+const int TILE_SIZE = 8;
+
+struct EditorBlock {
+    bool collision;
+    bool damage;
+    int layer; // Chyba do wywalenia?
+    uint8_t textureID;
+};
+
+Block EditorBlockToBlock(const EditorBlock& eBlock, int16_t x, int16_t y, uint8_t x_length, uint8_t y_length) {
+    Block block;
+    block.x = x;
+    block.y = y;
+    block.x_length = x_length;
+    block.y_length = y_length;
+    block.textureID = static_cast<int8_t>(eBlock.textureID);
+    block.layer = Layers::BACKGROUND; // Domy�lnie
+    if (eBlock.collision) {
+        block.extraData = ExtraData::COLLIDABLE;
+    } else if (eBlock.damage) {
+        block.extraData = ExtraData::DAMAGING;
+    } else {
+        block.extraData = ExtraData::NONE;
+    }
+    return block;
+}
+
+EditorBlock BlockToEditorBlock(const Block& block) {
+    EditorBlock eBlock;
+    eBlock.textureID = static_cast<uint8_t>(block.textureID);
+    eBlock.collision = (block.extraData == ExtraData::COLLIDABLE);
+    eBlock.damage = (block.extraData == ExtraData::DAMAGING);
+    eBlock.layer = static_cast<int>(block.layer);
+    return eBlock;
+}
 
 uint64_t createBlock(Block block) {
     if (block.layer < Layers::GUI || block.layer > Layers::BACKGROUND) {
@@ -15,8 +53,8 @@ uint64_t createBlock(Block block) {
     uint64_t blockData = 0;
     // Layout (bits): [63..48]=x (16) | [47..32]=y (16) | [31..24]=x_length (8) | [23..16]=y_length (8)
     //                 [15..8]=textureID (8) | [7..4]=extraData (4) | [3..0]=layer (4)
-    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(block.x)) & 0xFFFFULL) << 48;
-    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(block.y)) & 0xFFFFULL) << 32;
+    blockData |= (static_cast<uint64_t>(static_cast<int16_t>(block.x)) & 0xFFFFULL) << 48;
+    blockData |= (static_cast<uint64_t>(static_cast<int16_t>(block.y)) & 0xFFFFULL) << 32;
     blockData |= (static_cast<uint64_t>(block.x_length) & 0xFFULL) << 24;
     blockData |= (static_cast<uint64_t>(block.y_length) & 0xFFULL) << 16;
     blockData |= (static_cast<uint64_t>(block.textureID) & 0xFFULL) << 8;
@@ -72,60 +110,42 @@ void MapSaver::sortBlocks() {
     if (!(*fileStream)) throw std::runtime_error("Failed to write sorted block data to file.");
 }
 
+void MapSaver::fromEditor(std::string json, int chunkX, int chunkY) {
+    using jsonn = nlohmann::json;
+        auto doc = jsonn::parse(json);
+        auto arr = doc["chunkData"]["array"];
+    if (arr.is_null() || !arr.is_array() || arr.size() == 0) {
+        throw std::invalid_argument("Invalid JSON: 'chunkData.array' is missing or not an array.");
+    }
+
+    std::cout << "Parsed " << arr.size() << " blocks from JSON.\n";
+
+    for (long unsigned int i = 0; i < arr.size(); ++i) {
+        for (long unsigned int j = 0; j < arr[i].size(); ++j) {
+            auto item = arr[i][j];
+        EditorBlock eBlock;
+        eBlock.collision = item.value("collision", false);
+        eBlock.damage = item.value("damage", false);
+        eBlock.layer = item.value("layer", 0); // Default to BACKGROUND
+        eBlock.textureID = item.value("textureID", 0);
+
+        uint16_t x = j + static_cast<uint16_t>(chunkX * 64);
+        uint16_t y = i + static_cast<uint16_t>(chunkY * 64);
+        uint8_t x_length = 1;
+        uint8_t y_length = 1;
+
+        Block block = EditorBlockToBlock(eBlock, x, y, x_length, y_length);
+        if (block.textureID == 0 && (block.extraData == ExtraData::NONE)) continue; // Skip empty blocks
+        std::cout << "Adding block at (" << block.x << ", " << block.y << ") with textureID " << static_cast<int>(block.textureID) << "\n";
+        this->addBlock(block);
+        }
+    }
+}
+
 MapSaver::~MapSaver() {
     try { this->sortBlocks(); } catch (...) {}
 }
 
-    // dziala ale w sumie komu to potrzebne 
-    // struct Iterator {
-    //     using iterator_category = std::forward_iterator_tag;
-    //     using difference_type = std::ptrdiff_t;
-    //     using value_type = uint64_t;
-    //     using pointer = const uint64_t*;
-    //     using reference = const uint64_t&;
-
-    //     std::istream* file = nullptr;
-    //     uint64_t currentBlock = 0;
-    //     bool at_end = true;
-
-    //     Iterator(std::istream* f, bool readFirst) : file(f), currentBlock(0), at_end(false) {
-    //         if (readFirst) {
-    //             file->read(reinterpret_cast<char*>(&currentBlock), sizeof(currentBlock));
-    //             if (static_cast<std::streamsize>(sizeof(currentBlock)) != file->gcount()) at_end = true;
-    //         } else {
-    //             at_end = true;
-    //         }
-    //     }
-
-    //     reference operator*() const { return currentBlock; }
-    //     pointer operator->() const { return &currentBlock; }
-    //     Iterator& operator++() {
-    //         if (file) {
-    //             file->read(reinterpret_cast<char*>(&currentBlock), sizeof(currentBlock));
-    //             if (static_cast<std::streamsize>(sizeof(currentBlock)) != file->gcount()) at_end = true;
-    //             return *this;
-    //         }
-    //         at_end = true;
-    //         return *this;
-    //     }
-
-    //     Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; }
-
-    //     bool operator==(const Iterator& other) const { return at_end == other.at_end; }
-    //     bool operator!=(const Iterator& other) const { return !(*this == other); }
-    // };
-
-    // Iterator begin() {
-    //     fileStream->clear();
-    //     fileStream->seekg(0, std::ios::beg);
-    //     return Iterator(fileStream, true);
-    // }
-
-    // Iterator end() {
-    //     return Iterator(fileStream, false);
-    // }
-
-// MapLoader method implementations
 MapLoader::MapLoader(std::fstream& f) : fileStream(&f) {}
 
 MapLoader::~MapLoader() {}
@@ -136,7 +156,7 @@ std::vector<Wall> MapLoader::getAll() {
     uint64_t blockData;
     while (fileStream->read(reinterpret_cast<char*>(&blockData), sizeof(blockData))) {
         Block block = decodeBlock(blockData);
-        walls.push_back(Wall(block.x, block.y, block.x_length * 10, block.y_length * 10));
+        walls.push_back(Wall(block.x * TILE_SIZE, block.y * TILE_SIZE, block.x_length * TILE_SIZE, block.y_length * TILE_SIZE));
     }
     return walls;
 }
