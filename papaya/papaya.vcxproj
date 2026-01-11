@@ -128,7 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-
+    <ClCompile Include="src\Saves\map.cpp" />
     <ClCompile Include="src\Scenes\scene_test_room.h" />
     <ClCompile Include="src\papaya.cpp" />
     <ClCompile Include="src\external_headers\tinyfiledialogs.cpp" />
@@ -139,7 +139,7 @@
     <ClInclude Include="src\Entities\Entity.h" />
     <ClInclude Include="src\Entities\Player.h" />
     <ClInclude Include="src\Entities\Wall.h" />
-    <ClInclude Include="src\GUI\GUIRayLib.h" />
+    <ClInclude Include="src\Saves\map.hpp" />
     <ClInclude Include="src\Scenes\MainMenu.h" />
     <ClInclude Include="src\external_headers\json.hpp" />
     <ClInclude Include="src\external_headers\tinyfiledialogs.hpp" />
@@ -148,16 +148,8 @@
     <ClInclude Include="src\level_editor\scene_level_editor.hpp" />
     <ClInclude Include="src\Scenes\main_menu.hpp" />
     <ClInclude Include="src\Scenes\scene_functions.hpp" />
-
-    
   </ItemGroup>
   <ItemGroup>
-    
-    
-    
-    
-    
-
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\player.png" />

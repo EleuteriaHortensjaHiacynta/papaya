@@ -3,17 +3,14 @@
 
 #include <iostream>
 #include <raylib.h>
-
-#include "Scenes/MainMenu.h"
-#include "Scenes/scene_test_room.h"
 #include <cmath>
+#include <fstream>
 
+#include "Scenes/scene_test_room.h"
 #include "Scenes/main_menu.hpp"
 #include "level_editor/scene_level_editor.hpp"
-
-
 #include "Saves/map.hpp"
-#include <fstream>
+
 
 // int main() {
 //     std::fstream file("test.map", std::ios::out | std::ios::trunc);
@@ -119,5 +116,5 @@ int main() {
     CloseWindow();
 
     return 0;
-}
+}*/
 
