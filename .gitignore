@@ -3,6 +3,14 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+
+# Testing json files
+test0.json
+test1.json
+papaya/drawingScreen0.json
+papaya/drawingScreen1.json
+papaya/saved_chunks/
+
 # User-specific files
 *.rsuser
 *.suo

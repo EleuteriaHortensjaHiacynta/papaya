@@ -1,0 +1,298 @@
+#pragma once
+
+#include <raylib.h>
+#include <iostream>
+#include <string>
+#include <filesystem>
+#include <sstream>
+#include <iomanip>
+
+#include "external_headers/tinyfiledialogs.hpp"
+
+
+inline std::string openChunkDialog(const char *tittle = "Select file to open") {
+
+	std::filesystem::path currentPath = std::filesystem::current_path();
+
+	std::filesystem::path saveDir = currentPath / "saved_chunks/";
+
+	if (!std::filesystem::exists(saveDir)) {
+		std::filesystem::create_directory(saveDir);
+	}
+
+	const char* patterns[] = { "*.json" };
+
+	const char* result = tinyfd_openFileDialog(tittle, saveDir.string().c_str(), 1, patterns, "JSON files", 0);
+	if (result) return std::string(result);
+	return "";
+}
+
+// either all arguments need default values or none of them have defaults
+inline std::string saveChunkDialog(const char* title = "Select file to save", int x = 0, int y = 0) {
+
+	std::filesystem::path currentPath = std::filesystem::current_path();
+
+	std::filesystem::path saveDir = currentPath / "saved_chunks";
+
+	if (!std::filesystem::exists(saveDir)) {
+		std::filesystem::create_directory(saveDir);
+	}
+
+	std::string fileName = "chunk-" + std::to_string(x) + "-" + std::to_string(y) + ".json";
+
+	std::filesystem::path defaultPath = saveDir / fileName ;
+	
+	std::string defaultName = defaultPath.string();
+
+
+	
+	const char* patterns[] = { "*.json" };
+	
+	const char* result = tinyfd_saveFileDialog(title, defaultName.c_str(), 1, patterns, "JSON files");
+	if (result) return std::string(result);
+	return "";
+}
+
+inline std::string saveChunkToImage(const char* title) {
+
+	const char* patterns[] = { "*.png" };
+
+	std::string text = "image.png";
+
+	const char* result = tinyfd_saveFileDialog(title, text.c_str(), 1, patterns, "PNG files");
+	if (result) return std::string(result);
+	return "";
+
+}
+
+inline void autoSave(std::shared_ptr<InteractiveGrid> grid) {
+	std::filesystem::path currentPath = std::filesystem::current_path();
+
+	std::filesystem::path saveDir = currentPath / "saved_chunks/";
+
+	if (!std::filesystem::exists(saveDir)) {
+		std::filesystem::create_directory(saveDir);
+	}
+	saveDir = saveDir / "last_edited_chunk.autosave.json";
+
+	grid->chunkToJson(saveDir.string().c_str(), 0, 0);
+}
+
+inline void changeDisplayedCoordinate(std::shared_ptr<Button> button, std::string coordinate, int value) {
+	std::string text = coordinate + std::to_string(value);
+	button->addText(text.c_str(), 26, WHITE);
+}
+
+inline void changeChunkPos(int& chunkCoordinate, int changeBy) {
+	if (IsKeyDown(KEY_LEFT_SHIFT)) chunkCoordinate += 10 * changeBy;
+	else if (IsKeyDown(KEY_LEFT_CONTROL)) chunkCoordinate += 5 * changeBy;
+	else chunkCoordinate += changeBy;
+}
+
+inline void chunkChangeAndDisplay(int& chunkCoordinate, int changeBy, std::shared_ptr<Button> button, std::string coordinate) {
+	changeChunkPos(chunkCoordinate, changeBy);
+	changeDisplayedCoordinate(button, coordinate, chunkCoordinate);
+}
+
+inline void zoomChangeDisplay(std::shared_ptr<Button> button, float zoom) {
+	std::ostringstream zoomString;
+	zoomString << std::fixed << std::setprecision(1) << zoom;
+	button->addText(zoomString.str(), 28, WHITE);
+}
+
+inline void collisionSelection(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->currentCollision == false) button->addText("Enable collision", 25, WHITE);
+	else button->addText("Disable collision", 25, WHITE);
+	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+		if (grid->currentCollision == false) {
+			grid->currentCollision = true;
+		}
+		else {
+			grid->currentCollision = false;
+		}
+	}
+}
+
+inline void damageSelection(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->currentDamage == false) button->addText("Enable damage", 25, WHITE);
+	else button->addText("Disable damage", 25, WHITE);
+	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+		if (grid->currentDamage == false) {
+			grid->currentDamage = true;
+		}
+		else {
+			grid->currentDamage = false;
+		}
+	}
+}
+
+inline void enableCollisionOvelay(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->collisionOverlayEnabled == false) button->addText("Collision overlay", 18, WHITE);
+	else button->addText("Collision overlay", 18, BLACK);
+	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+		if (grid->collisionOverlayEnabled == false) {
+			grid->collisionOverlayEnabled = true;
+		}
+		else {
+			grid->collisionOverlayEnabled = false;
+		}
+	}
+}
+
+inline void enableDamageOvelay(std::shared_ptr<InteractiveGrid> grid, std::shared_ptr<Button> button) {
+	if (grid->damageOverlayEnabled == false) button->addText("Damage overlay", 18, WHITE);
+	else button->addText("Damage overlay", 18, BLACK);
+	if (CheckCollisionPointRec(MousePosition::sMousePos, button->positionSize) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+		if (grid->damageOverlayEnabled == false) {
+			grid->damageOverlayEnabled = true;
+		}
+		else {
+			grid->damageOverlayEnabled = false;
+		}
+	}
+}
+
+//allows to toggle tile collision, damage and their corresponding overlays
+// "Q" for toggling tile collision, "Shift + Q" for collision overlay
+// "E" for toggling tile damage, "Shift + E" for damage overlay
+inline void toggleDamageCollisionAndOverlaysKeyboard(std::shared_ptr<InteractiveGrid> grid) {
+	if (IsKeyPressed(KEY_Q)) {
+		if (IsKeyDown(KEY_LEFT_CONTROL)) {
+			grid->collisionOverlayEnabled = !grid->collisionOverlayEnabled;
+		}
+		else grid->currentCollision = !grid->currentCollision;
+	}
+	else if (IsKeyPressed(KEY_E)) {
+		if (IsKeyDown(KEY_LEFT_CONTROL)) {
+			grid->damageOverlayEnabled = !grid->damageOverlayEnabled;
+		}
+		else grid->currentDamage = !grid->currentDamage;
+	}
+}
+
+
+inline void turnChunkToImage(int tileSize, std::shared_ptr<InteractiveGrid> grid, Texture2D atlas, const std::string &path) {
+	RenderTexture2D mapTarget = LoadRenderTexture(64 * tileSize, 64 * tileSize);
+
+	BeginTextureMode(mapTarget);
+	ClearBackground(BLANK);
+
+	grid->drawToImage(atlas);
+
+	EndTextureMode();
+
+	Image mapImage = LoadImageFromTexture(mapTarget.texture);
+
+	ImageFlipVertical(&mapImage);
+	ExportImage(mapImage, path.c_str());
+
+	UnloadImage(mapImage);
+	UnloadRenderTexture(mapTarget);
+
+}
+
+
+inline void changeTileEntitySelector(bool isTile, bool enlarged, std::shared_ptr<ScrollContainer> tilePanel, std::shared_ptr<ScrollContainer> entityPanel, Rectangle tempLocation, Rectangle normalLocation, Rectangle enlargedLocation, std::shared_ptr<InteractiveGrid> screen) {
+	if (isTile) {
+		screen->isTileMode = true;
+		tilePanel->setRect(normalLocation);
+		entityPanel->setRect(tempLocation);
+		if (enlarged) {
+			tilePanel->setRect(enlargedLocation);
+		}
+		tilePanel->draw();
+	}
+	else {
+		screen->isTileMode = false;
+		tilePanel->setRect(tempLocation);
+		entityPanel->setRect(normalLocation);
+		if (enlarged) {
+			entityPanel->setRect(enlargedLocation);
+		}
+		entityPanel->draw();
+	}
+}
+
+inline void adjustScrollView(std::shared_ptr<ScrollContainer> scroll) {
+	auto childGrid = scroll->getChildGrid();
+	int x = (childGrid->selectedColumn - 3) * childGrid->columnWidth;
+	int y = (childGrid->selectedRow - 3) * childGrid->rowHeight;
+
+	scroll->adjustView(x, y);
+}
+
+//inline void nudgeScrollView(std::shared_ptr<ScrollContainer> scroll, int x, int y) {
+//	scroll->nudgeView(x, y);
+//}
+
+inline void selectionMoveOne(std::shared_ptr<InteractiveGrid> grid, bool &selectionMoved, int textureColumns, int spriteColumns) {
+	//selects a texture to the right
+	if (IsKeyPressed(KEY_D)) {
+		grid->currentID++;
+		grid->currentSpriteID++;
+		selectionMoved = true;
+	}
+	//selects the texture to the left
+	else if (IsKeyPressed(KEY_A)) {
+		grid->currentID--;
+		grid->currentSpriteID--;
+		selectionMoved = true;
+	}
+	//selects the texture down a row
+	else if (IsKeyPressed(KEY_S)) {
+		grid->currentID += textureColumns;
+		grid->currentSpriteID += spriteColumns;
+		selectionMoved = true;
+	}
+	//selects the texture up a row
+	else if (IsKeyPressed(KEY_W)) {
+		grid->currentID -= textureColumns;
+		grid->currentSpriteID -= spriteColumns;
+		selectionMoved = true;
+	}
+}
+
+inline void selectionMoveFast(std::shared_ptr<InteractiveGrid> grid, bool& selectionMoved, int textureColumns, int spriteColumns, float deltaTime, float& selectionScrollTimer) {
+
+	float scrollDelay = 0.05f;
+
+
+	if (IsKeyDown(KEY_LEFT_SHIFT)) {
+
+		selectionScrollTimer += deltaTime;
+
+		if (selectionScrollTimer >= scrollDelay) {
+
+			selectionScrollTimer = 0.0f;
+
+			//selects a texture to the right
+			if (IsKeyDown(KEY_D)) {
+				grid->currentID++;
+				grid->currentSpriteID++;
+				selectionMoved = true;
+			}
+			//selects the texture to the left
+			else if (IsKeyDown(KEY_A)) {
+				grid->currentID--;
+				grid->currentSpriteID--;
+				selectionMoved = true;
+			}
+			//selects the texture down a row
+			else if (IsKeyDown(KEY_S)) {
+				grid->currentID += textureColumns;
+				grid->currentSpriteID += spriteColumns;
+				selectionMoved = true;
+			}
+			//selects the texture up a row
+			else if (IsKeyDown(KEY_W)) {
+				grid->currentID -= textureColumns;
+				grid->currentSpriteID -= spriteColumns;
+				selectionMoved = true;
+
+			}
+
+		}
+		
+	}
+	else selectionScrollTimer = scrollDelay;
+}
