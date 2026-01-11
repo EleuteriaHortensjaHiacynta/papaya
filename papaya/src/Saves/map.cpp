@@ -16,7 +16,7 @@ struct EditorBlock {
     uint8_t textureID;
 };
 
-Block EditorBlockToBlock(const EditorBlock& eBlock, uint16_t x, uint16_t y, uint8_t x_length, uint8_t y_length) {
+Block EditorBlockToBlock(const EditorBlock& eBlock, int16_t x, int16_t y, uint8_t x_length, uint8_t y_length) {
     Block block;
     block.x = x;
     block.y = y;
@@ -53,8 +53,8 @@ uint64_t createBlock(Block block) {
     uint64_t blockData = 0;
     // Layout (bits): [63..48]=x (16) | [47..32]=y (16) | [31..24]=x_length (8) | [23..16]=y_length (8)
     //                 [15..8]=textureID (8) | [7..4]=extraData (4) | [3..0]=layer (4)
-    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(block.x)) & 0xFFFFULL) << 48;
-    blockData |= (static_cast<uint64_t>(static_cast<uint16_t>(block.y)) & 0xFFFFULL) << 32;
+    blockData |= (static_cast<uint64_t>(static_cast<int16_t>(block.x)) & 0xFFFFULL) << 48;
+    blockData |= (static_cast<uint64_t>(static_cast<int16_t>(block.y)) & 0xFFFFULL) << 32;
     blockData |= (static_cast<uint64_t>(block.x_length) & 0xFFULL) << 24;
     blockData |= (static_cast<uint64_t>(block.y_length) & 0xFFULL) << 16;
     blockData |= (static_cast<uint64_t>(block.textureID) & 0xFFULL) << 8;
@@ -145,6 +145,7 @@ void MapSaver::fromEditor(std::string json, int chunkX, int chunkY) {
 MapSaver::~MapSaver() {
     try { this->sortBlocks(); } catch (...) {}
 }
+
 MapLoader::MapLoader(std::fstream& f) : fileStream(&f) {}
 
 MapLoader::~MapLoader() {}
