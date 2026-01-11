@@ -11,8 +11,8 @@
 #include <fstream>
 
 int main2() {
-    std::fstream f("chunk-0-0.json", std::ios::in | std::ios::binary);
-    std::fstream f2("test.map", std::ios::out | std::ios::trunc);
+    std::fstream f("assets/maps/chunk-0-0.json", std::ios::in | std::ios::binary);
+    std::fstream f2("assets/maps/test.map", std::ios::out | std::ios::trunc);
     MapSaver saver(f2);
     std::string json;
     {
@@ -24,7 +24,20 @@ int main2() {
     saver.fromEditor(json, 0, 0);
     saver.~MapSaver();
     f2.close();
-    std::fstream f3("test.map", std::ios::in | std::ios::binary);
+
+    std::fstream f3("assets/maps/test.map", std::ios::out | std::ios::trunc);
+    std::string json2;
+    {
+        std::string line;
+        while (std::getline(f, line)) {
+            json2 += line + "\n";
+        }
+    }
+    saver.fromEditor(json2, 0, 0);
+    saver.~MapSaver();
+    f2.close();
+
+    std::fstream f3("assets/maps/test.map", std::ios::in | std::ios::binary);
 
     MapLoader loader(f3);
     auto walls = loader.getAll();
