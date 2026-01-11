@@ -4,7 +4,6 @@
 #include <iostream>
 #include <raylib.h>
 #include "Scenes/main_menu.hpp"
-#include "Scenes/Test.hpp"
 #include "level_editor/scene_level_editor.hpp"
 
 
@@ -34,7 +33,6 @@ int main() {
             sceneMainMenu(windowWidth, windowHeight, shouldQuit, state);
             break;
         case 1:
-            sceneTest(shouldQuit, state);
             break;
         case 2:
             sceneLevelEditor(shouldQuit, state, windowHeight, windowWidth);
