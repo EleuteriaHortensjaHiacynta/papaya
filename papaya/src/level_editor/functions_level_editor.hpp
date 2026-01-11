@@ -78,20 +78,6 @@ inline void autoSave(std::shared_ptr<InteractiveGrid> grid) {
 	grid->chunkToJson(saveDir.string().c_str(), 0, 0);
 }
 
-inline void subgridSetup(std::shared_ptr<Grid> subGrid, std::shared_ptr<Grid> grid, int row, int column) {
-	grid->insertWidget(row, column, subGrid);
-
-	// .get gives a raw pointer instead of shared ptr
-	subGrid->setParent(grid.get());
-	subGrid->setPosition(grid->cells[row][column].rect);
-	subGrid->expandSubgridToFillCell();
-}
-
-inline void gridButtonSetup(std::shared_ptr<Grid> grid, std::shared_ptr<Button> button, int row, int column) {
-	grid->insertWidget(row, column, button);
-	button->setPosition(grid->cells[row][column].rect);
-}
-
 inline void changeDisplayedCoordinate(std::shared_ptr<Button> button, std::string coordinate, int value) {
 	std::string text = coordinate + std::to_string(value);
 	button->addText(text.c_str(), 26, WHITE);

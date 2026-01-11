@@ -342,15 +342,12 @@ public:
 		DrawRectangleLinesEx(selectedCell, 2, WHITE);
 	}
 
+	//used for setup 
 	//loops through the grid and calls the draw function on every widget inside
 	//if there is no widget it draws a gray square border instead
-	void draw() override {
+	void drawGuide() {
 		for (int i = 0; i < mRows; i++) {
 			for (int j = 0; j < mColumns; j++) {
-
-				/*Rectangle originOffset = cells[i][j].rect;
-				originOffset.x += originX;
-				originOffset.y += originY;*/
 
 				if (cells[i][j].widget != nullptr) {
 					//cells[i][j].widget->setPosition(originOffset);
@@ -362,6 +359,20 @@ public:
 			}
 		}
 	}
+
+	//only draws the widgets inside its cells
+	void draw() override {
+		for (int i = 0; i < mRows; i++) {
+			for (int j = 0; j < mColumns; j++) {
+
+				if (cells[i][j].widget != nullptr) {
+					cells[i][j].widget->draw();
+				}
+
+			}
+		}
+	}
+
 
 	//changes the origin of the grid and readjusts the cells
 	void setPosition(Rectangle rect) override {

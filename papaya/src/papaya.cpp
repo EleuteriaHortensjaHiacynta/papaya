@@ -13,7 +13,7 @@ int main() {
 
     int windowHeight = 900;
     int windowWidth = 1600;
-    int state = 2;
+    int state = 0;
     bool shouldQuit = false;
 
     InitWindow(windowWidth, windowHeight, "papaya");
@@ -38,8 +38,10 @@ int main() {
             break;
         case 2:
             sceneLevelEditor(shouldQuit, state, windowHeight, windowWidth);
+            break;
         default:
             sceneMainMenu(windowWidth, windowHeight, shouldQuit, state);
+            break;
         }
     }
 
