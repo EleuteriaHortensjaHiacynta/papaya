@@ -10,7 +10,7 @@
 
 
 void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int windowWidth) {
-	shouldQuit = true;
+	bool shouldLeave = false;
 
 	const int TILE_SIZE = 8;
 	const int SPRITE_SIZE = 16;
@@ -308,18 +308,6 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pSaveToImage->addText("Save as image", 20, WHITE);
 
 
-	//pSaveButton->storeFunction([&]() {
-	//	std::string path = saveChunkDialog("Save Chunk File", chunkX, chunkY);
-	//	if (!path.empty()) {
-	//		//control output
-	//		std::cout << "Selected file to open: " << path << std::endl;
-	//		pDrawingScreen->chunkToJson(path, chunkX, chunkY);
-	//		//more control outputs
-	//		std::cout << "Saved chunk to: " << path << std::endl;
-	//	}
-	//	}
-	//);
-
 	pSaveToImage->storeFunction([&]() {
 		std::string path = saveChunkToImage("Save chunk as image");
 		if (!path.empty()) {
@@ -374,23 +362,38 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	);
 
 	//=====================================================================================================================
+	// return to main menu
+	//=====================================================================================================================
+
+	auto pBackToMainMenu = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+	pBackToMainMenu->addText("Back to main menu", 18, WHITE);
+
+	gridButtonSetup(pTopGrid, pBackToMainMenu, 0, 8);
+
+	pBackToMainMenu->storeFunction([&]() {
+		changeScene(state, 0, shouldLeave);
+		}
+	);
+
+
+	//=====================================================================================================================
 	// filler buttons for the top grid
 	//=====================================================================================================================
 
 	auto pSlot7 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
 	auto pSlot8 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
-	auto pSlot9 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+
 
 	gridButtonSetup(pTopGrid, pSlot7, 0, 6);
 	gridButtonSetup(pTopGrid, pSlot8, 0, 7);
-	gridButtonSetup(pTopGrid, pSlot9, 0, 8);
+
 
 	//=====================================================================================================================
 	//main loop
 	//=====================================================================================================================
 
 
-	while(!WindowShouldClose()) {
+	while(!WindowShouldClose() && !shouldLeave && (state == 2)) {
 
 		deltaTime = GetFrameTime();
 		autoSaveTimer += deltaTime;
