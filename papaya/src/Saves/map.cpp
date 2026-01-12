@@ -3,7 +3,9 @@
 #include <fstream>
 #include <algorithm>
 #include <stdexcept>
-#include <nlohmann/json.hpp>
+// #include <nlohmann/json.hpp>
+#include "../external_headers/json.hpp"
+using json = nlohmann::json;
 
 #include "map.hpp"
 

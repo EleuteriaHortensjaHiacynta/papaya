@@ -19,8 +19,9 @@ set(PAPAYA_SOURCES
   src/Entities/Enemy.h
   src/Entities/Player.h
   src/Entities/Wall.h
-  src/GUI/GUIRayLib.h
-  src/Scenes/MainMenu.h
+  src/GUI/GUI_raylib.hpp
+  src/Scenes/main_menu.hpp
+  src/Scenes/scene_functions.hpp
   src/Scenes/scene_test_room.h
   # add other .cpp/.h here
 )

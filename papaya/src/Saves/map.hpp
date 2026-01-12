@@ -5,17 +5,14 @@
 #include <string>
 #include <array>
 #include "../Entities/Wall.h"
+#include "../external_headers/json.hpp"
+
+using json = nlohmann::json;
 
 #define BLOCK_SIZE sizeof(uint64_t)
 
 // string[64][64]
 typedef std::array<std::array<std::string, 64>, 64> chunkTiles;
-
-struct Chunk {
-    int chunkX;
-    int chunkY;
-    chunkTiles data;
-};
 
 enum class Layers : uint8_t {
     GUI = 0,
@@ -63,7 +60,7 @@ private:
 public:
     explicit MapLoader(std::fstream& f);
     std::vector<Wall> getAll();
-    std::vector<Chunk> toChunks();
+    // std::vector<Chunk> toChunks();
     std::string toEditorJson();
 
     ~MapLoader();
