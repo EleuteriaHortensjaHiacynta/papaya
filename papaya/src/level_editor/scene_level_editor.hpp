@@ -23,9 +23,6 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	float autoSaveTimer = 0.0f;
 	float deltaTime = 0.0f;
 	float selectionScrollTimer = 0.0f;
-	
-	std::time_t currentTime;
-	std::tm localTime;
 
 
 	Texture2D textureAtlas = LoadTexture("assets/tiles/atlas_512x512.png");
@@ -399,13 +396,10 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		autoSaveTimer += deltaTime;
 		// time between auto saves
 		float autoSaveInterval = 5 * 60.0f;
-		currentTime = std::time(nullptr);
-
-		localtime_s(&localTime, &currentTime);
 
 		if (autoSaveTimer >= autoSaveInterval) {
 			autoSave(pDrawingScreen);
-			std::cout << "Auto save complete. " << std::put_time(&localTime, "%H:%M:%S") << std::endl;
+			std::cout << "Auto save complete. " << std::endl;
 			autoSaveTimer = 0.0f;
 		}
 
