@@ -28,15 +28,13 @@ inline float smoothing(float current, float target, float speed) {
 	return current + (target - current) * (1.0f - expf(-speed * GetFrameTime()));
 }
 
-inline void shiftingBackground(Texture2D image, Vector2 mouse, int windowWidth, int windowHeight, float xShift, float yShift, float time) {
-	static float shiftX = 0.0f;
-	static float shiftY = 0.0f;
+inline void shiftingBackground(Texture2D image, Vector2 mouse, int windowWidth, int windowHeight, float xShift, float yShift, float time, float &shiftX, float &shiftY) {
 	
 	float x = mouse.x * 0.1f / (windowWidth * 5.0f);
 	float y = mouse.y * 0.1f / (windowHeight * 5.0f);
 
-	float baseX = sinf(time * 0.25f) * 0.005f;
-	float baseY = cosf(time * 0.25f) * 0.005f;
+	float baseX = sinf(time * 0.25f) * 0.005f * xShift;
+	float baseY = cosf(time * 0.25f) * 0.005f * yShift;
 	
 	float mouseShiftX = x * xShift;
 	float mouseShiftY = y * yShift;

@@ -17,6 +17,13 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
 	float backgroundAnimationX = 0;
 	float backgroundAnimationY = 0;
 
+	float starsSmall0X = 0.0f;
+	float starsSmall0Y = 0.0f;
+	float starsSmall1X = 0.0f;
+	float starsSmall1Y = 0.0f;
+	float starsBigX = 0.0f;
+	float starsBigY = 0.0f;
+
 	bool shouldLeave = false;
 	Texture2D noStarsBackground = LoadTexture("assets/backgrounds/background_no_stars.png");
 	Texture2D starsBigBackground = LoadTexture("assets/backgrounds/background_stars_big.png");
@@ -110,11 +117,11 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
 		ClearBackground(GREEN);
 		DrawTexturePro(noStarsBackground, Rectangle{ (float)noStarsBackground.width, (float)noStarsBackground.height, (float)noStarsBackground.width, (float)noStarsBackground.height}, Rectangle{ 0, 0, (float)windowWidth, (float)windowHeight }, { 0, 0 }, 0.0f, WHITE);
 		
-		shiftingBackground(starsSmall0Background, mouse, windowWidth, windowHeight, -0.75, 0.75, time);
+		shiftingBackground(starsSmall0Background, mouse, windowWidth, windowHeight, -0.75, 0.75, time, starsSmall0X, starsSmall0Y);
 
-		shiftingBackground(starsSmall1Background, mouse, windowWidth, windowHeight, -0.75, 0.75, time);
+		shiftingBackground(starsSmall1Background, mouse, windowWidth, windowHeight, -0.75, 0.75, time, starsSmall1X, starsSmall1Y);
 
-		shiftingBackground(starsBigBackground, mouse, windowWidth, windowHeight, 1.5, 1.5, time);
+		shiftingBackground(starsBigBackground, mouse, windowWidth, windowHeight, 1.5, 1.5, time, starsBigX, starsBigY);
 		pMainGrid->draw();
 
 		EndDrawing();
