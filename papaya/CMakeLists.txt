@@ -29,6 +29,9 @@ set(PAPAYA_SOURCES
 # Prefer listing .cpp files explicitly; adjust to match your tree:
 set(PAPAYA_CPP
   src/papaya.cpp
+  src/Saves/map.cpp
+  # src/Saves/entities.cpp
+  src/external_headers/tinyfiledialogs.cpp
   # add other .cpp files
 )
 
@@ -36,6 +39,7 @@ add_executable(papaya ${PAPAYA_CPP} ${PAPAYA_SOURCES})
 
 # Include directories so headers are found with #include "..."
 target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/external_headers)
 
 include(FetchContent)
 
