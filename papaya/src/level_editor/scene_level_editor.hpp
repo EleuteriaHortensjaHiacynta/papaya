@@ -396,6 +396,9 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		autoSaveTimer += deltaTime;
 		// time between auto saves
 		float autoSaveInterval = 5 * 60.0f;
+		currentTime = std::time(nullptr);
+
+		// localtime_s(&localTime, &currentTime);
 
 		if (autoSaveTimer >= autoSaveInterval) {
 			autoSave(pDrawingScreen);
