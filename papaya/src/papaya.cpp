@@ -11,6 +11,32 @@
 #include "Scenes/main_menu.hpp"
 #include "level_editor/scene_level_editor.hpp"
 #include "Saves/map.hpp"
+#include "Saves/entities.hpp"
+
+// int main() {
+//     // Open file for read+write in binary mode (create/truncate) so saver can both write and later read for sorting
+//     std::fstream f("Assets/entities.dat", std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+
+//     {
+//         EntitySaver saver(f);
+//         saver.addEntityS({ 100, 150, PLAYER, 5 });
+//         saver.addEntityS({ 100, 150, ENEMY, 5 });
+//         // let saver be destroyed at end of scope to flush/sort
+//     }
+//     f.close();
+
+//     std::cout << "Entities saved to file.\n";
+//     std::fstream f2("Assets/entities.dat", std::ios::in | std::ios::binary);
+//     EntityLoader loader(f2);
+//     auto entities = loader.getAll();
+//     std::cout << "Entities loaded from file:\n";
+//     std::cout << "Loaded " << entities.size() << " entities from file.\n";
+
+//     for (const auto& entity : entities) {
+//         std::cout << "Entity Type: " << entity.entityType << ", Position: (" << entity.x << ", " << entity.y << "), Health: " << static_cast<int>(entity.health) << "\n";
+//     }
+//     return 0;
+// }
 
 int main() {
 

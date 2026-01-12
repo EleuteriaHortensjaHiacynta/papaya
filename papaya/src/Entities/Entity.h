@@ -9,6 +9,7 @@ public:
 	Vector2 mPosition;
 	EntityType mType;
 	bool mActive = true;
+	int mHealth = 1;
 
 	// konstruktor
 	Entity(Vector2 pos, EntityType t) : mPosition(pos), mType(t) {}

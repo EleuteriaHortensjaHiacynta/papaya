@@ -3,9 +3,7 @@
 #include <fstream>
 #include <algorithm>
 #include <stdexcept>
-// #include <nlohmann/json.hpp>
-#include "../external_headers/json.hpp"
-using json = nlohmann::json;
+#include <nlohmann/json.hpp>
 
 #include "map.hpp"
 
@@ -18,7 +16,7 @@ struct EditorBlock {
     uint8_t textureID;
 };
 
-Block EditorBlockToBlock(const EditorBlock& eBlock, int16_t x, int16_t y, uint8_t x_length, uint8_t y_length) {
+Block EditorBlockToBlock(const EditorBlock& eBlock, uint16_t x, uint16_t y, uint8_t x_length, uint8_t y_length) {
     Block block;
     block.x = x;
     block.y = y;
@@ -131,8 +129,8 @@ void MapSaver::fromEditor(std::string json, int chunkX, int chunkY) {
         eBlock.layer = item.value("layer", 0); // Default to BACKGROUND
         eBlock.textureID = item.value("textureID", 0);
 
-        uint16_t x = j + static_cast<uint16_t>(chunkX * 64);
-        uint16_t y = i + static_cast<uint16_t>(chunkY * 64);
+        uint16_t x = i + static_cast<uint16_t>(chunkX * 64);
+        uint16_t y = j + static_cast<uint16_t>(chunkY * 64);
         uint8_t x_length = 1;
         uint8_t y_length = 1;
 

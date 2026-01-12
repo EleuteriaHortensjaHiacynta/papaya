@@ -30,7 +30,7 @@ set(PAPAYA_SOURCES
 set(PAPAYA_CPP
   src/papaya.cpp
   src/Saves/map.cpp
-  # src/Saves/entities.cpp
+  src/Saves/entities.cpp
   src/external_headers/tinyfiledialogs.cpp
   # add other .cpp files
 )
