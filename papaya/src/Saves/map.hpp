@@ -8,7 +8,6 @@
 #include "../external_headers/json.hpp"
 
 using json = nlohmann::json;
-#include "GUI/GUI_raylib.hpp"
 
 #define BLOCK_SIZE sizeof(uint64_t)
 
