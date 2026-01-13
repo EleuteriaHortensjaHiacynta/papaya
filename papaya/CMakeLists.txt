@@ -23,6 +23,9 @@ set(PAPAYA_SOURCES
   src/Scenes/main_menu.hpp
   src/Scenes/scene_functions.hpp
   src/Scenes/scene_test_room.h
+  src/Saves/entities.hpp 
+  src/Saves/map.hpp
+  src/Saves/saves.hpp
   # add other .cpp/.h here
 )
 
@@ -30,7 +33,8 @@ set(PAPAYA_SOURCES
 set(PAPAYA_CPP
   src/papaya.cpp
   src/Saves/map.cpp
-  # src/Saves/entities.cpp
+  src/Saves/saves.cpp
+  src/Saves/entities.cpp
   src/external_headers/tinyfiledialogs.cpp
   # add other .cpp files
 )
@@ -83,5 +87,5 @@ set_target_properties(papaya PROPERTIES
 add_custom_command(TARGET papaya POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/assets
-    ${CMAKE_BINARY_DIR}/bin/Assets
+    ${CMAKE_BINARY_DIR}/bin/assets
 )
