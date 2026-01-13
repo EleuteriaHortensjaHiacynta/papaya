@@ -53,7 +53,7 @@ bool Saves::isSaveAvailable() {
 }
 
 EntityLoader Saves::getEntities() {
-    if (!isSaveAvailable()) {
+    if (isSaveAvailable()) {
         return entitySavesLoader;
     }
     return entityLoader;
@@ -88,6 +88,7 @@ void Saves::loadFromEditorDir(std::string pathToFolder) {
             fileStream.close();
 
             mapSaver.fromEditor(jsonContent);
+            entitySaver.fromEditor(jsonContent);
         }
     }
 }

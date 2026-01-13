@@ -6,6 +6,7 @@
 #include "../Entities/Enemy.h"
 #include "../Entities/Entity.h"
 #include "../Entities/Player.h"
+#include "../external_headers/json.hpp"
 
 
 // Sort comparator: by x then y
@@ -66,6 +67,37 @@ void EntitySaver::addEntity(std::unique_ptr<Entity> entity) {
     entityS.health = static_cast<uint8_t>(entity->mHealth);
 
     addEntityS(entityS);
+}
+
+void EntitySaver::fromEditor(std::string json) {
+    using jsonn = nlohmann::json;
+    auto doc = jsonn::parse(json);
+    auto arr = doc["chunkData"]["entities"];
+    int chunkX = doc["chunkData"]["x"].get<int>();
+    int chunkY = doc["chunkData"]["y"].get<int>();
+    if (arr.is_null() || !arr.is_array() || arr.size() == 0) {
+        throw std::invalid_argument("Invalid JSON: 'chunkData.entities' is missing or not an array.");
+    }
+
+    for (long unsigned int i = 0; i < arr.size(); ++i) {
+        for (long unsigned int j = 0; j < arr[i].size(); ++j) {
+        uint8_t item = arr[i][j];
+
+        if (item == 0) continue; // Pomijamy puste miejsca
+        std::cout << "Entity item: " << static_cast<int>(item) << " at chunk pos (" << i << ", " << j << ")\n";
+        
+        uint16_t x = i + static_cast<uint16_t>(chunkX * 64);
+        uint16_t y = j + static_cast<uint16_t>(chunkY * 64);
+
+        EntityS entity = {
+            x,
+            y,
+            static_cast<EntityType>(item),
+            0
+        };
+        this->addEntityS(entity);
+        }
+    }
 }
 
 // void EntitySaver::sortEntities() {

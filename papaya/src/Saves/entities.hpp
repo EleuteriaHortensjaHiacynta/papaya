@@ -29,6 +29,7 @@ public:
     void addEntityS(EntityS entity);
     void addEntity(std::unique_ptr<Entity> entity);
     // void sortEntities();
+    void fromEditor(std::string json);
     ~EntitySaver();
 };
 
