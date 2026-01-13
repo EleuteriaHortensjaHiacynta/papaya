@@ -1,350 +1,328 @@
 #pragma once
+
 #include "raylib.h"
+
 #include <vector>
-#include <fstream>
+#include <cmath>
 #include <algorithm>
+#include <iostream>
+
+#include "Saves/save_data.h"
+#include "Saves/save_manager.h"
 #include "Entities/Entity.h"
 #include "Entities/Player.h"
 #include "Entities/Wall.h"
 #include "Entities/Dummy.h"
-#include "Entities/RabbitEnemy.h"
-#include "Saves/map.hpp"
+#include "Entities/Enemy.h"
+#include "Entities/MageBoss.h"
 
-class Enemy : public Entity {
-public:
-    Vector2 mPosition, mVelocity, mSize, mPrevPosition;
-    float mSpeed = 40.0f, mGravity = 500.0f, mHurtTimer = 0.0f;
-    int mHealth = 3;
-    bool mIsFacingRight = true, mIsDead = false;
+inline void ResolveMapCollision(Player* pPlayer, const std::vector<Wall>& mapWalls, float dt) {
+    if (!pPlayer) return;
+    Rectangle pRect = pPlayer->getRect();
 
-    Enemy(float startX, float startY) : Entity({ startX, startY }, ENEMY) {
-        mPosition = { startX, startY }; mPrevPosition = mPosition;
-        mVelocity = { mSpeed, 0 }; mSize = { 16.0f, 16.0f };
-    }
-    void takeDamage(int amount) {
-        mHealth -= amount; mHurtTimer = 0.2f; mVelocity.y = -150.0f;
-        if (mHealth <= 0) mIsDead = true;
-    }
-    void update(float deltaTime) override {
-        if (mIsDead) return;
-        mPrevPosition = mPosition;
-        mVelocity.y += mGravity * deltaTime;
-        mPosition.x += mVelocity.x * deltaTime;
-        mPosition.y += mVelocity.y * deltaTime;
-        if (mHurtTimer > 0) mHurtTimer -= deltaTime;
-    }
-    Rectangle getRect() override { return { mPosition.x, mPosition.y, mSize.x, mSize.y }; }
-    void onCollision(Entity* pOther) override {
-        if (pOther->mType == WALL) {
-            Rectangle otherRect = pOther->getRect();
-            float prevBottom = mPrevPosition.y + mSize.y;
-            float prevRight = mPrevPosition.x + mSize.x;
-            float prevLeft = mPrevPosition.x;
+    pPlayer->mPosition.x += pPlayer->mVelocity.x * dt;
+    pRect = pPlayer->getRect();
 
-            if (prevBottom <= otherRect.y + 5.0f) {
-                mPosition.y = otherRect.y - mSize.y; mVelocity.y = 0;
+    for (const auto& wall : mapWalls) {
+        if (CheckCollisionRecs(pRect, wall.getRect())) {
+            if (pPlayer->mVelocity.x > 0) pPlayer->mPosition.x = wall.getRect().x - pPlayer->mSize.x;
+            else if (pPlayer->mVelocity.x < 0) pPlayer->mPosition.x = wall.getRect().x + wall.getRect().width;
+            pPlayer->mVelocity.x = 0;
+            pRect = pPlayer->getRect();
+        }
+    }
+
+    pPlayer->mPosition.y += pPlayer->mVelocity.y * dt;
+    pRect = pPlayer->getRect();
+
+    for (const auto& wall : mapWalls) {
+        if (CheckCollisionRecs(pRect, wall.getRect())) {
+            if (pPlayer->mVelocity.y > 0) {
+                pPlayer->mPosition.y = wall.getRect().y - pPlayer->mSize.y;
+                pPlayer->mVelocity.y = 0;
+                pPlayer->onGroundHit();
             }
-            else {
-                if (prevRight <= otherRect.x + 5.0f) {
-                    mPosition.x = otherRect.x - mSize.x; mVelocity.x *= -1; mIsFacingRight = !mIsFacingRight;
+            else if (pPlayer->mVelocity.y < 0) {
+                pPlayer->mPosition.y = wall.getRect().y + wall.getRect().height;
+                pPlayer->mVelocity.y = 0;
+            }
+            pRect = pPlayer->getRect();
+        }
+    }
+}
+
+inline void debugRoom(int windowWidth, int windowHeight) {
+    const int gameWidth = 320;
+    const int gameHeight = 180;
+
+    RenderTexture2D target = LoadRenderTexture(gameWidth, gameHeight);
+    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
+
+    SaveData currentSave;
+    Player player(50.0f, 100.0f);
+
+    SaveManager::apply(currentSave, player);
+
+    std::vector<Wall> walls;
+    walls.push_back(Wall(0, 160, 600.0f, 20.0f));
+    walls.push_back(Wall(150, 120, 50.0f, 10.0f));
+    walls.push_back(Wall(250, 90, 50.0f, 10.0f));
+    walls.push_back(Wall(400, 120, 20.0f, 40.0f));
+
+    std::vector<Entity*> entities;
+    Texture2D bossTex = LoadTexture("Assets/mage_boss.png");
+
+    if (SaveManager::saveExists()) {
+        SaveManager::loadFromFile(currentSave);
+        std::cout << "[SAVE] Wczytano zapis!" << std::endl;
+    }
+
+    if (!SaveManager::isEnemyDead(currentSave, 101)) {
+        Dummy* d1 = new Dummy(200, 100);
+        d1->mID = 101;
+        entities.push_back(d1);
+    }
+
+    if (!SaveManager::isEnemyDead(currentSave, 102)) {
+        Enemy* e1 = new Enemy(300, 100);
+        e1->mID = 102;
+        entities.push_back(e1);
+    }
+
+    if (!currentSave.boss1Defeated) {
+        MageBoss* boss = new MageBoss(450, 50, bossTex, &player);
+        boss->mID = 999;
+        entities.push_back(boss);
+    }
+
+    std::vector<Entity*> wallPointers;
+    for (auto& w : walls) wallPointers.push_back(&w);
+
+    Camera2D camera = { 0 };
+    camera.offset = { gameWidth / 2.0f, gameHeight / 2.0f };
+    camera.zoom = 1.0f;
+
+    bool godMode = false;
+    bool showStats = true;
+
+    while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
+        if (dt > 0.05f) dt = 0.05f;
+
+        if (IsKeyPressed(KEY_F4)) godMode = !godMode;
+        if (IsKeyPressed(KEY_F2)) showStats = !showStats;
+        if (IsKeyPressed(KEY_R)) {
+            player.mPosition = { 50, 100 };
+            player.mHealth = player.mMaxHealth;
+        }
+
+        if (IsKeyPressed(KEY_P)) {
+            SaveManager::setCheckpoint(currentSave, player.mPosition.x, player.mPosition.y, "debug_room");
+            SaveManager::saveToFile(currentSave);
+            std::cout << "[SAVE] Zapisano!" << std::endl;
+        }
+
+        SaveManager::collect(currentSave, player);
+
+        player.update(dt);
+        ResolveMapCollision(&player, walls, dt);
+
+        for (auto it = entities.begin(); it != entities.end(); ) {
+            Entity* e = *it;
+
+            MageBoss* mage = dynamic_cast<MageBoss*>(e);
+            if (mage) mage->updateBossLogic(dt, wallPointers);
+            else e->update(dt);
+
+            // === ATAKI GRACZA NA WROGÓW ===
+            if (player.mIsAttacking && CheckCollisionRecs(player.mAttackArea, e->getRect())) {
+                bool alreadyHit = false;
+                for (auto* hit : player.mHitEntities) {
+                    if (hit == e) { alreadyHit = true; break; }
                 }
-                else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) {
-                    mPosition.x = otherRect.x + otherRect.width; mVelocity.x *= -1; mIsFacingRight = !mIsFacingRight;
+
+                if (!alreadyHit) {
+                    if (mage) mage->takeDamage(player.mAttackDamage);
+                    else if (Dummy* dum = dynamic_cast<Dummy*>(e)) dum->takeDamage();
+                    else if (Enemy* en = dynamic_cast<Enemy*>(e)) en->takeDamage(player.mAttackDamage);
+
+                    player.mHitEntities.push_back(e);
+
+                    float playerBottom = player.mPosition.y + player.mSize.y;
+                    float playerTop = player.mPosition.y;
+                    float enemyCenterY = e->mPosition.y + e->mSize.y / 2.0f;
+
+                    bool isBelow = (playerTop > enemyCenterY);
+                    bool isPogo = (playerBottom < enemyCenterY) && (player.mVelocity.y >= 0);
+
+                    if (isBelow) {
+                        // nic
+                    }
+                    else if (isPogo) {
+                        player.mVelocity.y = -250.0f;
+                        player.mCanDash = true;
+                        player.mCanDoubleJump = true;
+                        player.mCanWavedash = true;
+                    }
+                    else {
+                        float recoilForce = 150.0f;
+
+                        if (player.mPosition.x < e->mPosition.x) {
+                            player.mVelocity.x = -recoilForce;
+                        }
+                        else {
+                            player.mVelocity.x = recoilForce;
+                        }
+                    }
                 }
             }
-        }
-    }
-    void draw() override {
-        if (mIsDead) return;
-        Color enemyColor = (mHurtTimer > 0) ? WHITE : GREEN;
-        DrawRectangle((int)mPosition.x, (int)mPosition.y, (int)mSize.x, (int)mSize.y, enemyColor);
-        float eyeOffset = mIsFacingRight ? 8.0f : 2.0f;
-        DrawRectangle((int)mPosition.x + eyeOffset, (int)mPosition.y + 4, 4, 4, BLACK);
-    }
-};
 
-class SceneTestRoom {
-public:
-    std::vector<Entity*> mEntities;
-    std::vector<Entity*> walls;
-    std::vector<Enemy*> enemies;
+            // === ATAKI WROGÓW NA GRACZA ===
+            if (!godMode) {
+                // Kolizja z ciałem wroga (nie Dummy)
+                if (CheckCollisionRecs(player.getRect(), e->getRect())) {
+                    if (!dynamic_cast<Dummy*>(e)) {
+                        player.takeDamage(1);
+                    }
+                }
 
-    Player* pPlayer = nullptr;
-    RabbitEnemy* pRabbit = nullptr;
-    Camera2D mCamera = { 0 };
-    Texture2D texRabbit;
+                // Specjalne ataki bossa
+                if (mage && mage->mState != MageBoss::DYING && mage->mState != MageBoss::INACTIVE) {
 
-    bool mDebugMode = true;
+                    // 1. FIREBALLE
+                    for (auto& fb : mage->mFireballs) {
+                        if (!fb.active) continue;
 
-    SceneTestRoom() {
-        pPlayer = new Player(30, 100);
-        mEntities.push_back(pPlayer);
+                        if (CheckCollisionCircleRec(fb.position, fb.radius, player.getRect())) {
+                            player.takeDamage(1);
+                            fb.active = false;
+                        }
+                    }
 
-        texRabbit = LoadTexture("Assets/rabbit.png");
+                    // 2. LASER
+                    if (mage->mState == MageBoss::LASER_FIRE) {
+                        if (mage->checkLaserCollision(&player)) {
+                            player.takeDamage(1);
+                        }
+                    }
 
-        pRabbit = new RabbitEnemy(180, 100, texRabbit, pPlayer);
-        mEntities.push_back(pRabbit);
-
-        // Ładowanie mapy
-        bool mapLoaded = false;
-        std::fstream f("Assets/maps/test.map", std::ios::in | std::ios::binary);
-        if (f.is_open()) {
-            auto map = MapLoader(f);
-            auto w = map.getAll();
-            for (auto& wall : w) {
-                Wall* wObj = new Wall(wall.mPosition.x, wall.mPosition.y, wall.mSize.x, wall.mSize.y);
-                mEntities.push_back(wObj);
-                walls.push_back(wObj);
+                    // 3. AOE ATAK
+                    if (mage->checkAoeCollision(&player)) {
+                        player.takeDamage(2);
+                        mage->mAoeDealtDamage = true;
+                    }
+                }
             }
-            f.close();
-            mapLoaded = true;
-        }
 
-        if (!mapLoaded || walls.empty()) {
-            CreateTestWalls();
-        }
+            // === SPRAWDZANIE ŚMIERCI WROGÓW ===
+            bool isDead = false;
 
-        mCamera.target = { pPlayer->mPosition.x, pPlayer->mPosition.y };
-        mCamera.offset = { 160.0f, 90.0f };
-        mCamera.rotation = 0.0f;
-        mCamera.zoom = 1.0f;
-    }
-
-    void CreateTestWalls() {
-        Wall* floor = new Wall(0, 200, 400, 32);
-        mEntities.push_back(floor); walls.push_back(floor);
-        Wall* leftWall = new Wall(0, 100, 32, 100);
-        mEntities.push_back(leftWall); walls.push_back(leftWall);
-        Wall* rightWall = new Wall(368, 100, 32, 100);
-        mEntities.push_back(rightWall); walls.push_back(rightWall);
-        Wall* platform = new Wall(150, 150, 100, 16);
-        mEntities.push_back(platform); walls.push_back(platform);
-    }
-
-    ~SceneTestRoom() {
-        // czyszczenie wszystkiego
-        for (Entity* e : mEntities) delete e;
-        mEntities.clear();
-        walls.clear();
-
-        for (Enemy* e : enemies) delete e;
-        enemies.clear();
-        UnloadTexture(texRabbit);
-    }
-
-    void Update(float deltaTime) {
-        if (IsKeyPressed(KEY_F1)) mDebugMode = !mDebugMode;
-
-        if (IsKeyPressed(KEY_F2)) {
-            if (!pRabbit) {
-                pRabbit = new RabbitEnemy(180, 100, texRabbit, pPlayer);
-                mEntities.push_back(pRabbit);
+            if (mage && mage->mState == MageBoss::DYING && !mage->mActive) {
+                isDead = true;
+                currentSave.boss1Defeated = true;
             }
-            else {
-                pRabbit->mPosition = { 180, 100 };
-                pRabbit->mVelocity = { 0, 0 };
-                pRabbit->mState = RabbitEnemy::RABBIT_IDLE;
-                pRabbit->mHealth = 3;
-                pRabbit->mIsDead = false;
-                pRabbit->mActive = true;
-                pRabbit->mFollowTimer = 0;
-                pRabbit->mCurrentFrame = 0;
-                pRabbit->mSize = { 16.0f, 16.0f };
+            if (Enemy* en = dynamic_cast<Enemy*>(e)) {
+                if (en->mIsDead) isDead = true;
             }
-        }
+            if (Dummy* dum = dynamic_cast<Dummy*>(e)) {
+                if (dum->mIsHit) isDead = true;
+            }
 
-        // 1. Aktualizacja encji
-        for (Entity* pEntity : mEntities) {
-            if (pEntity->mActive) {
-                pEntity->update(deltaTime);
-            }
-        }
-
-        // 2. Aktualizacja prostych wrogów
-        for (size_t i = 0; i < enemies.size(); i++) {
-            Enemy* e = enemies[i];
-            e->update(deltaTime);
-            for (Entity* wall : walls) {
-                if (CheckCollisionRecs(e->getRect(), wall->getRect())) e->onCollision(wall);
-            }
-            if (e->mIsDead) {
+            if (isDead && e->mID != -1) {
+                SaveManager::killEnemy(currentSave, e->mID);
+                SaveManager::saveToFile(currentSave);
+                std::cout << "[SAVE] Wrog ID " << e->mID << " zabity!" << std::endl;
                 delete e;
-                enemies.erase(enemies.begin() + i);
-                i--;
+                it = entities.erase(it);
+            }
+            else {
+                ++it;
             }
         }
 
-        // A. Ruszające się obiekty vs Ściany
-        for (Entity* entity : mEntities) {
-            // Sprawdzamy tylko "żywe" byty (Gracz, Wrogowie), pomijamy Ściany (WALL)
-            if (entity->mType == WALL || !entity->mActive) continue;
+        camera.target.x = std::floor(player.mPosition.x);
+        camera.target.y = std::floor(player.mPosition.y);
 
-            for (Entity* wall : walls) { // walls to Twoja osobna lista ścian
-                if (CheckCollisionRecs(entity->getRect(), wall->getRect())) {
-                    entity->onCollision(wall);
-                }
-            }
+        BeginTextureMode(target);
+        ClearBackground({ 40, 44, 52, 255 });
+        BeginMode2D(camera);
+
+        for (const auto& w : walls) DrawRectangleRec(w.getRect(), DARKGRAY);
+
+        for (auto* e : entities) {
+            e->draw();
+            DrawText(TextFormat("ID:%d", e->mID), (int)e->mPosition.x, (int)e->mPosition.y - 12, 5, YELLOW);
         }
 
-        // 4. Kolizja z graczem (Obrażenia)
-        for (Enemy* e : enemies) {
-            if (!e->mIsDead && CheckCollisionRecs(pPlayer->getRect(), e->getRect())) {
-                ApplyDamageToPlayer(e->mPosition.x + e->mSize.x / 2.0f);
-            }
+        player.draw();
+
+        if (currentSave.checkpointX != 0 || currentSave.checkpointY != 0) {
+            DrawCircle((int)currentSave.checkpointX, (int)currentSave.checkpointY, 4, GREEN);
         }
-
-        if (pRabbit && pRabbit->mActive) {
-            bool isAlive = !pRabbit->mIsDead && pRabbit->mState != RabbitEnemy::MONSTER_DYING;
- 
-            bool isDangerous = (pRabbit->mState != RabbitEnemy::RABBIT_IDLE &&
-                pRabbit->mState != RabbitEnemy::RABBIT_HOP &&
-                pRabbit->mState != RabbitEnemy::MORPHING &&
-                pRabbit->mState != RabbitEnemy::UNMORPHING);
-
-            // zadaj obrażenia tylko jeśli żyje oraz jest niebezpieczny
-            if (isAlive && isDangerous) {
-                if (CheckCollisionRecs(pPlayer->getRect(), pRabbit->getRect())) {
-                    ApplyDamageToPlayer(pRabbit->mPosition.x + pRabbit->mSize.x / 2.0f);
-                }
-            }
-        }
-
-        // 5. Atak gracza
-        if (pPlayer->mIsAttacking) {
-            for (Entity* pEntity : mEntities) handlePlayerHit(pPlayer, pEntity);
-            for (Enemy* pEnemy : enemies) handlePlayerHit(pPlayer, pEnemy);
-        }
-
-        // 6. Reset gracza
-        if (pPlayer->mPosition.y > 500) {
-            pPlayer->mPosition = { 30, 100 };
-            pPlayer->mVelocity = { 0, 0 };
-        }
-
-        // 7. Kamera
-        if (pPlayer) {
-            pPlayer->updateAnimation(deltaTime);
-            mCamera.target.x = floorf(pPlayer->mPosition.x);
-            mCamera.target.y = floorf(pPlayer->mPosition.y);
-        }
-
-    }
-
-    void ApplyDamageToPlayer(float enemyCenterX) {
-        if (pPlayer->mInvincibilityTimer <= 0) {
-            pPlayer->mHealth--;
-
-            float playerCenterX = pPlayer->mPosition.x + pPlayer->mSize.x / 2.0f;
-            float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
-
-            pPlayer->mVelocity.x = recoilDir * 300.0f;
-            pPlayer->mVelocity.y = -150.0f;
-            pPlayer->mRecoilTimer = 0.2f;
-            pPlayer->mInvincibilityTimer = 1.0f;
-            pPlayer->mIsDashing = false;
-            pPlayer->mIsAttacking = false;
-        }
-    }
-
-    void Draw() {
-        ClearBackground(DARKGRAY);
-        BeginMode2D(mCamera);
-
-        for (Entity* pEntity : mEntities) {
-            if (pEntity->mActive) pEntity->draw();
-        }
-        for (Enemy* e : enemies) e->draw();
-
-        if (mDebugMode) {
-            for (Entity* wall : walls) DrawRectangleLinesEx(wall->getRect(), 2, RED);
-            DrawRectangleLinesEx(pPlayer->getRect(), 1, GREEN);
-        }
-
-        for (Entity* pEntity : mEntities) {
-            if (pEntity->mActive) pEntity->draw();
-        }
-
-        for (Enemy* e : enemies) e->draw();
-
-        // DEBUG
-        //if (pPlayer && pRabbit) {
-        //    // Rysuj linię między królikiem a graczem
-        //    DrawLineV(
-        //        { pRabbit->mPosition.x + 8, pRabbit->mPosition.y + 8 },
-        //        { pPlayer->mPosition.x + 5, pPlayer->mPosition.y + 7 },
-        //        YELLOW
-        //    );
-        //}
 
         EndMode2D();
+        EndTextureMode();
 
-        // UI
-        DrawText("ARROWS - Move", 10, 10, 10, WHITE);
-        DrawText(TextFormat("HP: %d", pPlayer->mHealth), 10, 30, 20, RED);
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawTexturePro(target.texture,
+            { 0, 0, (float)target.texture.width, -(float)target.texture.height },
+            { 0, 0, (float)windowWidth, (float)windowHeight },
+            { 0, 0 }, 0.0f, WHITE);
 
-        if (mDebugMode) {
-            DrawText("F2 - Reset Rabbit", 10, 105, 10, YELLOW);
-            if (pRabbit) {
-                const char* stateNames[] = { "IDLE", "HOP", "MORPH", "CHARGE", "RUN", "SLIDE", "TURN", "UNMORPH", "DYING" };
-                DrawText(TextFormat("Rabbit State: %s", stateNames[pRabbit->mState]), 10, 135, 10, YELLOW);
+        if (showStats) {
+            int x = 10, y = 10;
+
+            DrawRectangle(x - 5, y - 5, 220, 200, Fade(BLACK, 0.8f));
+            DrawText("=== SAVE DATA ===", x, y, 16, YELLOW);
+            y += 25;
+
+            DrawText(TextFormat("Checkpoint: %.0f, %.0f", currentSave.checkpointX, currentSave.checkpointY), x, y, 10, WHITE);
+            y += 15;
+
+            DrawText(TextFormat("Player HP: %d/%d", player.mHealth, player.mMaxHealth), x, y, 10,
+                player.mHealth > 2 ? GREEN : RED);
+            y += 15;
+
+            DrawText(TextFormat("God Mode: %s", godMode ? "ON" : "OFF"), x, y, 10,
+                godMode ? YELLOW : GRAY);
+            y += 15;
+
+            DrawText("--- UNLOCKS ---", x, y, 10, SKYBLUE); y += 12;
+            DrawText(TextFormat("Double Jump: %s", currentSave.hasDoubleJump ? "YES" : "NO"), x, y, 10,
+                currentSave.hasDoubleJump ? GREEN : GRAY); y += 12;
+            DrawText(TextFormat("Wave Dash: %s", currentSave.hasWaveDash ? "YES" : "NO"), x, y, 10,
+                currentSave.hasWaveDash ? GREEN : GRAY); y += 15;
+
+            DrawText("--- BOSS ---", x, y, 10, SKYBLUE); y += 12;
+            DrawText(TextFormat("Mage Boss: %s", currentSave.boss1Defeated ? "DEFEATED" : "ALIVE"), x, y, 10,
+                currentSave.boss1Defeated ? GREEN : RED); y += 15;
+
+            DrawText("--- DEAD ENEMIES ---", x, y, 10, SKYBLUE); y += 12;
+            if (currentSave.deadEnemies.empty()) {
+                DrawText("(none)", x, y, 10, GRAY);
             }
             else {
-                DrawText("Rabbit DEAD/NULL", 10, 135, 10, RED);
-            }
-        }
-    }
-
-private:
-    void handlePlayerHit(Player* pPlayer, Entity* target) {
-        if (target == pPlayer || target->mType == WALL) return;
-        if (!target->mActive) return;
-
-        if (CheckCollisionRecs(pPlayer->mAttackArea, target->getRect())) {
-            // sprawdamy czy już nie oberwał w tej klatce ataku
-            for (Entity* hit : pPlayer->mHitEntities) if (hit == target) return;
-
-            RabbitEnemy* pRabbitEnemy = dynamic_cast<RabbitEnemy*>(target);
-            if (pRabbitEnemy) {
-                // jeśli królik jest martwy, ignorujemy trafienie całkowicie
-                // (brak obrażeń, brak pogo, brak recoilu)
-                if (pRabbitEnemy->mIsDead) return;
-
-                pRabbitEnemy->takeDamage(1);
-            }
-
-            Dummy* pDummy = dynamic_cast<Dummy*>(target);
-            if (pDummy && !pDummy->mIsHit) pDummy->takeDamage();
-
-            Enemy* pEnemy = dynamic_cast<Enemy*>(target);
-            if (pEnemy) pEnemy->takeDamage(1);
-
-            // dodajemy do listy trafionych (żeby nie bić co klatkę tego samego)
-            pPlayer->mHitEntities.push_back(target);
-
-            WeaponStats stats = pPlayer->getCurrentWeaponStats();
-
-            // Pogo logic (Atak w dół)
-            if (pPlayer->mAttackDir == 2) {
-                pPlayer->mVelocity.y = stats.pogoForce;
-                pPlayer->mIsPogoJump = true;
-                pPlayer->mIsJumping = false;
-                pPlayer->mJumpBufferCounter = 0;
-                pPlayer->mIsDashing = false;
-                pPlayer->mCanDash = true;
-            }
-            // Recoil (Atak w bok)
-            if (pPlayer->mAttackDir == 0) {
-                float playerCenterX = pPlayer->mPosition.x + pPlayer->mSize.x / 2.0f;
-                float enemyCenterX = target->getRect().x + target->getRect().width / 2.0f;
-                float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
-
-                pPlayer->mVelocity.x = recoilDir * stats.recoilSelf;
-                if (pPlayer->mIsGrounded) {
-                    pPlayer->mVelocity.y = -25.0f;
-                    pPlayer->mIsGrounded = false;
+                std::string ids = "";
+                for (int id : currentSave.deadEnemies) {
+                    ids += std::to_string(id) + " ";
                 }
-                pPlayer->mRecoilTimer = 0.20f;
+                DrawText(ids.c_str(), x, y, 10, RED);
             }
         }
+
+        DrawText("F2 - Stats | F4 - God | R - Reset | P - Checkpoint", 10, windowHeight - 25, 12, GRAY);
+        DrawFPS(windowWidth - 80, 10);
+
+        EndDrawing();
     }
-};
+
+    UnloadRenderTexture(target);
+    UnloadTexture(bossTex);
+    for (auto* e : entities) delete e;
+
+    std::cout << "\n=== FINAL SAVE ===" << std::endl;
+    std::cout << "Checkpoint: " << currentSave.checkpointX << ", " << currentSave.checkpointY << std::endl;
+    std::cout << "Boss defeated: " << (currentSave.boss1Defeated ? "YES" : "NO") << std::endl;
+    std::cout << "Dead enemies: " << currentSave.deadEnemies.size() << std::endl;
+}

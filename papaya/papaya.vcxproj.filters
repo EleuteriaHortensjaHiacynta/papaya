@@ -20,6 +20,12 @@
     <Filter Include="src\Entities">
       <UniqueIdentifier>{c0723f7e-7b27-4664-8a23-d6503b2e7a21}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{571a0c6a-6602-4944-bd88-1ebfc470379e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Saves">
+      <UniqueIdentifier>{64860523-2246-4ed7-9b4b-7d991cd75426}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\papaya.cpp">
@@ -55,6 +61,24 @@
     <ClInclude Include="src\Saves\map.hpp" />
     <ClInclude Include="src\Entities\RabbitEnemy.h">
       <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entities\MageBoss.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entities\Bat.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\audio_manager.h">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scenes\debug_room.h">
+      <Filter>src\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Saves\save_data.h">
+      <Filter>Saves</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Saves\save_manager.h">
+      <Filter>Saves</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

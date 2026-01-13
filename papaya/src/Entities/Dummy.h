@@ -17,11 +17,11 @@ public:
 		}
 	}
 
-	Rectangle getRect() override {
+	Rectangle getRect() const override {
 		return { mPosition.x, mPosition.y, 16, 32 }; //16x32
 	}
 
-	void draw() override {
+	void draw() const override {
 		Color color = mIsHit ? RED : GREEN;
 		DrawRectangleRec(getRect(), color);
 	}

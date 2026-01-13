@@ -6,7 +6,6 @@
 class RabbitEnemy : public Entity {
 public:
     Vector2 mVelocity = { 0, 0 };
-    Vector2 mSize = { 16.0f, 16.0f };
     Vector2 mPrevPosition = { 0, 0 };
 
     enum RabbitState {
@@ -414,11 +413,11 @@ public:
         }
     }
 
-    Rectangle getRect() override {
+    Rectangle getRect() const override {
         return { mPosition.x, mPosition.y, mSize.x, mSize.y };
     }
 
-    void draw() override {
+    void draw() const override {
         Rectangle source = {
             (float)mCurrentFrame * SPRITE_SIZE,
             0.0f,
