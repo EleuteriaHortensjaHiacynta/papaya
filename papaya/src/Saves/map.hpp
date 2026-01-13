@@ -49,7 +49,7 @@ public:
     explicit MapSaver(std::fstream& f);
     void addBlock(Block block);
     void sortBlocks();
-    void fromEditor(std::string json, int chunkX, int chunkY);
+    void fromEditor(std::string json);
     ~MapSaver();
 };
 
