@@ -18,15 +18,16 @@ class Saves {
     MapLoader mapLoader;
     MapSaver mapSaver;
 
-    EntityLoader entityLoader;
     EntitySaver entitySaver;
+    EntityLoader entityLoader;
 
-    EntityLoader entitySavesLoader;
     EntitySaver entitySavesSaver;
+    EntityLoader entitySavesLoader;
 
     bool isSaveAvailable();
 
     public:
+    explicit Saves(std::string pathToFolder);
 
     MapLoader getMap();
     MapSaver saveMap();
@@ -37,6 +38,4 @@ class Saves {
     
     // void addIcon();
     // Texture2D getIcon();
-
-    explicit Saves(std::string pathToFolder);
 };
