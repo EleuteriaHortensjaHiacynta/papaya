@@ -402,13 +402,13 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	pSaveAsMap3->addText("Save 3", 20, WHITE);
 
 	pSaveAsMap1->storeFunction([]() {
-		saveAsMap("assets/saves/main_save");
+		saveAsMap("assets/main_save");
 		});
 	pSaveAsMap2->storeFunction([]() {
-		saveAsMap("assets/saves/secondary_save");
+		saveAsMap("assets/secondary_save");
 		});
 	pSaveAsMap3->storeFunction([]() {
-		saveAsMap("assets/saves/tertiary_save");
+		saveAsMap("assets/tertiary_save");
 		});
 
 	//=====================================================================================================================
