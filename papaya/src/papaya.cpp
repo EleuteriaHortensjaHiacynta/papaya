@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Scenes/scene_test_room.h"
 
-#include "Scenes/scene_test_room.h"
 #include "Scenes/main_menu.hpp"
 #include "level_editor/scene_level_editor.hpp"
 #include "Saves/saves.hpp"
@@ -24,6 +23,7 @@ int main2() {
     for (const auto& block : saves.getMap().getAll()) {
         std::cout << "Block at (" << block.mPosition.x << ", " << block.mPosition.y << ") Size: (" << block.mSize.x << ", " << block.mSize.y << ")\n";
     }
+    return 0;
 }
 
 int main() {
@@ -35,6 +35,7 @@ int main() {
     const int gameHeight = 180;
 
     InitWindow(screenWidth, screenHeigt, "Papaya - Test Room");
+    InitAudioDevice();
 
     // Tworzenie wirtualne ekranu
     RenderTexture2D target = LoadRenderTexture(gameWidth, gameHeight);
@@ -71,6 +72,8 @@ int main() {
 
     UnloadRenderTexture(target);
     delete testLevel;
+
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

@@ -7,6 +7,7 @@ enum EntityType { PLAYER, WALL, BULLET, ENEMY };
 class Entity {
 public:
 	Vector2 mPosition;
+	Vector2 mSize;
 	EntityType mType;
 	bool mActive = true;
 	int mHealth = 1;

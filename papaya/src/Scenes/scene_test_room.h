@@ -5,297 +5,452 @@
 #include "Entities/Player.h"
 #include "Entities/Wall.h"
 #include "Entities/Dummy.h"
+#include "Entities/rabbit.h"
+#include "Entities/mage_boss.h"
 #include "Saves/map.hpp"
 
-// --- POPRAWIONA KLASA ENEMY ---
-// Wklejam j� tutaj w ca�o�ci, bo zmiany by�y w �rodku metod.
-// Upewnij si�, �e podmienisz swoj� star� definicj� Enemy na t�.
 class Enemy : public Entity {
 public:
-	Vector2 mPosition;
-	Vector2 mVelocity;
-	Vector2 mSize;
-	// DODANO: Potrzebne do poprawnej kolizji
-	Vector2 mPrevPosition;
+    Vector2 mVelocity;
+    Vector2 mPrevPosition;
 
-	float mSpeed = 40.0f;
-	float mGravity = 500.0f;
-	int mHealth = 3;
+    float mSpeed = 40.0f;
+    float mGravity = 500.0f;
+    int mHealth = 3;
 
-	bool mIsFacingRight = true;
-	bool mIsDead = false;
+    bool mIsFacingRight = true;
+    bool mIsDead = false;
+    float mHurtTimer = 0.0f;
 
-	float mHurtTimer = 0.0f;
+    Enemy(float startX, float startY) : Entity({ startX, startY }, ENEMY) {
+        mPosition = { startX, startY };
+        mPrevPosition = mPosition;
+        mVelocity = { mSpeed, 0 };
+        mSize = { 16.0f, 16.0f };
+    }
 
-	Enemy(float startX, float startY) : Entity({ startX, startY }, ENEMY) {
-		mPosition = { startX, startY };
-		mPrevPosition = mPosition; // Inicjalizacja
-		mVelocity = { mSpeed, 0 };
-		mSize = { 16.0f, 16.0f };
-	}
+    void takeDamage(int amount) {
+        mHealth -= amount;
+        mHurtTimer = 0.2f;
+        mVelocity.y = -150.0f;
+        if (mHealth <= 0) {
+            mIsDead = true;
+        }
+    }
 
-	void takeDamage(int amount) {
-		mHealth -= amount;
-		mHurtTimer = 0.2f;
-		mVelocity.y = -150.0f;
-		if (mHealth <= 0) {
-			mIsDead = true;
-		}
-	}
+    void update(float deltaTime) override {
+        if (mIsDead) return;
 
-	void update(float deltaTime) override {
-		if (mIsDead) return;
+        mPrevPosition = mPosition;
+        mVelocity.y += mGravity * deltaTime;
+        mPosition.x += mVelocity.x * deltaTime;
+        mPosition.y += mVelocity.y * deltaTime;
 
-		// DODANO: Kluczowe dla kolizji!
-		mPrevPosition = mPosition;
+        if (mHurtTimer > 0) mHurtTimer -= deltaTime;
+    }
 
-		mVelocity.y += mGravity * deltaTime;
+    Rectangle getRect() override {
+        return { mPosition.x, mPosition.y, mSize.x, mSize.y };
+    }
 
-		mPosition.x += mVelocity.x * deltaTime;
-		mPosition.y += mVelocity.y * deltaTime;
+    void onCollision(Entity* pOther) override {
+        if (pOther->mType == WALL) {
+            Rectangle otherRect = pOther->getRect();
+            float prevBottom = mPrevPosition.y + mSize.y;
+            float prevRight = mPrevPosition.x + mSize.x;
+            float prevLeft = mPrevPosition.x;
 
-		if (mHurtTimer > 0) {
-			mHurtTimer -= deltaTime;
-		}
-	}
+            if (prevBottom <= otherRect.y + 5.0f) {
+                mPosition.y = otherRect.y - mSize.y;
+                mVelocity.y = 0;
+            }
+            else {
+                if (prevRight <= otherRect.x + 5.0f) {
+                    mPosition.x = otherRect.x - mSize.x;
+                    mVelocity.x *= -1;
+                    mIsFacingRight = !mIsFacingRight;
+                }
+                else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) {
+                    mPosition.x = otherRect.x + otherRect.width;
+                    mVelocity.x *= -1;
+                    mIsFacingRight = !mIsFacingRight;
+                }
+            }
+        }
+    }
 
-	Rectangle getRect() override {
-		return { mPosition.x, mPosition.y, mSize.x, mSize.y };
-	}
-
-	// --- POPRAWIONA KOLIZJA (Skopiowana logika z Playera) ---
-	void onCollision(Entity* pOther) override {
-		if (pOther->mType == WALL) {
-			Rectangle otherRect = pOther->getRect();
-
-			float prevBottom = mPrevPosition.y + mSize.y;
-			float prevRight = mPrevPosition.x + mSize.x;
-			float prevLeft = mPrevPosition.x;
-
-			// Pod�oga
-			if (prevBottom <= otherRect.y + 5.0f) {
-				mPosition.y = otherRect.y - mSize.y;
-				mVelocity.y = 0;
-			}
-			// �ciany boczne (Zawracanie)
-			else {
-				if (prevRight <= otherRect.x + 5.0f) { // Uderzy� z lewej
-					mPosition.x = otherRect.x - mSize.x;
-					mVelocity.x *= -1;
-					mIsFacingRight = !mIsFacingRight;
-				}
-				else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) { // Uderzy� z prawej
-					mPosition.x = otherRect.x + otherRect.width;
-					mVelocity.x *= -1;
-					mIsFacingRight = !mIsFacingRight;
-				}
-			}
-		}
-	}
-
-	void draw() override {
-		if (mIsDead) return;
-		Color enemyColor = (mHurtTimer > 0) ? WHITE : GREEN;
-		DrawRectangle((int)mPosition.x, (int)mPosition.y, (int)mSize.x, (int)mSize.y, enemyColor);
-		float eyeOffset = mIsFacingRight ? 8.0f : 2.0f;
-		DrawRectangle((int)mPosition.x + eyeOffset, (int)mPosition.y + 4, 4, 4, BLACK);
-	}
+    void draw() override {
+        if (mIsDead) return;
+        Color enemyColor = (mHurtTimer > 0) ? WHITE : GREEN;
+        DrawRectangle((int)mPosition.x, (int)mPosition.y, (int)mSize.x, (int)mSize.y, enemyColor);
+        float eyeOffset = mIsFacingRight ? 8.0f : 2.0f;
+        DrawRectangle((int)mPosition.x + (int)eyeOffset, (int)mPosition.y + 4, 4, 4, BLACK);
+    }
 };
 
 // --- SCENA ---
 class SceneTestRoom {
 public:
-	std::vector<Entity*> mEntities;
-	std::vector<Entity*> walls;
-	std::vector<Enemy*> enemies;
+    std::vector<Entity*> mEntities;
+    std::vector<Entity*> walls;
+    std::vector<Enemy*> enemies;
 
-	Player* pPlayer;
-	Camera2D mCamera = { 0 };
+    Player* pPlayer = nullptr;
+    RabbitEnemy* pRabbit = nullptr;
+    MageBoss* pBoss = nullptr;
 
-	SceneTestRoom() {
-		pPlayer = new Player(30, 100);
-		mEntities.push_back(pPlayer);
+    Texture2D texRabbit;
+    Texture2D texBoss;
 
-		mEntities.push_back(new Dummy(180, 128));
+    Camera2D mCamera = { 0 };
+    bool mDebugMode = true;
 
-		auto f = std::fstream("test.map", std::ios::in | std::ios::binary);
-		auto map = MapLoader(f);
-		auto w = map.getAll();
-		for (auto& wall : w) {
-			Wall* wObj = new Wall(wall.mPosition.x, wall.mPosition.y, wall.mSize.x, wall.mSize.y);
-			mEntities.push_back(wObj);
-			walls.push_back(wObj);
-		}
+    SceneTestRoom() {
+        // === GRACZ ===
+        pPlayer = new Player(50, 200);
+        mEntities.push_back(pPlayer);
 
-		// WROGOWIE
-		// Wr�g 1: Nad lew� pod�og� (OK)
-		enemies.push_back(new Enemy(50, 100));
+        // === ŁADOWANIE TEKSTUR ===
+        texRabbit = LoadTexture("Assets/rabbit.png");
+        texBoss = LoadTexture("Assets/mage_boss.png");
 
-		// Wr�g 2: POPRAWIONY SPAWN
-		// Musi by� na lewo od X=220. Dajemy go na X=180, nad Dummy.
-		enemies.push_back(new Enemy(180, 50));
+        // === ARENA WALKI ===
+        // Główna podłoga
+        walls.push_back(new Wall(0, 250, 600, 32));
 
-		mCamera.target = { pPlayer->mPosition.x, pPlayer->mPosition.y };
-		mCamera.offset = { 160.0f, 90.0f };
-		mCamera.rotation = 0.0f;
-		mCamera.zoom = 1.0f;
-	}
+        // Ściany boczne (żeby nie wypaść)
+        walls.push_back(new Wall(-16, 50, 16, 232));   // Lewa
+        walls.push_back(new Wall(600, 50, 16, 232));   // Prawa
 
-	~SceneTestRoom() {
-		for (Entity* e : mEntities) delete e;
-		mEntities.clear();
-		walls.clear();
-		for (Enemy* e : enemies) delete e;
-		enemies.clear();
-	}
+        // Platformy do skakania
+        walls.push_back(new Wall(50, 200, 80, 16));    // Lewa niska
+        walls.push_back(new Wall(470, 200, 80, 16));   // Prawa niska
+        walls.push_back(new Wall(200, 150, 100, 16));  // Środkowa średnia
+        walls.push_back(new Wall(300, 150, 100, 16));  // Środkowa średnia 2
+        walls.push_back(new Wall(250, 100, 100, 16));  // Górna środkowa
 
-	void Update(float deltaTime) {
-		for (Entity* pEntity : mEntities) {
-			if (pEntity->mActive) {
-				pEntity->update(deltaTime);
-			}
-		}
+        // Małe schronienia
+        walls.push_back(new Wall(100, 170, 40, 8));    // Mini platforma lewa
+        walls.push_back(new Wall(460, 170, 40, 8));    // Mini platforma prawa
 
-		// LOGIKA WROG�W
-		for (int i = 0; i < enemies.size(); i++) {
-			Enemy* e = enemies[i];
+        // Dodaj ściany do entities
+        for (auto* w : walls) {
+            mEntities.push_back(w);
+        }
 
-			// 1. Fizyka (Tu dzia�a nowa grawitacja i mPrevPosition)
-			e->update(deltaTime);
+        // === WROGOWIE ===
+        // Rabbit - na lewej platformie
+        pRabbit = new RabbitEnemy(100, 180, texRabbit, pPlayer);
+        mEntities.push_back(pRabbit);
 
-			// 2. Kolizje (Tu dzia�a nowa funkcja onCollision)
-			for (auto& wall : walls) {
-				if (CheckCollisionRecs(e->getRect(), wall->getRect())) {
-					e->onCollision(wall);
-				}
-			}
+        // Boss - w centrum areny, wysoko
+        pBoss = new MageBoss(280, 60, texBoss, pPlayer);
+        pBoss->mActivationDistance = 200.0f; // Aktywuje się gdy gracz się zbliży
+        mEntities.push_back(pBoss);
 
-			if (e->mIsDead) {
-				delete e;
-				enemies.erase(enemies.begin() + i);
-				i--;
-			}
-		}
+        // Dummy do testów
+        mEntities.push_back(new Dummy(500, 200));
 
-		// KOLIZJA GRACZ VS WR�G
-		for (Enemy* e : enemies) {
-			if (!e->mIsDead && CheckCollisionRecs(pPlayer->getRect(), e->getRect())) {
+        // === KAMERA ===
+        mCamera.target = { pPlayer->mPosition.x, pPlayer->mPosition.y };
+        mCamera.offset = { 160.0f, 90.0f };
+        mCamera.rotation = 0.0f;
+        mCamera.zoom = 1.0f;
+    }
 
-				if (pPlayer->mInvincibilityTimer <= 0) {
-					pPlayer->mHealth--;
+    ~SceneTestRoom() {
+        for (Entity* e : mEntities) delete e;
+        mEntities.clear();
+        walls.clear();
 
-					// Obliczanie kierunku odrzutu
-					float playerCenterX = pPlayer->mPosition.x + pPlayer->mSize.x / 2.0f;
-					float enemyCenterX = e->mPosition.x + e->mSize.x / 2.0f;
-					float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
+        for (Enemy* e : enemies) delete e;
+        enemies.clear();
 
-					pPlayer->mVelocity.x = recoilDir * 300.0f;
-					pPlayer->mVelocity.y = -150.0f;
+        UnloadTexture(texRabbit);
+        UnloadTexture(texBoss);
+    }
 
-					pPlayer->mRecoilTimer = 0.2f;
+    void Update(float deltaTime) {
+        // Debug toggle
+        if (IsKeyPressed(KEY_F1)) mDebugMode = !mDebugMode;
 
-					pPlayer->mInvincibilityTimer = 1.0f;
+        // Reset rabbit
+        if (IsKeyPressed(KEY_F2) && pRabbit) {
+            pRabbit->mPosition = { 100, 180 };
+            pRabbit->mVelocity = { 0, 0 };
+            pRabbit->mState = RabbitEnemy::RABBIT_IDLE;
+            pRabbit->mHealth = 3;
+            pRabbit->mIsDead = false;
+            pRabbit->mActive = true;
+        }
 
-					pPlayer->mIsDashing = false;
-					pPlayer->mIsAttacking = false;
-				}
-			}
-		}
+        // Reset boss
+        if (IsKeyPressed(KEY_F3) && pBoss) {
+            pBoss->mPosition = { 280, 60 };
+            pBoss->mHealth = pBoss->mMaxHealth;
+            pBoss->mState = MageBoss::INACTIVE;
+            pBoss->mActive = true;
+            pBoss->mIsEnraged = false;
+            pBoss->mFireballs.clear();
+        }
 
-		for (auto it1 = mEntities.begin(); it1 != mEntities.end(); ++it1) {
-			for (auto it2 = mEntities.begin(); it2 != mEntities.end(); ++it2) {
-				Entity* pA = *it1;
-				Entity* pB = *it2;
-				if (pA == pB) continue;
-				if (!pA->mActive || !pB->mActive) continue;
+        // === UPDATE ENTITIES ===
+        for (Entity* pEntity : mEntities) {
+            if (!pEntity->mActive) continue;
 
-				if (CheckCollisionRecs(pA->getRect(), pB->getRect())) {
-					pA->onCollision(pB);
-				}
-			}
-		}
+            // Special update dla bossa
+            if (pEntity == pBoss && pBoss->mActive) {
+                pBoss->updateBossLogic(deltaTime, walls);
+            }
+            else {
+                pEntity->update(deltaTime);
+            }
+        }
 
-		if (pPlayer->mIsAttacking) {
-			for (Entity* pEntity : mEntities) handlePlayerHit(pPlayer, pEntity);
-			for (Enemy* pEnemy : enemies) handlePlayerHit(pPlayer, pEnemy);
-		}
+        // === UPDATE BASIC ENEMIES ===
+        for (size_t i = 0; i < enemies.size(); i++) {
+            Enemy* e = enemies[i];
+            e->update(deltaTime);
 
-		if (pPlayer->mPosition.y > 500) {
-			pPlayer->mPosition = { 30,100 };
-			pPlayer->mVelocity = { 0,0 };
-		}
+            for (auto& wall : walls) {
+                if (CheckCollisionRecs(e->getRect(), wall->getRect())) {
+                    e->onCollision(wall);
+                }
+            }
 
-		if (pPlayer) {
-			pPlayer->updateAnimation(deltaTime);
-			mCamera.target.x = floor(pPlayer->mPosition.x);
-			mCamera.target.y = floor(pPlayer->mPosition.y);
-		}
-	}
+            if (e->mIsDead) {
+                delete e;
+                enemies.erase(enemies.begin() + i);
+                i--;
+            }
+        }
 
-	void Draw() {
-		ClearBackground(DARKGRAY);
+        // === KOLIZJE ZE ŚCIANAMI ===
+        for (Entity* entity : mEntities) {
+            if (entity->mType == WALL || !entity->mActive) continue;
 
-		BeginMode2D(mCamera);
-		for (Entity* pEntity : mEntities) {
-			if (pEntity->mActive) pEntity->draw();
-		}
-		for (Enemy* e : enemies) {
-			e->draw();
-		}
-		EndMode2D();
+            for (Entity* wall : walls) {
+                if (CheckCollisionRecs(entity->getRect(), wall->getRect())) {
+                    entity->onCollision(wall);
+                }
+            }
+        }
 
-		DrawText("ARROWS - Move / Climb", 10, 10, 10, WHITE);
-		DrawText("SPACE - Jump / Wall Jump", 10, 25, 10, WHITE);
-		DrawText("C - Dash", 10, 40, 10, WHITE);
-		DrawText("Z - Attack (Try Down + Z)", 10, 55, 10, WHITE);
-		//DrawText("X - Spirit Chakram", 10, 70, 10, WHITE);
-		//DrawText("1/2/3 - Change Weapon", 10, 85, 10, WHITE);
-		DrawText(TextFormat("HP : %d",pPlayer->mHealth), 10, 85, 10, WHITE);
-	}
+        // === KOLIZJA GRACZ VS WROGOWIE ===
+        // Basic enemies
+        for (Enemy* e : enemies) {
+            if (!e->mIsDead && CheckCollisionRecs(pPlayer->getRect(), e->getRect())) {
+                ApplyDamageToPlayer(e->mPosition.x + e->mSize.x / 2.0f);
+            }
+        }
+
+        // Rabbit
+        if (pRabbit && pRabbit->mActive && !pRabbit->mIsDead) {
+            bool isDangerous = (pRabbit->mState != RabbitEnemy::RABBIT_IDLE &&
+                pRabbit->mState != RabbitEnemy::RABBIT_HOP &&
+                pRabbit->mState != RabbitEnemy::MORPHING &&
+                pRabbit->mState != RabbitEnemy::UNMORPHING);
+
+            if (isDangerous && CheckCollisionRecs(pPlayer->getRect(), pRabbit->getRect())) {
+                ApplyDamageToPlayer(pRabbit->mPosition.x + pRabbit->mSize.x / 2.0f);
+            }
+        }
+
+        // Boss
+        if (pBoss && pBoss->mActive && pBoss->mState != MageBoss::DYING) {
+            // Fireball collision
+            for (auto& fb : pBoss->mFireballs) {
+                if (fb.active && CheckCollisionCircleRec(fb.position, fb.radius, pPlayer->getRect())) {
+                    ApplyDamageToPlayer(fb.position.x);
+                    fb.active = false;
+                }
+            }
+
+            // Laser collision
+            if (pBoss->mState == MageBoss::LASER_FIRE) {
+                if (pBoss->checkLaserCollision(pPlayer)) {
+                    ApplyDamageToPlayer(pBoss->mPosition.x);
+                }
+            }
+
+            // AOE collision
+            if (pBoss->mState == MageBoss::AOE_ATTACK) {
+                if (pBoss->checkAoeCollision(pPlayer)) {
+                    ApplyDamageToPlayer(pBoss->mPosition.x + pBoss->mSize.x / 2.0f);
+                    pBoss->mAoeDealtDamage = true;
+                }
+            }
+
+            // Body collision
+            if (CheckCollisionRecs(pPlayer->getRect(), pBoss->getRect())) {
+                ApplyDamageToPlayer(pBoss->mPosition.x + pBoss->mSize.x / 2.0f);
+            }
+        }
+
+        // === ATAK GRACZA ===
+        if (pPlayer->mIsAttacking) {
+            for (Entity* pEntity : mEntities) {
+                handlePlayerHit(pPlayer, pEntity);
+            }
+            for (Enemy* pEnemy : enemies) {
+                handlePlayerHit(pPlayer, pEnemy);
+            }
+        }
+
+        // === RESET GRACZA ===
+        if (pPlayer->mPosition.y > 400) {
+            pPlayer->mPosition = { 50, 200 };
+            pPlayer->mVelocity = { 0, 0 };
+        }
+
+        // === ANIMACJA I KAMERA ===
+        pPlayer->updateAnimation(deltaTime);
+        mCamera.target.x = floorf(pPlayer->mPosition.x);
+        mCamera.target.y = floorf(pPlayer->mPosition.y);
+    }
+
+    void ApplyDamageToPlayer(float enemyCenterX) {
+        if (pPlayer->mInvincibilityTimer > 0) return;
+
+        pPlayer->takeDamage(1);
+
+        float playerCenterX = pPlayer->mPosition.x + pPlayer->mSize.x / 2.0f;
+        float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
+
+        pPlayer->mVelocity.x = recoilDir * 300.0f;
+        pPlayer->mVelocity.y = -150.0f;
+        pPlayer->mRecoilTimer = 0.2f;
+        pPlayer->mInvincibilityTimer = 1.0f;
+        pPlayer->mIsDashing = false;
+        pPlayer->mIsAttacking = false;
+    }
+
+    void Draw() {
+        ClearBackground({ 30, 30, 40, 255 });
+
+        BeginMode2D(mCamera);
+
+        // Rysuj ściany
+        for (Entity* pEntity : mEntities) {
+            if (pEntity->mActive) pEntity->draw();
+        }
+
+        // Rysuj basic enemies
+        for (Enemy* e : enemies) {
+            e->draw();
+        }
+
+        // Debug hitboxy
+        if (mDebugMode) {
+            for (Entity* wall : walls) {
+                DrawRectangleLinesEx(wall->getRect(), 1, RED);
+            }
+            DrawRectangleLinesEx(pPlayer->getRect(), 1, GREEN);
+
+            if (pRabbit && pRabbit->mActive) {
+                DrawRectangleLinesEx(pRabbit->getRect(), 1, ORANGE);
+            }
+            if (pBoss && pBoss->mActive) {
+                DrawRectangleLinesEx(pBoss->getRect(), 1, PURPLE);
+            }
+        }
+
+        EndMode2D();
+
+        // === UI ===
+        DrawText("=== CONTROLS ===", 10, 10, 10, WHITE);
+        DrawText("ARROWS - Move", 10, 25, 10, WHITE);
+        DrawText("SPACE - Jump", 10, 40, 10, WHITE);
+        DrawText("C - Dash", 10, 55, 10, WHITE);
+        DrawText("Z - Attack", 10, 70, 10, WHITE);
+
+        DrawText("=== DEBUG ===", 10, 95, 10, YELLOW);
+        DrawText("F1 - Toggle Hitboxes", 10, 110, 10, YELLOW);
+        DrawText("F2 - Reset Rabbit", 10, 125, 10, YELLOW);
+        DrawText("F3 - Reset Boss", 10, 140, 10, YELLOW);
+
+        DrawText(TextFormat("HP: %d", pPlayer->mHealth), 10, 165, 20, RED);
+
+        // Stan wrogów
+        if (pRabbit) {
+            const char* rabbitStates[] = { "IDLE", "HOP", "MORPH", "CHARGE", "RUN", "SLIDE", "TURN", "UNMORPH", "DYING" };
+            DrawText(TextFormat("Rabbit: %s HP:%d", rabbitStates[pRabbit->mState], pRabbit->mHealth),
+                200, 10, 10, pRabbit->mIsDead ? RED : GREEN);
+        }
+
+        if (pBoss) {
+            const char* bossStates[] = { "INACTIVE", "APPEARING", "IDLE", "FIREBALL", "LASER_CHARGE",
+                                         "LASER_FIRE", "VULNERABLE", "TP_OUT", "TP_IN", "AOE", "DYING" };
+            Color bossColor = pBoss->mIsEnraged ? RED : (pBoss->mActive ? GREEN : GRAY);
+            DrawText(TextFormat("Boss: %s HP:%d/%d %s",
+                bossStates[pBoss->mState], pBoss->mHealth, pBoss->mMaxHealth,
+                pBoss->mIsEnraged ? "[ENRAGED]" : ""),
+                200, 25, 10, bossColor);
+        }
+    }
 
 private:
-	void handlePlayerHit(Player* pPlayer, Entity* target) {
-		if (target == pPlayer || target->mType == WALL) return;
+    void handlePlayerHit(Player* pPlayer, Entity* target) {
+        if (target == pPlayer || target->mType == WALL) return;
+        if (!target->mActive) return;
 
-		if (CheckCollisionRecs(pPlayer->mAttackArea, target->getRect())) {
-			bool alreadyHit = false;
-			for (Entity* hit : pPlayer->mHitEntities) {
-				if (hit == target) { alreadyHit = true; break; }
-			}
-			if (alreadyHit) return;
+        if (!CheckCollisionRecs(pPlayer->mAttackArea, target->getRect())) return;
 
-			Dummy* pDummy = dynamic_cast<Dummy*>(target);
-			if (pDummy && !pDummy->mIsHit) pDummy->takeDamage();
+        // Sprawdź czy już trafiony
+        for (Entity* hit : pPlayer->mHitEntities) {
+            if (hit == target) return;
+        }
 
-			Enemy* pEnemy = dynamic_cast<Enemy*>(target);
-			if (pEnemy) pEnemy->takeDamage(1);
+        // Handle different enemy types
+        if (MageBoss* boss = dynamic_cast<MageBoss*>(target)) {
+            if (boss->mState == MageBoss::VULNERABLE) {
+                boss->takeDamage(2);  // Więcej obrażeń gdy vulnerable
+            }
+            else {
+                boss->takeDamage(1);
+            }
+            pPlayer->mHitEntities.push_back(target);
+        }
+        else if (RabbitEnemy* rabbit = dynamic_cast<RabbitEnemy*>(target)) {
+            if (!rabbit->mIsDead) {
+                rabbit->takeDamage(1);
+                pPlayer->mHitEntities.push_back(target);
+            }
+        }
+        else if (Dummy* dummy = dynamic_cast<Dummy*>(target)) {
+            if (!dummy->mIsHit) {
+                dummy->takeDamage();
+                pPlayer->mHitEntities.push_back(target);
+            }
+        }
+        else if (Enemy* enemy = dynamic_cast<Enemy*>(target)) {
+            enemy->takeDamage(1);
+            pPlayer->mHitEntities.push_back(target);
+        }
 
-			pPlayer->mHitEntities.push_back(target);
-			WeaponStats stats = pPlayer->getCurrentWeaponStats();
+        // Pogo i recoil
+        WeaponStats stats = pPlayer->getCurrentWeaponStats();
 
-			if (pPlayer->mAttackDir == 2) {
-				pPlayer->mVelocity.y = stats.pogoForce;
-				pPlayer->mIsPogoJump = true;
-				pPlayer->mIsJumping = false;
-				pPlayer->mJumpBufferCounter = 0;
-				pPlayer->mIsDashing = false;
-				pPlayer->mCanDash = true;
-			}
+        if (pPlayer->mAttackDir == 2) {  // Down attack
+            pPlayer->mVelocity.y = stats.pogoForce;
+            pPlayer->mIsPogoJump = true;
+            pPlayer->mIsJumping = false;
+            pPlayer->mJumpBufferCounter = 0;
+            pPlayer->mIsDashing = false;
+            pPlayer->mCanDash = true;
+        }
 
-			if (pPlayer->mAttackDir == 0) {
-				float playerCenterX = pPlayer->mPosition.x + pPlayer->mSize.x / 2.0f;
-				float enemyCenterX = target->getRect().x + target->getRect().width / 2.0f;
-				float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
+        if (pPlayer->mAttackDir == 0) {  // Side attack
+            float playerCenterX = pPlayer->mPosition.x + pPlayer->mSize.x / 2.0f;
+            float enemyCenterX = target->getRect().x + target->getRect().width / 2.0f;
+            float recoilDir = (playerCenterX < enemyCenterX) ? -1.0f : 1.0f;
 
-				pPlayer->mVelocity.x = recoilDir * stats.recoilSelf;
-				if (pPlayer->mIsGrounded) {
-					pPlayer->mVelocity.y = -25.0f;
-					pPlayer->mIsGrounded = false;
-				}
-				pPlayer->mRecoilTimer = 0.20f;
-				pPlayer->mIsDashing = false;
-				pPlayer->mCanDash = true;
-			}
-		}
-	}
+            pPlayer->mVelocity.x = recoilDir * stats.recoilSelf;
+            if (pPlayer->mIsGrounded) {
+                pPlayer->mVelocity.y = -25.0f;
+                pPlayer->mIsGrounded = false;
+            }
+            pPlayer->mRecoilTimer = 0.20f;
+        }
+    }
 };

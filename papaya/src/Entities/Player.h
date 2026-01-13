@@ -42,12 +42,21 @@ enum AnimState {
 
 class Player : public Entity {
 public:
-	Vector2 mPosition;
 	Vector2 mPrevPosition;
 	Vector2 mVelocity;
-	Vector2 mSize;
 
 	Vector2 mStartPosition;
+
+	// combo
+	int mComboHit = 0;           
+	float mComboTimer = 0.0f;    
+	const float COMBO_WINDOW = 0.5f;
+
+	// sfx
+	Sound mSfxAttack;
+	Sound mSfxJump;
+	Sound mSfxHurt;
+	Sound mSfxDeath;
 
 	// Fizyka
 	float mMaxSpeed = 100.0f;
@@ -169,12 +178,23 @@ public:
 		mWingsActive = false;
 		mFrameRec = { 0.0f, 0.0f, 16.0f, 16.0f };
 		mSize = { 10.0f, 14.0f };
+
+		// SFX
+		mSfxAttack = LoadSound("Assets/sfx/attack.wav");
+		mSfxJump = LoadSound("Assets/sfx/jump.wav");
+		mSfxHurt = LoadSound("Assets/sfx/hurt.wav");
+		mSfxDeath = LoadSound("Assets/sfx/death.wav");
 	}
 
 	~Player() {
 		UnloadTexture(mTexture);
 		UnloadTexture(mSlashTexture);
 		UnloadTexture(mWingsTexture);
+
+		UnloadSound(mSfxAttack);
+		UnloadSound(mSfxJump);
+		UnloadSound(mSfxHurt);
+		UnloadSound(mSfxDeath);
 	}
 
 	// Update przyjmuje list� przeszk�d
@@ -223,9 +243,23 @@ public:
 		// updateAnimation(deltaTime);
 	}
 
+	void playSoundRandom(Sound sound, float minPitch = 0.9f, float maxPitch = 1.1f) {
+		float pitch = minPitch + (float)GetRandomValue(0, 100) / 100.0f * (maxPitch - minPitch);
+		SetSoundPitch(sound, pitch);
+		PlaySound(sound);
+	}
+
+	void takeDamage(int amount) {
+		if (mInvincibilityTimer > 0) return;
+		mHealth -= amount;
+		mInvincibilityTimer = 1.0f;
+		playSoundRandom(mSfxHurt);
+	}
+
 private:
 
 	void respawn() {
+		playSoundRandom(mSfxDeath);
 		mPosition = mStartPosition;
 		mHealth = mMaxHealth;
 		mVelocity = { 0,0 };
@@ -234,6 +268,7 @@ private:
 		mInvincibilityTimer = 0;
 		mIsDashing = false;
 		mCurrentState = IDLE;
+		mComboHit = 0;
 	}
 
 	void handleSacrifice() {
@@ -279,6 +314,12 @@ private:
 			mMomentumTimer -= deltaTime;
 		}
 
+		if (mComboTimer > 0) {
+			mComboTimer -= deltaTime;
+			if (mComboTimer <= 0) {
+				mComboHit = 0;
+			}
+		}
 
 		// Mechanika ataku
 		// attackTimer
@@ -448,6 +489,7 @@ private:
 			// wall jump (odbicie si� od �ciany w skoku)
 			if (mTouchingWall && !mIsGrounded) {
 				mVelocity.y = -mJumpForce;
+				playSoundRandom(mSfxJump, 0.95f, 1.05f);
 
 				float wallJumpKick = 180.0f;
 				mVelocity.x = -mWallDir * wallJumpKick;
@@ -463,12 +505,15 @@ private:
 			
 			// pierwszy skok
 			else if (mCoyoteTimeCounter > 0) {
+				playSoundRandom(mSfxJump, 0.95f, 1.05f);
+
 				mVelocity.y = -mJumpForce;
 				mJumpCount = 1;
 				jumped = true;
 			}
 			//  drugi skok
 			else if (mJumpCount < mMaxJumps) {
+				playSoundRandom(mSfxJump, 1.1f, 1.25f);
 				mVelocity.y = -mJumpForce;
 				mJumpCount++;
 				jumped = true;
@@ -569,6 +614,8 @@ private:
 	void handleAttack(float deltaTime) {
 		if (IsKeyPressed(KEY_Z) && !mIsAttacking) {
 
+			playSoundRandom(mSfxAttack, 0.85f, 1.15f);
+
 			WeaponStats stats = getCurrentWeaponStats();
 
 			mIsAttacking = true;
@@ -578,6 +625,11 @@ private:
 			// HITBOX
 			float reachX = stats.reachX;
 			float reachY = stats.reachY;
+
+			switch (mComboHit) {
+			case 1: reachX *= 1.15f; break;
+			case 2: reachX *= 1.3f; reachY *= 1.2f; break;
+			}
 
 			if (IsKeyDown(KEY_UP)) {
 				mAttackDir = 1;
@@ -613,6 +665,10 @@ private:
 					mAttackArea = { mPosition.x - reachX, mPosition.y + yOffset, reachX, reachY };
 				}
 			}
+
+			mComboHit++;
+			if (mComboHit > 2) mComboHit = 0;
+			mComboTimer = COMBO_WINDOW;
 		}
 	}
 
@@ -784,6 +840,9 @@ public:
 			if (mAttackTimer < 0.1f) slashFrame = 2;
 
 			float spriteSize = 64.0f;
+			float scale = 1.0f;
+			float rotation = 0.0f;
+			Color slashColor = WHITE;
 
 			Rectangle slashSource = { slashFrame * spriteSize, 0.0f, spriteSize, spriteSize };
 
@@ -792,7 +851,6 @@ public:
 			Vector2 playerCenter = { mPosition.x + mSize.x / 2.0f, mPosition.y + mSize.y / 2.0f };
 
 			Vector2 offset = { mIsFacingRight ? 10.0f : -10.0f, 0.0f };
-			float rotation = 0.0f;
 
 			if (mAttackDir == 1) {
 				offset = { 0.0f, -10.0f };
@@ -802,11 +860,28 @@ public:
 				offset = { 0.0f,10.0f };
 				rotation = mIsFacingRight ? 90.0f : -90.0f; // d�
 			}
-			
-			Rectangle dest = { playerCenter.x + offset.x, playerCenter.y + offset.y, spriteSize, spriteSize};
-			Vector2 origin = { spriteSize/2.0f, spriteSize/2.0f }; // �rodek obrotu
+			else {
+				switch (mComboHit) {
+				case 1:
+					rotation = 20.0f;
+					break;
+				case 2:
+					rotation = -25.0f;
+					scale = 1.2f;
+					slashColor = LIGHTGRAY;
+					break;
+				default:
+					rotation = 0.0f;
+					break;
+				}
+				if (!mIsFacingRight) rotation *= -1;
+			}
 
-			DrawTexturePro(mSlashTexture, slashSource, dest, origin, rotation, WHITE);
+			float finalSize = spriteSize * scale;
+			Rectangle dest = { playerCenter.x + offset.x, playerCenter.y + offset.y, finalSize, finalSize};
+			Vector2 origin = { finalSize / 2.0f, finalSize / 2.0f }; // �rodek obrotu
+
+			DrawTexturePro(mSlashTexture, slashSource, dest, origin, rotation, slashColor);
 		}
 
 		// hitbox 10px
