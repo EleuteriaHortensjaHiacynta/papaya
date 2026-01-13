@@ -1,5 +1,4 @@
 #include <string>
-#include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <stdexcept>
@@ -110,15 +109,15 @@ void MapSaver::sortBlocks() {
     if (!(*fileStream)) throw std::runtime_error("Failed to write sorted block data to file.");
 }
 
-void MapSaver::fromEditor(std::string json, int chunkX, int chunkY) {
+void MapSaver::fromEditor(std::string json) {
     using jsonn = nlohmann::json;
-        auto doc = jsonn::parse(json);
-        auto arr = doc["chunkData"]["array"];
+    auto doc = jsonn::parse(json);
+    auto arr = doc["chunkData"]["array"];
+    int chunkX = doc["chunkData"]["x"].get<int>();
+    int chunkY = doc["chunkData"]["y"].get<int>();
     if (arr.is_null() || !arr.is_array() || arr.size() == 0) {
         throw std::invalid_argument("Invalid JSON: 'chunkData.array' is missing or not an array.");
     }
-
-    std::cout << "Parsed " << arr.size() << " blocks from JSON.\n";
 
     for (long unsigned int i = 0; i < arr.size(); ++i) {
         for (long unsigned int j = 0; j < arr[i].size(); ++j) {
@@ -136,7 +135,6 @@ void MapSaver::fromEditor(std::string json, int chunkX, int chunkY) {
 
         Block block = EditorBlockToBlock(eBlock, x, y, x_length, y_length);
         if (block.textureID == 0 && (block.extraData == ExtraData::NONE)) continue; // Skip empty blocks
-        std::cout << "Adding block at (" << block.x << ", " << block.y << ") with textureID " << static_cast<int>(block.textureID) << "\n";
         this->addBlock(block);
         }
     }

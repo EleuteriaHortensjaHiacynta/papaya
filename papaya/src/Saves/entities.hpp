@@ -28,7 +28,7 @@ public:
     explicit EntitySaver(std::fstream& f);
     void addEntityS(EntityS entity);
     void addEntity(std::unique_ptr<Entity> entity);
-    void sortEntities();
+    // void sortEntities();
     ~EntitySaver();
 };
 
@@ -40,7 +40,6 @@ public:
     explicit EntityLoader(std::fstream& f);
     // std::vector<std::unique_ptr<Entity>> getAll();
     std::vector<EntityS> getAll();
-    std::string toEditorJson();
 
     ~EntityLoader();
 };
