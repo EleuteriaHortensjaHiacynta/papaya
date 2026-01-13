@@ -10,33 +10,20 @@
 #include "Scenes/scene_test_room.h"
 #include "Scenes/main_menu.hpp"
 #include "level_editor/scene_level_editor.hpp"
-#include "Saves/map.hpp"
-#include "Saves/entities.hpp"
+#include "Saves/saves.hpp"
 
-// int main() {
-//     // Open file for read+write in binary mode (create/truncate) so saver can both write and later read for sorting
-//     std::fstream f("Assets/entities.dat", std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+int main2() {
+    Saves saves("assets/saves/main_save");
+    saves.loadFromEditorDir("assets/editor/");
 
-//     {
-//         EntitySaver saver(f);
-//         saver.addEntityS({ 100, 150, PLAYER, 5 });
-//         saver.addEntityS({ 100, 150, ENEMY, 5 });
-//         // let saver be destroyed at end of scope to flush/sort
-//     }
-//     f.close();
+    for (const auto& entityS : saves.getEntities().getAll()) {
+        std::cout << "Entity at (" << entityS.x << ", " << entityS.y << ") Type: " << static_cast<int>(entityS.entityType) << " Health: " << static_cast<int>(entityS.health) << std::endl;
+    }
 
-//     std::cout << "Entities saved to file.\n";
-//     std::fstream f2("Assets/entities.dat", std::ios::in | std::ios::binary);
-//     EntityLoader loader(f2);
-//     auto entities = loader.getAll();
-//     std::cout << "Entities loaded from file:\n";
-//     std::cout << "Loaded " << entities.size() << " entities from file.\n";
-
-//     for (const auto& entity : entities) {
-//         std::cout << "Entity Type: " << entity.entityType << ", Position: (" << entity.x << ", " << entity.y << "), Health: " << static_cast<int>(entity.health) << "\n";
-//     }
-//     return 0;
-// }
+    for (const auto& block : saves.getMap().getAll()) {
+        std::cout << "Block at (" << block.mPosition.x << ", " << block.mPosition.y << ") Size: (" << block.mSize.x << ", " << block.mSize.y << ")\n";
+    }
+}
 
 int main() {
 
