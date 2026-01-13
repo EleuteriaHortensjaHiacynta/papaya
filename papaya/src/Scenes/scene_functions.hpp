@@ -47,3 +47,24 @@ inline void shiftingBackground(Texture2D image, Vector2 mouse, int windowWidth, 
 
 	DrawTexturePro(image, Rectangle{ (float)image.width * (0.25f + shiftX), (float)image.height * (0.25f + shiftY), (float)image.width * 0.75f, (float)image.height * 0.75f}, Rectangle{0, 0, (float)windowWidth, (float)windowHeight}, {0, 0}, 0.0f, WHITE);
 }
+
+bool clearDir(const std::filesystem::path& dir) {
+	
+	std::error_code ec;
+
+	std::filesystem::path currentPath = std::filesystem::current_path();
+
+	std::filesystem::path saveDir = currentPath / dir;
+
+	if (!dir.string().starts_with("assets/saves")) return false;
+
+	// Remove everything inside (and the directory itself)
+	std::filesystem::remove_all(saveDir, ec);
+	if (ec) return false;
+
+	// Recreate the directory empty
+	std::filesystem::create_directories(saveDir, ec);
+	if (ec) return false;
+
+	return true;
+}
