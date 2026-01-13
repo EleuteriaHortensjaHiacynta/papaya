@@ -24,58 +24,60 @@ int main2() {
     for (const auto& block : saves.getMap().getAll()) {
         std::cout << "Block at (" << block.mPosition.x << ", " << block.mPosition.y << ") Size: (" << block.mSize.x << ", " << block.mSize.y << ")\n";
     }
-}
 
-int main() {
-
-    const int screenWidth = 1280; //tymczasowo const
-    const int screenHeigt = 720; //tymczasowo const
-
-    const int gameWidth = 320;
-    const int gameHeight = 180;
-
-    InitWindow(screenWidth, screenHeigt, "Papaya - Test Room");
-
-    // Tworzenie wirtualne ekranu
-    RenderTexture2D target = LoadRenderTexture(gameWidth, gameHeight);
-    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // �eby pixele by�y ostre
-    
-    SetTargetFPS(60);
-
-    SceneTestRoom* testLevel = new SceneTestRoom();
-
-    while (!WindowShouldClose()) {
-        float dt = GetFrameTime();
-
-        // Logika
-        testLevel->Update(dt);
-
-        // Rysowanie na ma�ym ekranie
-        BeginTextureMode(target);
-            ClearBackground(RAYWHITE);
-            // Rysowania sceny(gracza+mapy)
-            testLevel->Draw();
-        EndTextureMode();
-
-        // Rysowanie rozci�gni�tego ekranu
-        BeginDrawing();
-            ClearBackground(BLACK);
-            DrawTexturePro(target.texture,
-                { 0.0f, 0.0f, (float)gameWidth, -(float)gameHeight }, // source
-                { 0.0f, 0.0f, (float)screenWidth, (float)screenHeigt }, // dest
-                { 0.0f, 0.0f }, // origin
-                0.0f, // rotation
-                WHITE);
-        EndDrawing();
-    }
-
-    UnloadRenderTexture(target);
-    delete testLevel;
-    CloseWindow();
     return 0;
 }
 
-/*
+//int main() {
+//
+//    const int screenWidth = 1280; //tymczasowo const
+//    const int screenHeigt = 720; //tymczasowo const
+//
+//    const int gameWidth = 320;
+//    const int gameHeight = 180;
+//
+//    InitWindow(screenWidth, screenHeigt, "Papaya - Test Room");
+//
+//    // Tworzenie wirtualne ekranu
+//    RenderTexture2D target = LoadRenderTexture(gameWidth, gameHeight);
+//    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // �eby pixele by�y ostre
+//    
+//    SetTargetFPS(60);
+//
+//    SceneTestRoom* testLevel = new SceneTestRoom();
+//
+//    while (!WindowShouldClose()) {
+//        float dt = GetFrameTime();
+//
+//        // Logika
+//        testLevel->Update(dt);
+//
+//        // Rysowanie na ma�ym ekranie
+//        BeginTextureMode(target);
+//            ClearBackground(RAYWHITE);
+//            // Rysowania sceny(gracza+mapy)
+//            testLevel->Draw();
+//        EndTextureMode();
+//
+//        // Rysowanie rozci�gni�tego ekranu
+//        BeginDrawing();
+//            ClearBackground(BLACK);
+//            DrawTexturePro(target.texture,
+//                { 0.0f, 0.0f, (float)gameWidth, -(float)gameHeight }, // source
+//                { 0.0f, 0.0f, (float)screenWidth, (float)screenHeigt }, // dest
+//                { 0.0f, 0.0f }, // origin
+//                0.0f, // rotation
+//                WHITE);
+//        EndDrawing();
+//    }
+//
+//    UnloadRenderTexture(target);
+//    delete testLevel;
+//    CloseWindow();
+//    return 0;
+//}
+
+
 int main() {
     std::cout << "Hello World!\n";
 
@@ -115,5 +117,5 @@ int main() {
     CloseWindow();
 
     return 0;
-}*/
+}
 

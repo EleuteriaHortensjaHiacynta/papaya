@@ -372,17 +372,54 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		}
 	);
 
+	//=====================================================================================================================
+	// save into a map
+	//=====================================================================================================================
+
+	//button that shows 3 save buttons
+
+	bool showSaves = false;
+
+	auto pShowSaveSlots = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+	gridButtonSetup(pTopGrid, pShowSaveSlots, 0, 7);
+	pShowSaveSlots->addText("Save as a map", 20, WHITE);
+	pShowSaveSlots->storeFunction([&]() {
+		showSaves = !showSaves;
+		});
+
+	auto pSavesGrid = std::make_shared<Grid>(1, 3, 50, windowWidth / 10, 960, 40);
+
+	auto pSaveAsMap1 = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+	auto pSaveAsMap2 = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+	auto pSaveAsMap3 = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
+
+	gridButtonSetup(pSavesGrid, pSaveAsMap1, 0, 0);
+	gridButtonSetup(pSavesGrid, pSaveAsMap2, 0, 1);
+	gridButtonSetup(pSavesGrid, pSaveAsMap3, 0, 2);
+
+	pSaveAsMap1->addText("Save 1", 20, WHITE);
+	pSaveAsMap2->addText("Save 2", 20, WHITE);
+	pSaveAsMap3->addText("Save 3", 20, WHITE);
+
+	pSaveAsMap1->storeFunction([]() {
+		saveAsMap("assets/main_save");
+		});
+	pSaveAsMap2->storeFunction([]() {
+		saveAsMap("assets/secondary_save");
+		});
+	pSaveAsMap3->storeFunction([]() {
+		saveAsMap("assets/tertiary_save");
+		});
 
 	//=====================================================================================================================
 	// filler buttons for the top grid
 	//=====================================================================================================================
 
 	auto pSlot7 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
-	auto pSlot8 = std::make_shared<Button>(b, GRAY, GRAY, GRAY);
+
 
 
 	gridButtonSetup(pTopGrid, pSlot7, 0, 6);
-	gridButtonSetup(pTopGrid, pSlot8, 0, 7);
 
 
 	//=====================================================================================================================
@@ -449,7 +486,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 			!CheckCollisionPointRec(MousePosition::sMousePos, pScrollPanel->getRect()) &&
 			!CheckCollisionPointRec(MousePosition::sMousePos, pEntityPanel->getRect()) &&
 			(!CheckCollisionPointRec(MousePosition::sMousePos, cheatsheetRect) || !isCheatsheetVisible)
-			) {
+			 && (!CheckCollisionPointRec(MousePosition::sMousePos, Rectangle{ pSavesGrid->cells[0][0].rect.x, pSavesGrid->cells[0][0].rect.y, (float) pSavesGrid->columnWidth*3, (float) pSavesGrid->rowHeight }) || !showSaves) ) {
 			shouldpDrawingScreenInteract = true;
 		}
 		else shouldpDrawingScreenInteract = false;
@@ -542,7 +579,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 			if (IsKeyPressed(KEY_V)) pDrawingScreen->pasteSelectionBox();
 		}
 		
-		
+		if (showSaves) pSavesGrid->draw();
 
 
 		EndDrawing();

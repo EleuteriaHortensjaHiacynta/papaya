@@ -8,13 +8,14 @@
 #include <iomanip>
 
 #include "external_headers/tinyfiledialogs.hpp"
+#include "Saves/saves.hpp"
 
 
 inline std::string openChunkDialog(const char *tittle = "Select file to open") {
 
 	std::filesystem::path currentPath = std::filesystem::current_path();
 
-	std::filesystem::path saveDir = currentPath / "saved_chunks/";
+	std::filesystem::path saveDir = currentPath / "assets/editor/";
 
 	if (!std::filesystem::exists(saveDir)) {
 		std::filesystem::create_directory(saveDir);
@@ -32,7 +33,7 @@ inline std::string saveChunkDialog(const char* title = "Select file to save", in
 
 	std::filesystem::path currentPath = std::filesystem::current_path();
 
-	std::filesystem::path saveDir = currentPath / "saved_chunks";
+	std::filesystem::path saveDir = currentPath / "assets/editor/";
 
 	if (!std::filesystem::exists(saveDir)) {
 		std::filesystem::create_directory(saveDir);
@@ -68,7 +69,7 @@ inline std::string saveChunkToImage(const char* title) {
 inline void autoSave(std::shared_ptr<InteractiveGrid> grid) {
 	std::filesystem::path currentPath = std::filesystem::current_path();
 
-	std::filesystem::path saveDir = currentPath / "saved_chunks/";
+	std::filesystem::path saveDir = currentPath / "assets/editor/";
 
 	if (!std::filesystem::exists(saveDir)) {
 		std::filesystem::create_directory(saveDir);
@@ -296,3 +297,14 @@ inline void selectionMoveFast(std::shared_ptr<InteractiveGrid> grid, bool& selec
 	}
 	else selectionScrollTimer = scrollDelay;
 }
+
+inline void saveAsMap(std::string path) {
+	Saves saves(path);
+	saves.loadFromEditorDir("assets/editor/");
+}
+
+
+
+
+
+
