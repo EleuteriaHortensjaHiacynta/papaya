@@ -14,11 +14,12 @@
 
 int main2() {
     Saves saves("assets/saves/main_save");
-    saves.loadFromEditorDir("assets/editor/");
+    // saves.loadFromEditorDir("assets/editor/");
 
     for (const auto& entityS : saves.getEntities().getAll()) {
         std::cout << "Entity at (" << entityS.x << ", " << entityS.y << ") Type: " << static_cast<int>(entityS.entityType) << " Health: " << static_cast<int>(entityS.health) << std::endl;
     }
+
 
     for (const auto& block : saves.getMap().getAll()) {
         std::cout << "Block at (" << block.mPosition.x << ", " << block.mPosition.y << ") Size: (" << block.mSize.x << ", " << block.mSize.y << ")\n";
