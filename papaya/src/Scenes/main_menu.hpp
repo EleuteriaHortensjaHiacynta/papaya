@@ -64,6 +64,10 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
 	auto pDeleteSave1Button = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
 	pDeleteSave1Button->addText("Delete save 1", 40, WHITE);
 
+	pDeleteSave1Button->storeFunction([]() {
+		clearDir("assets/saves/main_save");
+		});
+
 	gridButtonSetup(pMainGrid, pDeleteSave1Button, 4, 0);
 
 	auto pDeleteSave2Button = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
@@ -71,10 +75,18 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
 
 	gridButtonSetup(pMainGrid, pDeleteSave2Button, 5, 0);
 
+	pDeleteSave2Button->storeFunction([]() {
+		clearDir("assets/saves/secondary_save");
+		});
+
 	auto pDeleteSave3Button = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
 	pDeleteSave3Button->addText("Delete save 3", 40, WHITE);
 
 	gridButtonSetup(pMainGrid, pDeleteSave3Button, 6, 0);
+
+	pDeleteSave3Button->storeFunction([]() {
+		clearDir("assets/saves/tertiary_save");
+		});
 
 
 	//=====================================================================================================================
