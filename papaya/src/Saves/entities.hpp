@@ -21,7 +21,7 @@ uint64_t createEntityS(EntityS entity);
 EntityS decodeEntityS(uint64_t entityData);
 
 // <--- WA¯NE: Dodaj tê deklaracjê, ¿eby scene_game widzia³ tê funkcjê
-std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS);
+std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS, Texture2D& mainTileset, Entity* playerPtr);
 
 class EntitySaver {
 private:

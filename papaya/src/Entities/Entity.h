@@ -2,12 +2,16 @@
 #include "raylib.h"
 #include <vector>
 
-enum EntityType { PLAYER, WALL, BULLET, ENEMY };
+enum EntityType { PLAYER, WALL, MAGE_BOSS, ENEMY, RABBIT};
+
 
 class Entity {
 public:
 	Vector2 mPosition;
 	EntityType mType;
+	Vector2 mSize;
+	Texture2D mTexture = { 0 };
+
 	bool mActive = true;
 	int mHealth = 1;
 
