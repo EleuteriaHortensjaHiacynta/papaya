@@ -7,7 +7,8 @@
 #include "../Entities/Entity.h"
 #include "../Entities/Player.h"
 #include "../external_headers/json.hpp"
-
+#include "../Entities/mage_boss.h"
+#include "../Entities/rabbit.h"
 
 // Sort comparator: by x then y
 static bool sortByXY(uint64_t a, uint64_t b) {
@@ -37,21 +38,20 @@ EntityS decodeEntityS(uint64_t entityData) {
     return entity;
 }
 
-std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS) {
+std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS, Texture2D& tex, Entity* playerPtr) {
     float x = static_cast<float>(entityS.x);
     float y = static_cast<float>(entityS.y);
 
     switch (entityS.entityType) {
-    case PLAYER:
-        return std::make_unique<Player>(x, y);
-    case ENEMY:
-        return std::make_unique<Enemy>(x, y);
-        // Jeœli napotkasz coœ innego (np. WALL w z³ym miejscu, albo b³¹d danych):
-    default:
-        std::cout << "[WARNING] Unknown EntityType ID: " << (int)entityS.entityType << " at " << x << "," << y << std::endl;
-        return nullptr; // Zwracamy pusty wskaŸnik zamiast crashowaæ grê
+    case MAGE_BOSS:
+        return std::make_unique<MageBoss>(x, y, tex, playerPtr); // tex to bossTexture
+    case RABBIT:
+        return std::make_unique<RabbitEnemy>(x, y, tex, playerPtr); // tex to rabbitTexture
+        // ... reszta case'ów ...
     }
+    return nullptr;
 }
+
 EntitySaver::EntitySaver(std::fstream& f) : fileStream(&f) {}
 
 void EntitySaver::addEntityS(EntityS entity) {
