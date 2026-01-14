@@ -11,8 +11,12 @@ using json = nlohmann::json;
 
 #define BLOCK_SIZE sizeof(uint64_t)
 
-// string[64][64]
 typedef std::array<std::array<std::string, 64>, 64> chunkTiles;
+
+struct RenderTile {
+    int x, y;
+    uint16_t textureID; // ZMIANA: uint8_t -> uint16_t (mieœci do 65535)
+};
 
 enum class Layers : uint8_t {
     GUI = 0,
@@ -33,15 +37,14 @@ struct Block {
     int16_t y;
     uint8_t x_length;
     uint8_t y_length;
-    int8_t textureID;
+    uint16_t textureID; // ZMIANA: uint8_t -> uint16_t
     Layers layer;
     ExtraData extraData;
 };
 
 uint64_t createBlock(Block block);
-Block decodeBlock(uint64_t blockData);  
+Block decodeBlock(uint64_t blockData);
 
-// Class to save blocks to a file
 class MapSaver {
 private:
     std::fstream* fileStream = nullptr;
@@ -53,15 +56,12 @@ public:
     ~MapSaver();
 };
 
-// Class to load blocks from a file
 class MapLoader {
 private:
     std::fstream* fileStream = nullptr;
 public:
     explicit MapLoader(std::fstream& f);
     std::vector<Wall> getAll();
-    // std::vector<Chunk> toChunks();
-    std::string toEditorJson();
-
+    std::vector<RenderTile> getRenderData();
     ~MapLoader();
 };
