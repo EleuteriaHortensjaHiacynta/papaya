@@ -42,15 +42,16 @@ std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS) {
     float y = static_cast<float>(entityS.y);
 
     switch (entityS.entityType) {
-        case PLAYER:
-            return std::make_unique<Player>(x, y);
-        case ENEMY:
-            return std::make_unique<Enemy>(x, y);
-        default:
-            throw std::invalid_argument("Unknown EntityType in EntitySToEntity");
+    case PLAYER:
+        return std::make_unique<Player>(x, y);
+    case ENEMY:
+        return std::make_unique<Enemy>(x, y);
+        // Jeœli napotkasz coœ innego (np. WALL w z³ym miejscu, albo b³¹d danych):
+    default:
+        std::cout << "[WARNING] Unknown EntityType ID: " << (int)entityS.entityType << " at " << x << "," << y << std::endl;
+        return nullptr; // Zwracamy pusty wskaŸnik zamiast crashowaæ grê
     }
 }
-
 EntitySaver::EntitySaver(std::fstream& f) : fileStream(&f) {}
 
 void EntitySaver::addEntityS(EntityS entity) {
@@ -59,7 +60,7 @@ void EntitySaver::addEntityS(EntityS entity) {
     if (!(*fileStream)) throw std::runtime_error("Failed to write entity to stream");
 }
 
-void EntitySaver::addEntity(std::unique_ptr<Entity> entity) {
+void EntitySaver::addEntity(const std::unique_ptr<Entity>& entity) {
     EntityS entityS;
     entityS.x = static_cast<uint16_t>(entity->mPosition.x);
     entityS.y = static_cast<uint16_t>(entity->mPosition.y);

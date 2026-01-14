@@ -4,7 +4,7 @@
 #include "Scenes/scene_functions.hpp"
 
 inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, int& state) {
-	
+
 	float time = 0;
 
 	float mouseIdleTime = 0;
@@ -44,18 +44,32 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
 
 	gridButtonSetup(pMainGrid, pSave1Button, 0, 0);
 
+	pSave1Button->storeFunction([&]() {
+		// Tutaj normalnie ustawilibyœmy œcie¿kê do zapisu, ale na razie
+		// po prostu odpalmy grê (stan 1):
+		changeScene(state, 1, shouldLeave);
+		}); // <--- TU BY£ B£¥D: Doda³em brakuj¹ce zamkniêcie
+
 
 	auto pSave2Button = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
 	pSave2Button->addText("Load save 2", 40, WHITE);
 
 	gridButtonSetup(pMainGrid, pSave2Button, 1, 0);
- 
+
+	pSave2Button->storeFunction([&]() {
+		// Tymczasowo te¿ ³aduje grê (w scene_game masz na sztywno "main_save")
+		changeScene(state, 1, shouldLeave);
+		});
+
 
 	auto pSave3Button = std::make_shared<Button>(b, GRAY, LIGHTGRAY, WHITE);
 	pSave3Button->addText("Load save 3", 40, WHITE);
-	
+
 	gridButtonSetup(pMainGrid, pSave3Button, 2, 0);
 
+	pSave3Button->storeFunction([&]() {
+		changeScene(state, 1, shouldLeave);
+		});
 
 	//=====================================================================================================================
 	// delete save buttons
@@ -127,8 +141,8 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
 
 		BeginDrawing();
 		ClearBackground(GREEN);
-		DrawTexturePro(noStarsBackground, Rectangle{ (float)noStarsBackground.width, (float)noStarsBackground.height, (float)noStarsBackground.width, (float)noStarsBackground.height}, Rectangle{ 0, 0, (float)windowWidth, (float)windowHeight }, { 0, 0 }, 0.0f, WHITE);
-		
+		DrawTexturePro(noStarsBackground, Rectangle{ (float)noStarsBackground.width, (float)noStarsBackground.height, (float)noStarsBackground.width, (float)noStarsBackground.height }, Rectangle{ 0, 0, (float)windowWidth, (float)windowHeight }, { 0, 0 }, 0.0f, WHITE);
+
 		shiftingBackground(starsSmall0Background, mouse, windowWidth, windowHeight, -0.75, 0.75, time, starsSmall0X, starsSmall0Y);
 
 		shiftingBackground(starsSmall1Background, mouse, windowWidth, windowHeight, -0.75, 0.75, time, starsSmall1X, starsSmall1Y);
