@@ -3,8 +3,8 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include "map.hpp"
-#include "entities.hpp"
+#include "Map/map.hpp"
+#include "Entities/entities.hpp"
 
 class Saves {
 private:

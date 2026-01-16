@@ -9,61 +9,93 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
 
-# TYLKO PLIKI .CPP - kaødy raz!
+# ============================================================================
+# PLIKI èR”D£OWE (.cpp)
+# ============================================================================
 set(PAPAYA_SOURCES
   src/papaya.cpp
-  src/Saves/map.cpp
+  
+  src/Map/map.cpp
+  
+  src/Entities/entities.cpp
+
   src/Saves/saves.cpp
-  src/Saves/entities.cpp
+  
+  # Scenes
   src/Scenes/scene_game.cpp
+  
+  # Entities - Player
+  src/Entities/Player/Player.cpp
+  
+  # External
   src/external_headers/tinyfiledialogs.cpp
 )
 
-# Nag≥Ûwki osobno (opcjonalnie, dla IDE)
+# ============================================================================
+# NAG£”WKI (dla IDE - opcjonalne ale przydatne)
+# ============================================================================
 set(PAPAYA_HEADERS
+  # Core utilities
+  src/Core/InputHelper.h
+  src/Core/MathUtils.h
+  
+  # Entities - Base
   src/Entities/Entity.h
-  src/Entities/Dummy.h
-  src/Entities/Enemy.h
-  src/Entities/Player.h
-  src/Entities/Wall.h
+  
+  # Entities - Player
+  src/Entities/Player/Player.h
+  src/Entities/Player/PlayerConstants.h
+  src/Entities/Player/PlayerTypes.h
+
+
+  # Entities - Environment
+  src/Entities/Environment/Wall.h
+  
+  # Entities - Enemies
+  src/Entities/Enemies/rabbit.h
+  src/Entities/Enemies/mage_boss.h
+  
+  # GUI
   src/GUI/GUI_raylib.hpp
+  
+  # Scenes
   src/Scenes/main_menu.hpp
   src/Scenes/scene_functions.hpp
   src/Scenes/scene_test_room.h
   src/Scenes/scene_game.hpp
-  src/Saves/entities.hpp 
-  src/Saves/map.hpp
+  
+  # Saves
+  src/Entities/entities.hpp 
+  src/Map/map.hpp
   src/Saves/saves.hpp
 )
 
 add_executable(papaya ${PAPAYA_SOURCES} ${PAPAYA_HEADERS})
 
-# Include directories so headers are found with #include "..."
-target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/external_headers)
+# ============================================================================
+# INCLUDE DIRECTORIES
+# ============================================================================
+target_include_directories(papaya PRIVATE 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/external_headers
+)
 
+# ============================================================================
+# DEPENDENCIES
+# ============================================================================
+
+# nlohmann/json
 include(FetchContent)
-
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_Declare(json 
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
 FetchContent_MakeAvailable(json)
-
 target_link_libraries(papaya PRIVATE nlohmann_json::nlohmann_json)
 
-# Note that the namespaced target will always be available regardless of the
-# import method
-target_link_libraries(papaya PRIVATE nlohmann_json::nlohmann_json)
-
-# Example: enable more warnings (optional)
-if (MSVC)
-  target_compile_options(papaya PRIVATE /W4)
-else()
-  target_compile_options(papaya PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-# If you use external libs, find and link them:
+# raylib
 find_package(raylib REQUIRED)
 
-# Link against raylib. Different raylib CMake packages export different targets/variables
 if (TARGET raylib)
   target_link_libraries(papaya PRIVATE raylib)
 elseif (TARGET raylib::raylib)
@@ -72,15 +104,26 @@ elseif (DEFINED RAYLIB_LIBRARIES)
   target_include_directories(papaya PRIVATE ${RAYLIB_INCLUDE_DIRS})
   target_link_libraries(papaya PRIVATE ${RAYLIB_LIBRARIES})
 else()
-  message(FATAL_ERROR "Found raylib but could not determine target to link. Please set RAYLIB_LIBRARIES or ensure raylib provides a CMake target (raylib or raylib::raylib).")
+  message(FATAL_ERROR "Found raylib but could not determine target to link.")
 endif()
 
-# Put binaries in build/bin
+# ============================================================================
+# COMPILER OPTIONS
+# ============================================================================
+if (MSVC)
+  target_compile_options(papaya PRIVATE /W4)
+else()
+  target_compile_options(papaya PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# ============================================================================
+# OUTPUT
+# ============================================================================
 set_target_properties(papaya PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-# Copy assets to the runtime output directory so code using "Assets/..." finds them
+# Copy assets
 add_custom_command(TARGET papaya POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_CURRENT_SOURCE_DIR}/assets
