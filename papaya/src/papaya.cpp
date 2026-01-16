@@ -1,7 +1,7 @@
 #include <iostream>
 #include <raylib.h>
 #include "Scenes/main_menu.hpp"
-#include "Scenes/scene_game.hpp"       // [POPRAWIONE] .cpp -> .hpp
+#include "Scenes/scene_game.hpp"
 #include "level_editor/scene_level_editor.hpp"
 
 int main() {

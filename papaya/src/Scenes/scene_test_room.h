@@ -2,10 +2,10 @@
 #include "raylib.h"
 #include <vector>
 #include "Entities/Entity.h"
-#include "Entities/Player.h"
-#include "Entities/Wall.h"
+#include "Entities/Player/Player.h"
+#include "Entities/Environment/Wall.h"
 #include "Entities/Dummy.h"
-#include "Saves/map.hpp"
+#include "Map/map.hpp"
 
 // --- POPRAWIONA KLASA ENEMY ---
 // Wklejam j� tutaj w ca�o�ci, bo zmiany by�y w �rodku metod.

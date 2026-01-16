@@ -59,7 +59,7 @@ public:
     const Vector2 RABBIT_SIZE = { 16.0f, 16.0f };
 
     RabbitEnemy(float x, float y, Texture tex, Entity* target)
-        : Entity({ x, y }, ENEMY)
+        : Entity({ x, y }, RABBIT)
     {
         mPosition = { x, y };
         mPrevPosition = mPosition;
