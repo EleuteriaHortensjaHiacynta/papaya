@@ -1,10 +1,8 @@
 #include <iostream>
 #include <raylib.h>
 #include "Scenes/main_menu.hpp"
-#include "Scenes/scene_game.cpp"       // <--- DODAJ TO
+#include "Scenes/scene_game.hpp"       // [POPRAWIONE] .cpp -> .hpp
 #include "level_editor/scene_level_editor.hpp"
-
-// main2() możesz usunąć lub zostawić do testów
 
 int main() {
     std::cout << "Hello Papaya!\n";
@@ -25,7 +23,7 @@ int main() {
             sceneMainMenu(windowWidth, windowHeight, shouldQuit, state);
             break;
 
-        case 1: // GAMEPLAY (To teraz działa!)
+        case 1: // GAMEPLAY
             sceneGame(windowWidth, windowHeight, shouldQuit, state);
             break;
 

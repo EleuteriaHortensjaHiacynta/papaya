@@ -9351,7 +9351,7 @@
 "textureID": 0
 },
 {
-"collision": true,
+"collision": false,
 "damage": false,
 "textureID": 236
 },
@@ -17718,7 +17718,7 @@
 "textureID": 220
 },
 {
-"collision": true,
+"collision": false,
 "damage": false,
 "textureID": 31
 },
@@ -18023,7 +18023,7 @@
 "textureID": 1
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 10
 },
@@ -18350,7 +18350,7 @@
 "textureID": 10
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 10
 }

@@ -12,10 +12,7 @@
 // Upewnij si�, �e podmienisz swoj� star� definicj� Enemy na t�.
 class Enemy : public Entity {
 public:
-	Vector2 mPosition;
 	Vector2 mVelocity;
-	Vector2 mSize;
-	// DODANO: Potrzebne do poprawnej kolizji
 	Vector2 mPrevPosition;
 
 	float mSpeed = 40.0f;
