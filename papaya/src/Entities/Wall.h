@@ -3,8 +3,6 @@
 
 class Wall : public Entity {
 public:
-	Vector2 mSize;
-
 	Wall(float x, float y, float w, float h) : Entity({ x,y }, WALL) {
 		mSize = { w,h };
 	}

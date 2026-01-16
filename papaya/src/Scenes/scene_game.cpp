@@ -11,6 +11,8 @@
 #include "../Entities/Entity.h"
 #include "../Entities/Player.h"
 #include "../Entities/Wall.h" 
+ #include "../Entities/mage_boss.h" // Odkomentuj jeśli masz ten plik nagłówkowy
+ #include "../Entities/rabbit.h"    // Odkomentuj jeśli masz ten plik nagłówkowy
 
 // --- STAŁE ---
 const int VIRTUAL_WIDTH = 320;
@@ -120,8 +122,36 @@ struct SmoothCamera {
 // --- GŁÓWNA FUNKCJA SCENY ---
 
 void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) {
-    Saves saves("assets/saves/main_save");
     SetTargetFPS(60);
+
+    // ==========================================
+    // KROK 1: IMPORT DANYCH (W OSOBNYM ZAKRESIE)
+    // ==========================================
+    {
+        // Tworzymy obiekt Saves tylko na chwilę, żeby sprawdzić/zaimportować mapę
+        Saves tempSaves("assets/saves/main_save");
+
+        if (tempSaves.getMap().getRenderData().empty()) {
+            std::string jsonPath = "assets/editor"; // Twoja ścieżka do JSONów
+            std::cout << "[SYSTEM] Wykryto pustą mapę. Próba importu z '" << jsonPath << "'..." << std::endl;
+
+            try {
+                tempSaves.loadFromEditorDir(jsonPath);
+                std::cout << "[SYSTEM] Import zakończony. Zamykanie pliku w celu zapisania zmian..." << std::endl;
+            }
+            catch (const std::exception& e) {
+                std::cout << "[ERROR] Błąd importu mapy: " << e.what() << std::endl;
+            }
+        }
+        // TUTAJ tempSaves jest niszczone.
+        // Destruktor zamyka pliki i wymusza zapis na dysk.
+    }
+
+    // ==========================================
+    // KROK 2: WŁAŚCIWA GRA
+    // ==========================================
+    // Otwieramy pliki ponownie - teraz na pewno mają dane!
+    Saves saves("assets/saves/main_save");
 
     // ==========================================
     // TEKSTURY
@@ -140,6 +170,7 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     // MAPA
     // ==========================================
     GameMap gameMap;
+    // Teraz getRenderData() pobierze świeże dane z pliku
     gameMap.init(saves.getMap().getRenderData());
 
     std::cout << "[INFO] Mapa: " << gameMap.width << "x" << gameMap.height
@@ -162,52 +193,50 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     std::vector<std::unique_ptr<Entity>> activeEntities;
     Player* playerPtr = nullptr;
 
-    // 1. Ściany
-    std::vector<Wall> walls = saves.getMap().getAll();
-    for (const auto& w : walls) {
-        auto wallEnt = std::make_unique<Wall>(w);
-        wallEnt->mType = WALL;
-        staticCollisionGrid.insertStatic(wallEnt.get());
-        activeEntities.push_back(std::move(wallEnt));
+    // 1. Ściany z kolizji mapy
+    {
+        std::vector<CollisionRect> collisions = saves.getMap().getCollisions();
+        std::cout << "[INFO] Załadowano " << collisions.size() << " kolizji." << std::endl;
+
+        for (const auto& col : collisions) {
+            auto wallEnt = std::make_unique<Wall>(
+                static_cast<float>(col.x),
+                static_cast<float>(col.y),
+                static_cast<float>(col.w),
+                static_cast<float>(col.h)
+            );
+            staticCollisionGrid.insertStatic(wallEnt.get());
+            activeEntities.push_back(std::move(wallEnt));
+        }
     }
 
     // 2. Gracz
-    auto playerEntity = std::make_unique<Player>(464.5f, 442.0f);
-    playerEntity->mTexture = playerTexture;
-    playerPtr = playerEntity.get();
-    activeEntities.push_back(std::move(playerEntity));
-
-    // 3. Boss (wymuszony spawn)
-    EntityS bossD;
-    bossD.x = 658;
-    bossD.y = 100;  // Zmień na widoczną pozycję!
-    bossD.entityType = MAGE_BOSS;
-    auto boss = EntitySToEntity(bossD, bossTexture, playerPtr);
-    if (boss) {
-        boss->mActive = true;
-        boss->mHealth = 50;
-        activeEntities.push_back(std::move(boss));
-        std::cout << "[INFO] Boss zespawnowany na " << bossD.x << ", " << bossD.y << std::endl;
+    {
+        auto playerEntity = std::make_unique<Player>(464.5f, 442.0f);
+        playerEntity->mTexture = playerTexture;
+        playerPtr = playerEntity.get();
+        activeEntities.push_back(std::move(playerEntity));
     }
 
-    // 4. Królik
-    EntityS rabbitD;
-    rabbitD.x = 306;
-    rabbitD.y = 322;
-    rabbitD.entityType = RABBIT;
-    auto rabbit = EntitySToEntity(rabbitD, rabbitTexture, playerPtr);
-    if (rabbit) {
-        rabbit->mActive = true;
-        rabbit->mHealth = 5;
-        activeEntities.push_back(std::move(rabbit));
-    }
+    // 3. Wrogowie z pliku
+    {
+        auto rawEntities = saves.getEntities().getAll();
+        std::cout << "[INFO] Wczytano " << rawEntities.size() << " encji z pliku." << std::endl;
 
-    // 5. Inne z zapisu
-    auto rawEntities = saves.getEntities().getAll();
-    for (const auto& eData : rawEntities) {
-        if (eData.entityType == PLAYER || eData.entityType == MAGE_BOSS || eData.entityType == RABBIT) continue;
-        auto newEnemy = EntitySToEntity(eData, tileset, playerPtr);
-        if (newEnemy) activeEntities.push_back(std::move(newEnemy));
+        for (const auto& eData : rawEntities) {
+            if (eData.entityType == PLAYER) continue;
+
+            Texture2D* textureToUse = &tileset;
+            if (eData.entityType == MAGE_BOSS) textureToUse = &bossTexture;
+            else if (eData.entityType == RABBIT) textureToUse = &rabbitTexture;
+
+            auto newEnemy = EntitySToEntity(eData, *textureToUse, playerPtr);
+            if (newEnemy) {
+                newEnemy->mHealth = (eData.health > 0) ? eData.health : 10;
+                newEnemy->mActive = true;
+                activeEntities.push_back(std::move(newEnemy));
+            }
+        }
     }
 
     // ==========================================
@@ -230,95 +259,88 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     bool showDebug = false;
 
     // ==========================================
-    // GŁÓWNA PĘTLA
-    // ==========================================
+// GŁÓWNA PĘTLA
+// ==========================================
     while (!WindowShouldClose() && !shouldQuit) {
         float dt = std::min(GetFrameTime(), 0.033f);
 
-        // --- INPUT ---
         if (IsKeyPressed(KEY_ESCAPE)) {
             state = 0;
             break;
         }
         if (IsKeyPressed(KEY_F3)) showDebug = !showDebug;
 
-        // --- UPDATE ENTITIES ---
+        // ==========================================
+        // UPDATE
+        // ==========================================
+
+        // 1. Update wszystkich entity (fizyka, input, AI)
         for (auto& ent : activeEntities) {
             if (!ent || !ent->mActive) continue;
             ent->update(dt);
+        }
 
-            // Kolizje ze ścianami (dla każdego entity oprócz ścian)
-            if (ent->mType != WALL) {
-                nearbyObstacles.clear();
-                staticCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, nearbyObstacles);
-                for (Entity* obs : nearbyObstacles) {
-                    if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
-                        ent->onCollision(obs);
-                    }
+        // 2. Kolizje ze ścianami (z mapy)
+        for (auto& ent : activeEntities) {
+            if (!ent || !ent->mActive || ent->mType == WALL) continue;
+
+            nearbyObstacles.clear();
+            staticCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, nearbyObstacles);
+
+            for (Entity* obs : nearbyObstacles) {
+                if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
+                    ent->onCollision(obs);
                 }
             }
         }
 
-        // --- WALKA (POPRAWIONA!) ---
+        // 3. Walka - atak gracza na wrogów
         if (playerPtr && playerPtr->mActive) {
             for (auto& ent : activeEntities) {
                 if (!ent || !ent->mActive) continue;
                 if (ent->mType == WALL || ent.get() == playerPtr) continue;
 
-                // ============================================
-                // 1. GRACZ ATAKUJE WROGA (używamy mAttackArea!)
-                // ============================================
+                // Atak gracza
                 if (playerPtr->mIsAttacking) {
                     if (CheckCollisionRecs(playerPtr->mAttackArea, ent->getRect())) {
                         if (!playerPtr->hasHit(ent.get())) {
                             playerPtr->mHitEntities.push_back(ent.get());
-
                             int damage = playerPtr->getAttackDamage();
                             ent->mHealth -= damage;
-
-                            std::cout << "[COMBAT] Trafiono! Damage: " << damage
-                                << " | HP wroga: " << ent->mHealth << std::endl;
-
-                            if (ent->mHealth <= 0) {
-                                ent->mActive = false;
-                                std::cout << "[COMBAT] Wrog pokonany!" << std::endl;
-                            }
+                            if (ent->mHealth <= 0) ent->mActive = false;
                         }
                     }
                 }
 
-                // ============================================
-                // 2. WRÓG DOTYKA GRACZA (zadaje obrażenia)
-                // ============================================
+                // Kolizja z graczem (damage)
                 if (CheckCollisionRecs(playerPtr->getRect(), ent->getRect())) {
                     if (playerPtr->mInvincibilityTimer <= 0) {
                         playerPtr->mHealth -= 1;
                         playerPtr->mInvincibilityTimer = 1.0f;
-
-                        // Odrzut
                         float knockbackDir = (playerPtr->mPosition.x < ent->mPosition.x) ? -1.0f : 1.0f;
                         playerPtr->mVelocity.x = knockbackDir * 120.0f;
                         playerPtr->mVelocity.y = -80.0f;
-
-                        std::cout << "[COMBAT] Gracz trafiony! HP: " << playerPtr->mHealth << std::endl;
                     }
                 }
             }
+        }
 
-            // Late update (animacje, wspinaczka)
+        // 4. Late Update (animacje + wspinaczka PO kolizjach)
+        if (playerPtr && playerPtr->mActive) {
             playerPtr->lateUpdate(dt);
-
-            // Kamera
             smoothCam.update(playerPtr->mPosition, dt);
             camera.target = smoothCam.getPosition();
         }
 
-        // --- RYSOWANIE ---
+        // ==========================================
+        // DRAW
+        // ==========================================
+
         BeginTextureMode(target);
         ClearBackground({ 40, 44, 52, 255 });
         BeginMode2D(camera);
 
-        // Mapa (z cullingiem)
+        // Mapa
         int camL = (int)(camera.target.x - VIRTUAL_WIDTH / 2 - gameMap.minX) / TILE_SIZE_PX - 1;
         int camR = (int)(camera.target.x + VIRTUAL_WIDTH / 2 - gameMap.minX) / TILE_SIZE_PX + 2;
         int camT = (int)(camera.target.y - VIRTUAL_HEIGHT / 2 - gameMap.minY) / TILE_SIZE_PX - 1;
@@ -342,110 +364,37 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
             }
         }
 
-        // Entities (bez ścian!)
+        // Entities
         for (auto& ent : activeEntities) {
             if (!ent || !ent->mActive || ent->mType == WALL) continue;
             ent->draw();
 
-            // Pasek HP dla bossa
             if (ent->mType == MAGE_BOSS) {
-                float barWidth = 32.0f;
-                float barHeight = 3.0f;
-                float barX = ent->mPosition.x - barWidth / 2 + 8;
-                float barY = ent->mPosition.y - 12;
-                float hpPercent = (float)ent->mHealth / 50.0f;
-
-                DrawRectangle((int)barX, (int)barY, (int)barWidth, (int)barHeight, DARKGRAY);
-                DrawRectangle((int)barX, (int)barY, (int)(barWidth * hpPercent), (int)barHeight, RED);
-                DrawRectangleLinesEx({ barX, barY, barWidth, barHeight }, 1, BLACK);
-            }
-
-            // Pasek HP dla innych wrogów
-            if (ent->mType == RABBIT) {
-                float barWidth = 16.0f;
-                float hpPercent = (float)ent->mHealth / 5.0f;
-                DrawRectangle((int)ent->mPosition.x, (int)ent->mPosition.y - 6, (int)(barWidth * hpPercent), 2, RED);
+                float barW = 32.0f;
+                DrawRectangle((int)(ent->mPosition.x - barW / 2 + 8), (int)(ent->mPosition.y - 12), (int)barW, 3, DARKGRAY);
+                DrawRectangle((int)(ent->mPosition.x - barW / 2 + 8), (int)(ent->mPosition.y - 12), (int)(barW * ((float)ent->mHealth / 50.0f)), 3, RED);
             }
         }
 
-        // Debug: hitbox ataku
-        if (showDebug && playerPtr && playerPtr->mIsAttacking) {
-            Color attackColor = YELLOW;
-            if (playerPtr->mComboCount == 2) attackColor = ORANGE;
-            DrawRectangleLinesEx(playerPtr->mAttackArea, 1, attackColor);
-        }
-
-        // Debug: hitboxy wrogów
-        if (showDebug) {
-            for (auto& ent : activeEntities) {
-                if (!ent || !ent->mActive || ent->mType == WALL) continue;
-                if (ent.get() != playerPtr) {
-                    DrawRectangleLinesEx(ent->getRect(), 1, RED);
-                }
-            }
+        if (showDebug && playerPtr) {
+            DrawRectangleLinesEx(playerPtr->getRect(), 1, GREEN);
+            if (playerPtr->mIsAttacking) DrawRectangleLinesEx(playerPtr->mAttackArea, 1, YELLOW);
         }
 
         EndMode2D();
         EndTextureMode();
 
-        // --- SKALOWANIE NA EKRAN ---
         BeginDrawing();
         ClearBackground(BLACK);
-
         float scale = std::min((float)windowWidth / VIRTUAL_WIDTH, (float)windowHeight / VIRTUAL_HEIGHT);
-        float renderW = VIRTUAL_WIDTH * scale;
-        float renderH = VIRTUAL_HEIGHT * scale;
-        float offsetX = (windowWidth - renderW) / 2;
-        float offsetY = (windowHeight - renderH) / 2;
+        DrawTexturePro(target.texture, { 0, 0, (float)target.texture.width, -(float)target.texture.height },
+            { (windowWidth - VIRTUAL_WIDTH * scale) / 2, (windowHeight - VIRTUAL_HEIGHT * scale) / 2, VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale },
+            { 0, 0 }, 0, WHITE);
 
-        DrawTexturePro(
-            target.texture,
-            { 0, 0, (float)target.texture.width, -(float)target.texture.height },
-            { offsetX, offsetY, renderW, renderH },
-            { 0, 0 }, 0, WHITE
-        );
-
-        // --- UI ---
-        if (playerPtr) {
-            // HP Gracza
-            DrawText(TextFormat("HP: %d/%d", playerPtr->mHealth, playerPtr->mMaxHealth), 20, 20, 24, RED);
-
-            // Combo info
-            if (playerPtr->mIsAttacking || playerPtr->mComboWindowOpen) {
-                const char* comboText = "";
-                Color comboColor = WHITE;
-                switch (playerPtr->mComboCount) {
-                case 0: comboText = "Combo: 1"; comboColor = WHITE; break;
-                case 1: comboText = "Combo: 2"; comboColor = SKYBLUE; break;
-                case 2: comboText = "FINISHER!"; comboColor = GOLD; break;
-                }
-                DrawText(comboText, 20, 50, 20, comboColor);
-            }
-        }
-
-        // Debug info
-        if (showDebug) {
-            DrawText(TextFormat("FPS: %d", GetFPS()), windowWidth - 100, 20, 20, LIME);
-            DrawText("[F3] Debug", windowWidth - 100, 45, 16, GRAY);
-
-            if (playerPtr) {
-                DrawText(TextFormat("Pos: %.0f, %.0f", playerPtr->mPosition.x, playerPtr->mPosition.y),
-                    20, windowHeight - 50, 16, WHITE);
-                DrawText(TextFormat("Vel: %.0f, %.0f", playerPtr->mVelocity.x, playerPtr->mVelocity.y),
-                    20, windowHeight - 30, 16, WHITE);
-            }
-        }
-
-        // Kontrolki
-        DrawText("WASD/Arrows: Move | Space: Jump | C: Dash | Z: Attack | F3: Debug",
-            20, windowHeight - 20, 12, DARKGRAY);
-
+        if (playerPtr) DrawText(TextFormat("HP: %d", playerPtr->mHealth), 20, 20, 24, RED);
         EndDrawing();
     }
 
-    // ==========================================
-    // CLEANUP
-    // ==========================================
     UnloadTexture(bossTexture);
     UnloadTexture(rabbitTexture);
     UnloadTexture(playerTexture);

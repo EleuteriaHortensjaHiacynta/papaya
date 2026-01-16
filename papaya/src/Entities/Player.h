@@ -45,7 +45,6 @@ public:
     Vector2 mPrevPosition;
     Vector2 mVelocity;
     Vector2 mStartPosition;
-    Vector2 mSize;
 
     // Fizyka
     float mMaxSpeed = 100.0f;
@@ -54,7 +53,7 @@ public:
     float mGravity = 500.0f;
     float mJumpForce = 200.0f;
     float mRecoilFriction = 60.0f;
-    float mDashSpeed = 160.0f;
+    float mDashSpeed = 360.0f;
 
     // Double Jump
     int mJumpCount = 0;
@@ -182,6 +181,10 @@ public:
 
         mPrevPosition = mPosition;
 
+        // *** RESET FLAG KOLIZJI ***
+        mTouchingWall = false;
+        mWallDir = 0;
+
         updateTimers(deltaTime);
         handleDash(deltaTime);
         handleMovement(deltaTime);
@@ -189,7 +192,7 @@ public:
         handleAttack(deltaTime);
         applyPhysics(deltaTime);
 
-        mTouchingWall = false;
+        // mTouchingWall będzie ustawione przez onCollision/handleWallCollision
 
         updateStamina(deltaTime);
         handleGhosts(deltaTime);
@@ -204,6 +207,12 @@ public:
 
     void handleWallMovementPostCollision(float deltaTime) {
         if (!mTouchingWall || mStamina <= 0) {
+            mIsClimbing = false;
+            return;
+        }
+
+        // *** NOWE: Jeśli gracz właśnie skoczył, nie nadpisuj velocity ***
+        if (mVelocity.y < -100.0f) {
             mIsClimbing = false;
             return;
         }
@@ -271,6 +280,168 @@ public:
         }
     }
 
+    Rectangle getRect() override {
+        return { mPosition.x, mPosition.y, mSize.x, mSize.y };
+    }
+
+    // *** KOLIZJE Z ENTITY (wrogowie, ściany jako Entity) ***
+    void onCollision(Entity* pOther) override {
+        if (pOther->mType == WALL) {
+            Rectangle wallRect = pOther->getRect();
+            handleWallCollision(wallRect);
+        }
+        // Możesz dodać inne typy kolizji tutaj
+    }
+
+    void draw() override {
+        // Stamina bar
+        if (mStamina < mMaxStamina) {
+            float barWidth = 20.0f;
+            float barHeight = 2.0f;
+            float barX = mPosition.x + mSize.x / 2 - barWidth / 2;
+            float barY = mPosition.y - 10.0f;
+
+            float percent = mStamina / mMaxStamina;
+            Color color = ColorAlpha(RED, percent);
+
+            if (percent < 0.50f) {
+                DrawRectangle((int)barX, (int)barY, (int)(barWidth * percent), (int)barHeight, color);
+            }
+        }
+
+        // Duszki
+        for (const auto& ghost : mGhosts) {
+            float ghostWidth = ghost.facingRight ? ghost.frameRec.width : -ghost.frameRec.width;
+            Rectangle source = { ghost.frameRec.x, ghost.frameRec.y, ghostWidth, ghost.frameRec.height };
+            Vector2 drawPos = { std::floor(ghost.position.x - 3), std::floor(ghost.position.y - 2) };
+            Rectangle dest = { drawPos.x, drawPos.y, 16.0f, 16.0f };
+            DrawTexturePro(mTexture, source, dest, { 0, 0 }, 0.0f, Fade(WHITE, ghost.alpha));
+        }
+
+        // Skrzydła
+        if (mWingsActive) {
+            float wingW = 32.0f;
+            float wingH = 16.0f;
+            Rectangle source = { mWingsFrame * wingW, 0.0f, mIsFacingRight ? wingW : -wingW, wingH };
+            Vector2 playerCenter = { mPosition.x + mSize.x / 2.0f, mPosition.y + mSize.y / 2.0f };
+            Vector2 wingsPos = { playerCenter.x - (wingW / 2.0f), playerCenter.y - (wingH / 2.0f) + 1.0f };
+            DrawTextureRec(mWingsTexture, source, wingsPos, Fade(WHITE, 0.5f));
+        }
+
+        float sourceWidth = mIsFacingRight ? mFrameRec.width : -mFrameRec.width;
+        Rectangle source = { mFrameRec.x, mFrameRec.y, sourceWidth, mFrameRec.height };
+
+        // Slash z combo
+        if (mIsAttacking) {
+            WeaponStats stats = getCurrentWeaponStats();
+            float attackProgress = 1.0f - (mAttackTimer / (stats.duration * (mComboCount == 2 ? 1.2f : (mComboCount == 1 ? 0.85f : 1.0f))));
+
+            int slashFrame = 0;
+            if (attackProgress > 0.3f) slashFrame = 1;
+            if (attackProgress > 0.7f) slashFrame = 2;
+
+            float spriteSize = 64.0f;
+            if (mComboCount == 2) spriteSize = 80.0f;
+
+            Rectangle slashSource = { slashFrame * 64.0f, 0.0f, 64.0f, 64.0f };
+            if (!mIsFacingRight) slashSource.width *= -1;
+
+            Vector2 playerCenter = { mPosition.x + mSize.x / 2.0f, mPosition.y + mSize.y / 2.0f };
+
+            // Rotacja zależna od combo
+            float comboRotation = 0.0f;
+            switch (mComboCount) {
+            case 0: comboRotation = 15.0f; break;
+            case 1: comboRotation = -25.0f; break;
+            case 2: comboRotation = 40.0f; break;
+            }
+            if (!mIsFacingRight) comboRotation = -comboRotation;
+
+            Vector2 offset = { 0.0f, 0.0f };
+            float rotation = 0.0f;
+
+            if (mAttackDir == 0) {
+                float offsetDist = 10.0f;
+                if (mComboCount == 2) offsetDist = 14.0f;
+                offset = { mIsFacingRight ? offsetDist : -offsetDist, 0.0f };
+                rotation = comboRotation;
+            }
+            else if (mAttackDir == 1) {
+                offset = { 0.0f, -10.0f };
+                rotation = mIsFacingRight ? -90.0f + comboRotation * 0.5f : 90.0f - comboRotation * 0.5f;
+            }
+            else if (mAttackDir == 2) {
+                offset = { 0.0f, 10.0f };
+                rotation = mIsFacingRight ? 90.0f + comboRotation * 0.5f : -90.0f - comboRotation * 0.5f;
+            }
+
+            Rectangle dest = { playerCenter.x + offset.x, playerCenter.y + offset.y, spriteSize, spriteSize };
+            Vector2 origin = { spriteSize / 2.0f, spriteSize / 2.0f };
+
+            // Kolor zależny od combo
+            Color slashColor = WHITE;
+            switch (mComboCount) {
+            case 0: slashColor = WHITE; break;
+            case 1: slashColor = { 200, 200, 255, 255 }; break;
+            case 2: slashColor = { 255, 180, 50, 255 }; break;
+            }
+
+            if (mComboCount == 2 && attackProgress < 0.3f) {
+                slashColor = { 255, 255, 180, 255 };
+            }
+
+            DrawTexturePro(mSlashTexture, slashSource, dest, origin, rotation, slashColor);
+
+            // Finisher ghost effect
+            if (mComboCount == 2) {
+                Color ghostSlash = { 255, 150, 50, 80 };
+                Rectangle ghostDest = dest;
+                ghostDest.width *= 1.3f;
+                ghostDest.height *= 1.3f;
+                Vector2 ghostOrigin = { ghostDest.width / 2.0f, ghostDest.height / 2.0f };
+                DrawTexturePro(mSlashTexture, slashSource, ghostDest, ghostOrigin, rotation - 15.0f, ghostSlash);
+            }
+        }
+
+        // Gracz
+        Vector2 drawPos;
+        drawPos.x = mPosition.x - 3;
+        drawPos.y = mPosition.y - 2;
+
+        if (mCurrentState == CLIMB || mCurrentState == WALL_SLIDE) {
+            float wallOffset = 2.0f;
+            drawPos.x += mIsFacingRight ? wallOffset : -wallOffset;
+        }
+
+        Rectangle dest = { std::floor(drawPos.x), std::floor(drawPos.y), 16.0f, 16.0f };
+
+        Color drawColor = WHITE;
+        if (mInvincibilityTimer > 0.0f) {
+            if ((int)(mInvincibilityTimer * 20.0f) % 2 == 0) {
+                drawColor = RED;
+            }
+        }
+
+        DrawTexturePro(mTexture, source, dest, { 0, 0 }, 0.0f, drawColor);
+
+        // Combo indicator
+        if (mIsAttacking || mComboWindowOpen) {
+            Color indicatorColor = WHITE;
+            const char* comboText = "1";
+            switch (mComboCount) {
+            case 0: comboText = "1"; indicatorColor = WHITE; break;
+            case 1: comboText = "2"; indicatorColor = SKYBLUE; break;
+            case 2: comboText = "3!"; indicatorColor = GOLD; break;
+            }
+            DrawText(comboText, (int)mPosition.x + 2, (int)mPosition.y - 18, 8, indicatorColor);
+
+            if (mComboWindowOpen) {
+                float progress = mComboWindowTimer / COMBO_WINDOW;
+                DrawRectangle((int)mPosition.x - 3, (int)mPosition.y - 12, (int)(16.0f * progress), 2, YELLOW);
+            }
+        }
+    }
+
 private:
 
     void respawn() {
@@ -285,6 +456,9 @@ private:
         mComboCount = 0;
         mComboWindowOpen = false;
         mCurrentState = IDLE;
+        mTouchingWall = false;
+        mWallDir = 0;
+        mIsClimbing = false;
     }
 
     void handleSacrifice() {
@@ -364,7 +538,7 @@ private:
     }
 
     void handleMovement(float deltaTime) {
-        if (mIsDashing) return;
+        if (mIsDashing || mIsClimbing) return;  // *** DODANO: || mIsClimbing ***
 
         float moveDir = 0.0f;
         if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) moveDir = 1.0f;
@@ -601,204 +775,53 @@ private:
         mPosition.y += mVelocity.y * deltaTime;
     }
 
-public:
+    // *** WSPÓLNA LOGIKA KOLIZJI ZE ŚCIANAMI ***
+    void handleWallCollision(Rectangle wallRect) {
+        float prevBottom = mPrevPosition.y + mSize.y;
+        float prevRight = mPrevPosition.x + mSize.x;
+        float prevLeft = mPrevPosition.x;
 
-    Rectangle getRect() override {
-        return { mPosition.x, mPosition.y, mSize.x, mSize.y };
-    }
+        // Kolizja od góry (stanie na podłodze)
+        if (prevBottom <= wallRect.y + 2.0f) {
+            mPosition.y = wallRect.y - mSize.y;
+            mVelocity.y = 0;
+            mIsGrounded = true;
+            mCanDash = true;
+            mIsJumping = false;
+            mJumpCount = 0;
 
-    void onCollision(Entity* pOther) override {
-        if (pOther->mType == WALL) {
-            Rectangle otherRect = pOther->getRect();
-            float prevBottom = mPrevPosition.y + mSize.y;
-            float prevRight = mPrevPosition.x + mSize.x;
-            float prevLeft = mPrevPosition.x;
-
-            if (prevBottom <= otherRect.y + 2.0f) {
-                mPosition.y = otherRect.y - mSize.y;
-                mVelocity.y = 0;
-                mIsGrounded = true;
-                mCanDash = true;
-                mIsJumping = false;
-                mJumpCount = 0;
-
-                if (mIsDashing) {
-                    mIsDashing = false;
-                    float dashDir = 0.0f;
-                    if (mVelocity.x > 0.1f) dashDir = 1.0f;
-                    else if (mVelocity.x < -0.1f) dashDir = -1.0f;
-                    else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) dashDir = 1.0f;
-                    else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) dashDir = -1.0f;
-                    else dashDir = mIsFacingRight ? 1.0f : -1.0f;
-                    mVelocity.x = dashDir * mDashSpeed * WAVE_DASH_BOOST_SPEED;
-                }
-            }
-            else if (mPrevPosition.y >= otherRect.y + otherRect.height - 2.0f) {
-                mPosition.y = otherRect.y + otherRect.height;
-                mVelocity.y = 0;
-            }
-            else {
-                if (prevRight <= otherRect.x + 5.0f) {
-                    mPosition.x = otherRect.x - mSize.x;
-                    mTouchingWall = true;
-                    mWallDir = 1;
-                }
-                else if (prevLeft >= otherRect.x + otherRect.width - 5.0f) {
-                    mPosition.x = otherRect.x + otherRect.width;
-                    mTouchingWall = true;
-                    mWallDir = -1;
-                }
-                mVelocity.x = 0;
+            // Wave-dash
+            if (mIsDashing) {
+                mIsDashing = false;
+                float dashDir = 0.0f;
+                if (mVelocity.x > 0.1f) dashDir = 1.0f;
+                else if (mVelocity.x < -0.1f) dashDir = -1.0f;
+                else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) dashDir = 1.0f;
+                else if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) dashDir = -1.0f;
+                else dashDir = mIsFacingRight ? 1.0f : -1.0f;
+                mVelocity.x = dashDir * mDashSpeed * WAVE_DASH_BOOST_SPEED;
             }
         }
-    }
-
-    void draw() override {
-        // Stamina bar
-        if (mStamina < mMaxStamina) {
-            float barWidth = 20.0f;
-            float barHeight = 2.0f;
-            float barX = mPosition.x + mSize.x / 2 - barWidth / 2;
-            float barY = mPosition.y - 10.0f;
-
-            float percent = mStamina / mMaxStamina;
-            Color color = ColorAlpha(RED, percent);
-
-            if (percent < 0.50f) {
-                DrawRectangle((int)barX, (int)barY, (int)(barWidth * percent), (int)barHeight, color);
-            }
+        // Kolizja od dołu (uderzenie głową w sufit)
+        else if (mPrevPosition.y >= wallRect.y + wallRect.height - 2.0f) {
+            mPosition.y = wallRect.y + wallRect.height;
+            mVelocity.y = 0;
         }
-
-        // Duszki
-        for (const auto& ghost : mGhosts) {
-            float ghostWidth = ghost.facingRight ? ghost.frameRec.width : -ghost.frameRec.width;
-            Rectangle source = { ghost.frameRec.x, ghost.frameRec.y, ghostWidth, ghost.frameRec.height };
-            Vector2 drawPos = { std::floor(ghost.position.x - 3), std::floor(ghost.position.y - 2) };
-            Rectangle dest = { drawPos.x, drawPos.y, 16.0f, 16.0f };
-            DrawTexturePro(mTexture, source, dest, { 0, 0 }, 0.0f, Fade(WHITE, ghost.alpha));
-        }
-
-        // Skrzydła
-        if (mWingsActive) {
-            float wingW = 32.0f;
-            float wingH = 16.0f;
-            Rectangle source = { mWingsFrame * wingW, 0.0f, mIsFacingRight ? wingW : -wingW, wingH };
-            Vector2 playerCenter = { mPosition.x + mSize.x / 2.0f, mPosition.y + mSize.y / 2.0f };
-            Vector2 wingsPos = { playerCenter.x - (wingW / 2.0f), playerCenter.y - (wingH / 2.0f) + 1.0f };
-            DrawTextureRec(mWingsTexture, source, wingsPos, Fade(WHITE, 0.5f));
-        }
-
-        float sourceWidth = mIsFacingRight ? mFrameRec.width : -mFrameRec.width;
-        Rectangle source = { mFrameRec.x, mFrameRec.y, sourceWidth, mFrameRec.height };
-
-        // Slash z combo
-        if (mIsAttacking) {
-            WeaponStats stats = getCurrentWeaponStats();
-            float attackProgress = 1.0f - (mAttackTimer / (stats.duration * (mComboCount == 2 ? 1.2f : (mComboCount == 1 ? 0.85f : 1.0f))));
-
-            int slashFrame = 0;
-            if (attackProgress > 0.3f) slashFrame = 1;
-            if (attackProgress > 0.7f) slashFrame = 2;
-
-            float spriteSize = 64.0f;
-            if (mComboCount == 2) spriteSize = 80.0f;
-
-            Rectangle slashSource = { slashFrame * 64.0f, 0.0f, 64.0f, 64.0f };
-            if (!mIsFacingRight) slashSource.width *= -1;
-
-            Vector2 playerCenter = { mPosition.x + mSize.x / 2.0f, mPosition.y + mSize.y / 2.0f };
-
-            // Rotacja zależna od combo
-            float comboRotation = 0.0f;
-            switch (mComboCount) {
-            case 0: comboRotation = 15.0f; break;
-            case 1: comboRotation = -25.0f; break;
-            case 2: comboRotation = 40.0f; break;
+        // Kolizja boczna (ŚCIANY - dla wspinaczki!)
+        else {
+            if (prevRight <= wallRect.x + 5.0f) {
+                // Ściana po prawej
+                mPosition.x = wallRect.x - mSize.x;
+                mTouchingWall = true;
+                mWallDir = 1;
             }
-            if (!mIsFacingRight) comboRotation = -comboRotation;
-
-            Vector2 offset = { 0.0f, 0.0f };
-            float rotation = 0.0f;
-
-            if (mAttackDir == 0) {
-                float offsetDist = 10.0f;
-                if (mComboCount == 2) offsetDist = 14.0f;
-                offset = { mIsFacingRight ? offsetDist : -offsetDist, 0.0f };
-                rotation = comboRotation;
+            else if (prevLeft >= wallRect.x + wallRect.width - 5.0f) {
+                // Ściana po lewej
+                mPosition.x = wallRect.x + wallRect.width;
+                mTouchingWall = true;
+                mWallDir = -1;
             }
-            else if (mAttackDir == 1) {
-                offset = { 0.0f, -10.0f };
-                rotation = mIsFacingRight ? -90.0f + comboRotation * 0.5f : 90.0f - comboRotation * 0.5f;
-            }
-            else if (mAttackDir == 2) {
-                offset = { 0.0f, 10.0f };
-                rotation = mIsFacingRight ? 90.0f + comboRotation * 0.5f : -90.0f - comboRotation * 0.5f;
-            }
-
-            Rectangle dest = { playerCenter.x + offset.x, playerCenter.y + offset.y, spriteSize, spriteSize };
-            Vector2 origin = { spriteSize / 2.0f, spriteSize / 2.0f };
-
-            // Kolor zależny od combo
-            Color slashColor = WHITE;
-            switch (mComboCount) {
-            case 0: slashColor = WHITE; break;
-            case 1: slashColor = { 200, 200, 255, 255 }; break;
-            case 2: slashColor = { 255, 180, 50, 255 }; break;
-            }
-
-            if (mComboCount == 2 && attackProgress < 0.3f) {
-                slashColor = { 255, 255, 180, 255 };
-            }
-
-            DrawTexturePro(mSlashTexture, slashSource, dest, origin, rotation, slashColor);
-
-            // Finisher ghost effect
-            if (mComboCount == 2) {
-                Color ghostSlash = { 255, 150, 50, 80 };
-                Rectangle ghostDest = dest;
-                ghostDest.width *= 1.3f;
-                ghostDest.height *= 1.3f;
-                Vector2 ghostOrigin = { ghostDest.width / 2.0f, ghostDest.height / 2.0f };
-                DrawTexturePro(mSlashTexture, slashSource, ghostDest, ghostOrigin, rotation - 15.0f, ghostSlash);
-            }
-        }
-
-        // Gracz
-        Vector2 drawPos;
-        drawPos.x = mPosition.x - 3;
-        drawPos.y = mPosition.y - 2;
-
-        if (mCurrentState == CLIMB || mCurrentState == WALL_SLIDE) {
-            float wallOffset = 2.0f;
-            drawPos.x += mIsFacingRight ? wallOffset : -wallOffset;
-        }
-
-        Rectangle dest = { std::floor(drawPos.x), std::floor(drawPos.y), 16.0f, 16.0f };
-
-        Color drawColor = WHITE;
-        if (mInvincibilityTimer > 0.0f) {
-            if ((int)(mInvincibilityTimer * 20.0f) % 2 == 0) {
-                drawColor = RED;
-            }
-        }
-
-        DrawTexturePro(mTexture, source, dest, { 0, 0 }, 0.0f, drawColor);
-
-        // Combo indicator
-        if (mIsAttacking || mComboWindowOpen) {
-            Color indicatorColor = WHITE;
-            const char* comboText = "1";
-            switch (mComboCount) {
-            case 0: comboText = "1"; indicatorColor = WHITE; break;
-            case 1: comboText = "2"; indicatorColor = SKYBLUE; break;
-            case 2: comboText = "3!"; indicatorColor = GOLD; break;
-            }
-            DrawText(comboText, (int)mPosition.x + 2, (int)mPosition.y - 18, 8, indicatorColor);
-
-            if (mComboWindowOpen) {
-                float progress = mComboWindowTimer / COMBO_WINDOW;
-                DrawRectangle((int)mPosition.x - 3, (int)mPosition.y - 12, (int)(16.0f * progress), 2, YELLOW);
-            }
+            mVelocity.x = 0;
         }
     }
 

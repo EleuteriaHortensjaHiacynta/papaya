@@ -6749,17 +6749,17 @@
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 98
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 97
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 34
 }
 ],
@@ -7071,243 +7071,6 @@
 },
 {
 "collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
 "damage": false,
 "textureID": 34
 },
@@ -7319,1701 +7082,6 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 33
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 33
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
 "textureID": 34
 }
 ],
@@ -9246,650 +7314,6 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 34
 },
 {
@@ -9920,22 +7344,17 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 34
+"textureID": 33
 },
 {
 "collision": false,
 "damage": false,
-"textureID": 34
+"textureID": 98
 },
 {
 "collision": false,
 "damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
+"textureID": 97
 },
 {
 "collision": false,
@@ -9946,16 +7365,6 @@
 "collision": false,
 "damage": false,
 "textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
 },
 {
 "collision": false,
@@ -9969,18 +7378,33 @@
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 34
 },
 {
 "collision": false,
-"damage": true,
-"textureID": 33
+"damage": false,
+"textureID": 98
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
 "textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
 }
 ],
 [
@@ -10242,67 +7666,67 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
 "textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
 }
 ],
 [
@@ -10569,37 +7993,7 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
 },
 {
 "collision": false,
@@ -10613,18 +8007,48 @@
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 34
 },
 {
 "collision": false,
-"damage": true,
-"textureID": 33
+"damage": false,
+"textureID": 98
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
 "textureID": 33
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
 }
 ],
 [
@@ -10886,67 +8310,67 @@
 {
 "collision": false,
 "damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
 "textureID": 97
 },
 {
 "collision": false,
 "damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 34
 },
 {
 "collision": false,
 "damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
 "textureID": 97
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 33
 }
 ],
 [
@@ -11208,6 +8632,31 @@
 {
 "collision": false,
 "damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
 "textureID": 33
 },
 {
@@ -11218,12 +8667,7 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
+"textureID": 97
 },
 {
 "collision": false,
@@ -11236,39 +8680,19 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 34
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
-"textureID": 98
+"textureID": 33
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
+"textureID": 33
 }
 ],
 [
@@ -11530,32 +8954,22 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
 },
 {
 "collision": false,
@@ -11565,7 +8979,12 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
 },
 {
 "collision": false,
@@ -11575,22 +8994,27 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
 "textureID": 34
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
 "textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
 }
 ],
 [
@@ -11852,32 +9276,7 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
 },
 {
 "collision": false,
@@ -11887,7 +9286,32 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
 },
 {
 "collision": false,
@@ -11900,19 +9324,19 @@
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
-"textureID": 98
+"collision": true,
+"damage": false,
+"textureID": 34
 },
 {
-"collision": false,
-"damage": true,
-"textureID": 97
+"collision": true,
+"damage": false,
+"textureID": 34
 },
 {
-"collision": false,
-"damage": true,
-"textureID": 98
+"collision": true,
+"damage": false,
+"textureID": 34
 }
 ],
 [
@@ -12189,17 +9613,17 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 34
 },
 {
 "collision": false,
 "damage": false,
-"textureID": 33
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
 },
 {
 "collision": false,
@@ -12214,27 +9638,27 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
+"textureID": 34
 },
 {
 "collision": false,
 "damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
 "textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
 }
 ],
 [
@@ -12531,12 +9955,7 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
+"textureID": 34
 },
 {
 "collision": false,
@@ -12545,17 +9964,2598 @@
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
 "textureID": 97
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
 "textureID": 34
 },
 {
 "collision": false,
-"damage": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 33
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 33
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
 "textureID": 98
 }
 ],
@@ -12866,18 +12866,18 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 }
 ],
@@ -13188,340 +13188,18 @@
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 33
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 33
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 33
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
 "textureID": 33
 }
 ],
@@ -13749,7 +13427,37 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 33
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
 },
 {
 "collision": false,
@@ -13764,41 +13472,6 @@
 {
 "collision": false,
 "damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
 "textureID": 33
 },
 {
@@ -13809,686 +13482,47 @@
 {
 "collision": false,
 "damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
 "textureID": 33
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-}
-],
-[
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 0
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": false,
-"textureID": 97
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 34
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 98
-},
-{
-"collision": false,
-"damage": true,
-"textureID": 97
 }
 ],
 [
@@ -14720,6 +13754,972 @@
 {
 "collision": false,
 "damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 97
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 34
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 98
+},
+{
+"collision": true,
+"damage": false,
+"textureID": 97
+}
+],
+[
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 0
+},
+{
+"collision": false,
+"damage": false,
+"textureID": 33
+},
+{
+"collision": false,
+"damage": false,
 "textureID": 34
 },
 {
@@ -14798,18 +14798,18 @@
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 }
 ],
@@ -15115,23 +15115,23 @@
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 }
 ],
@@ -15432,28 +15432,28 @@
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 283
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 284
 }
 ],
@@ -15744,28 +15744,28 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 92
 },
 {
@@ -16066,28 +16066,28 @@
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 282
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 219
 },
 {
@@ -16388,18 +16388,18 @@
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 155
 },
 {
@@ -16710,18 +16710,18 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 155
 },
 {
@@ -17032,18 +17032,18 @@
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 92
 },
 {
@@ -17354,18 +17354,18 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 156
 },
 {
@@ -17676,38 +17676,38 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 27
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 26
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 27
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 28
 }
 ],
@@ -17998,38 +17998,38 @@
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 156
 }
 ],
@@ -18320,38 +18320,38 @@
 "textureID": 97
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 33
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 34
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 98
 },
 {
-"collision": false,
-"damage": true,
+"collision": true,
+"damage": false,
 "textureID": 220
 }
 ],

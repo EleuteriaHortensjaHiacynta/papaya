@@ -4878,17 +4878,17 @@
 "textureID": 425
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 166
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 166
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 166
 },
@@ -4963,17 +4963,17 @@
 "textureID": 425
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 166
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 166
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 166
 },
@@ -16792,7 +16792,7 @@
 "textureID": 0
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 143
 },
@@ -17723,12 +17723,12 @@
 "textureID": 0
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 13
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 68
 },
@@ -17743,12 +17743,12 @@
 "textureID": 81
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 66
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 15
 },
@@ -18055,12 +18055,12 @@
 "textureID": 83
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 258
 },
 {
-"collision": false,
+"collision": true,
 "damage": false,
 "textureID": 259
 },

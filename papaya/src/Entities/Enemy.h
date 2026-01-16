@@ -3,9 +3,7 @@
 
 class Enemy : public Entity {
 public:
-	Vector2 mPosition;
 	Vector2 mVelocity;
-	Vector2 mSize;
 
 	float mSpeed = 40.0f;
 	float mGravity = 500.0f;

@@ -5,16 +5,23 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Default to Debug build to include symbols for easier debugging if not set
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
 
-# sources (add or remove files as appropriate)
+# TYLKO PLIKI .CPP - ka¿dy raz!
 set(PAPAYA_SOURCES
   src/papaya.cpp
   src/Saves/map.cpp
-  src/Entities/Entity.h        # optional for IDE visibility
+  src/Saves/saves.cpp
+  src/Saves/entities.cpp
+  src/Scenes/scene_game.cpp
+  src/external_headers/tinyfiledialogs.cpp
+)
+
+# Nag³ówki osobno (opcjonalnie, dla IDE)
+set(PAPAYA_HEADERS
+  src/Entities/Entity.h
   src/Entities/Dummy.h
   src/Entities/Enemy.h
   src/Entities/Player.h
@@ -23,23 +30,13 @@ set(PAPAYA_SOURCES
   src/Scenes/main_menu.hpp
   src/Scenes/scene_functions.hpp
   src/Scenes/scene_test_room.h
+  src/Scenes/scene_game.hpp
   src/Saves/entities.hpp 
   src/Saves/map.hpp
   src/Saves/saves.hpp
-  # add other .cpp/.h here
 )
 
-# Prefer listing .cpp files explicitly; adjust to match your tree:
-set(PAPAYA_CPP
-  src/papaya.cpp
-  src/Saves/map.cpp
-  src/Saves/saves.cpp
-  src/Saves/entities.cpp
-  src/external_headers/tinyfiledialogs.cpp
-  # add other .cpp files
-)
-
-add_executable(papaya ${PAPAYA_CPP} ${PAPAYA_SOURCES})
+add_executable(papaya ${PAPAYA_SOURCES} ${PAPAYA_HEADERS})
 
 # Include directories so headers are found with #include "..."
 target_include_directories(papaya PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
