@@ -10,7 +10,6 @@
 #include "../Entities/Enemies/mage_boss.h"
 #include "../Entities/Enemies/rabbit.h"
 
-// Sort comparator: by x then y
 static bool sortByXY(uint64_t a, uint64_t b) {
     EntityS ea = decodeEntityS(a);
     EntityS eb = decodeEntityS(b);
@@ -20,10 +19,8 @@ static bool sortByXY(uint64_t a, uint64_t b) {
 
 uint64_t createEntityS(EntityS entity) {
     uint64_t entityData = 0;
-    // Layout (bits): [63..48]=x (16) | [47..32]=y (16) | [31..24]=x_length (8) | [23..16]=y_length (8)
-    //                 [15..8]=textureID (8) | [7..4]=extraData (4) | [3..0]=layer (4)
+    // Layout (bits): [63..48]=x | [47..32]=y | [31..24]=type | [23..16]=health
 
-    // Rzutujemy int16_t na uint16_t, aby zachowaæ uk³ad bitów (bit cast)
     entityData |= (static_cast<uint64_t>(static_cast<uint16_t>(entity.x)) & 0xFFFFULL) << 48;
     entityData |= (static_cast<uint64_t>(static_cast<uint16_t>(entity.y)) & 0xFFFFULL) << 32;
 
@@ -35,7 +32,6 @@ uint64_t createEntityS(EntityS entity) {
 EntityS decodeEntityS(uint64_t entityData) {
     EntityS entity;
 
-    // Odczytujemy jako uint16_t, a potem rzutujemy na int16_t, aby przywróciæ znak
     entity.x = static_cast<uint16_t>((entityData >> 48) & 0xFFFF);
     entity.y = static_cast<uint16_t>((entityData >> 32) & 0xFFFF);
 
@@ -53,13 +49,7 @@ std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS, Texture2D& tex, 
         return std::make_unique<MageBoss>(x, y, tex, playerPtr);
     case RABBIT:
         return std::make_unique<RabbitEnemy>(x, y, tex, playerPtr);
-
-        // WA¯NE: Dodaj tutaj inne typy wrogów, jeœli masz (np. SLIME, BAT)
-        // case SLIME: return std::make_unique<Slime>(x, y, tex, playerPtr);
-
     default:
-        // Zabezpieczenie przed zwróceniem nullptr dla nieznanego typu
-        // Jeœli masz klasê bazow¹ Enemy, mo¿esz tu zwróciæ generycznego wroga
         return nullptr;
     }
 }
@@ -74,8 +64,7 @@ void EntitySaver::addEntityS(EntityS entity) {
 
 void EntitySaver::addEntity(const std::unique_ptr<Entity>& entity) {
     EntityS entityS;
-    // Konwersja z Pixeli (Gra) na Kafelki (Zapis)
-    // Zak³adamy, ¿e entity->mPosition to piksele, a TILE_SIZE to 8
+    // Convert Pixel pos to Tile pos
     entityS.x = static_cast<int16_t>(entity->mPosition.x / 8.0f);
     entityS.y = static_cast<int16_t>(entity->mPosition.y / 8.0f);
     entityS.entityType = entity->mType;
@@ -101,18 +90,12 @@ void EntitySaver::fromEditor(std::string json) {
     for (long unsigned int i = 0; i < arr.size(); ++i) {
         for (long unsigned int j = 0; j < arr[i].size(); ++j) {
 
-            // 1. Pobieramy surowe ID z edytora (numer obrazka w atlasie)
             uint8_t editorID = arr[i][j];
+            if (editorID == 0) continue;
 
-            if (editorID == 0) continue; // Puste pole
-
-            // 2. T³umaczenie: Editor Sprite ID -> Game Enum
             EntityType gameType;
 
-            // UWAGA: SprawdŸ w swoim atlasie (pliku .png), który to obrazek!
-            // Zak³adam: 
-            // 1 = Królik (drugi obrazek, bo 0 to pierwszy)
-            // 2 = Boss
+            // Map Editor ID -> Game Enum
             switch (editorID) {
             case 1:
                 gameType = RABBIT;
@@ -123,20 +106,18 @@ void EntitySaver::fromEditor(std::string json) {
                 std::cout << " -> Mapowanie: EditorID 2 -> MAGE_BOSS" << std::endl;
                 break;
             default:
-                // Jeœli nie wiesz co to, dajemy królika dla testu
                 std::cout << " -> WARNING: Nieznane ID (" << (int)editorID << "), ustawiam RABBIT" << std::endl;
                 gameType = RABBIT;
                 break;
             }
 
-            // 3. Obliczanie pozycji globalnej (w kafelkach)
             int globalTileX = static_cast<int>(j) + (chunkX * 64);
             int globalTileY = static_cast<int>(i) + (chunkY * 64);
 
             EntityS entity;
             entity.x = static_cast<int16_t>(globalTileX);
             entity.y = static_cast<int16_t>(globalTileY);
-            entity.entityType = gameType; // Tu zapisujemy ju¿ poprawne ID gry!
+            entity.entityType = gameType;
             entity.health = 10;
 
             this->addEntityS(entity);
@@ -144,9 +125,7 @@ void EntitySaver::fromEditor(std::string json) {
     }
 }
 
-EntitySaver::~EntitySaver() {
-    // sortEntities();
-}
+EntitySaver::~EntitySaver() {}
 
 EntityLoader::EntityLoader(std::fstream& f) : fileStream(&f) {}
 

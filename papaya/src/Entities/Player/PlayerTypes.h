@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "raylib.h"
 
-// === TYPY BRONI ===
 enum class WeaponType {
     SWORD_DEFAULT,
     DAGGER_SWIFT,
@@ -10,86 +9,78 @@ enum class WeaponType {
     KATANA_BLOOD
 };
 
-// === KIERUNKI ATAKU ===
 enum class AttackDirection {
     HORIZONTAL,
     UP,
     DOWN
 };
 
-// === STATY BRONI ===
 struct WeaponStats {
     float damage;
     float reachX;
     float reachY;
-    float duration;         // Ile czasu trwa animacja ataku (im więcej = wolniej)
-    float attackCooldown;   // Ile czasu trzeba czekać na kolejny atak
+    float duration;         // Attack duration
+    float attackCooldown;
     Color slashColor;
     float rotationSpeed;
     float baseRotation;
 
     static WeaponStats GetStats(WeaponType type) {
         switch (type) {
-
-            // 🗡️ MIECZ DOMYŚLNY (Zbalansowany)
         case WeaponType::SWORD_DEFAULT:
             return {
-                2.0f,       // damage (było 15.0)
+                2.0f,       // damage
                 30.0f,      // reachX
                 25.0f,      // reachY
-                0.45f,      // duration (zwolnione z 0.35)
-                0.50f,      // cooldown (zwolnione z 0.35)
+                0.45f,      // duration
+                0.50f,      // cooldown
                 Color{200, 200, 255, 255},
                 0.3f,
                 0.0f
             };
 
-            // 🗡️ SZTYLET (Szybki, mały dmg - baza 1)
         case WeaponType::DAGGER_SWIFT:
             return {
-                1.0f,       // damage (było 8.0)
+                1.0f,       // damage
                 22.0f,      // reachX
                 18.0f,      // reachY
-                0.30f,      // duration (zwolnione z 0.2)
-                0.25f,      // cooldown (nadal szybki, ale bez przesady)
+                0.30f,      // duration
+                0.25f,      // cooldown
                 Color{150, 255, 150, 255},
                 0.6f,
                 -5.0f
             };
 
-            // 🪓 TOPÓR (Bardzo wolny, potężny dmg)
         case WeaponType::AXE_HEAVY:
             return {
-                5.0f,       // damage (było 28.0) - Zgodnie z prośbą max
+                5.0f,       // damage
                 35.0f,      // reachX
                 30.0f,      // reachY
-                0.80f,      // duration (bardzo wolny zamach - było 0.5)
-                0.90f,      // cooldown (duża kara za chybienie)
+                0.80f,      // duration
+                0.90f,      // cooldown
                 Color{255, 120, 60, 255},
                 0.2f,
                 10.0f
             };
 
-            // 🔱 WŁÓCZNIA (Duży zasięg, mały dmg)
         case WeaponType::SPEAR_LONG:
             return {
-                1.5f,       // damage (było 12.0)
-                55.0f,      // reachX (podbity zasięg, żeby miała sens przy małym dmg)
+                1.5f,       // damage
+                55.0f,      // reachX
                 16.0f,      // reachY
-                0.60f,      // duration (wolniejsze dźgnięcie - było 0.38)
+                0.60f,      // duration
                 0.55f,      // cooldown
                 Color{255, 255, 100, 255},
                 0.1f,
                 0.0f
             };
 
-            // ⚔️ KATANA (Dobre obrażenia, średnia prędkość)
         case WeaponType::KATANA_BLOOD:
             return {
-                3.5f,       // damage (było 20.0)
+                3.5f,       // damage
                 38.0f,      // reachX
                 21.0f,      // reachY
-                0.40f,      // duration (zwolnione z 0.28)
+                0.40f,      // duration
                 0.45f,      // cooldown
                 Color{255, 30, 60, 255},
                 0.5f,
@@ -113,7 +104,6 @@ struct WeaponStats {
     }
 };
 
-// === ANIMACJE ===
 enum class AnimState {
     IDLE, WALK, TURN,
     JUMP_UP, JUMP_DOWN,
@@ -121,7 +111,6 @@ enum class AnimState {
     ATTACK
 };
 
-// === DANE ANIMACJI (NAPRAWIONE) ===
 struct AnimationData {
     int startFrame;
     int frameCount;
@@ -130,8 +119,7 @@ struct AnimationData {
 
     static AnimationData GetAnimationData(AnimState state, float velocityY = 0, AttackDirection attackDir = AttackDirection::HORIZONTAL) {
         switch (state) {
-
-            // IDLE & WALK (Poprawione indeksy)
+            // IDLE & WALK
         case AnimState::IDLE:       return { 12, 6, 0.15f, true };
         case AnimState::WALK:       return { 0, 6, 0.1f, true };
 
@@ -145,16 +133,16 @@ struct AnimationData {
 
                             // CLIMBING
         case AnimState::CLIMB:
-            if (velocityY < 0) return { 39, 2, 0.15f, true }; // Góra
-            if (velocityY > 0) return { 41, 2, 0.15f, true }; // Dół
-            return { 39, 1, 0.15f, true };                    // Zwis
+            if (velocityY < 0) return { 39, 2, 0.15f, true }; // Up
+            if (velocityY > 0) return { 41, 2, 0.15f, true }; // Down
+            return { 39, 1, 0.15f, true };                    // Hang
 
         case AnimState::WALL_SLIDE: return { 43, 2, 0.15f, true };
 
-                                  // ATTACK (Poprawione klatki)
+                                  // ATTACK
         case AnimState::ATTACK:
             switch (attackDir) {
-            case AttackDirection::UP:    return { 28, 5, 0.07f, false }; // Nieco wolniejsza animacja (0.07)
+            case AttackDirection::UP:    return { 28, 5, 0.07f, false };
             case AttackDirection::DOWN:  return { 34, 5, 0.07f, false };
             default:                     return { 22, 5, 0.07f, false };
             }
@@ -164,7 +152,6 @@ struct AnimationData {
     }
 };
 
-// === GHOST EFFECT ===
 struct Ghost {
     Vector2 position;
     Rectangle frameRec;

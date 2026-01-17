@@ -20,7 +20,6 @@ struct EntityS {
 uint64_t createEntityS(EntityS entity);
 EntityS decodeEntityS(uint64_t entityData);
 
-// <--- WA¯NE: Dodaj tê deklaracjê, ¿eby scene_game widzia³ tê funkcjê
 std::unique_ptr<Entity> EntitySToEntity(const EntityS& entityS, Texture2D& mainTileset, Entity* playerPtr);
 
 class EntitySaver {
@@ -32,7 +31,6 @@ public:
     int mTextureID = 0;
     void addEntity(const std::unique_ptr<Entity>& entity);
 
-    // void sortEntities();
     void fromEditor(std::string json);
     ~EntitySaver();
 };
@@ -42,7 +40,6 @@ private:
     std::fstream* fileStream = nullptr;
 public:
     explicit EntityLoader(std::fstream& f);
-    // std::vector<std::unique_ptr<Entity>> getAll();
     std::vector<EntityS> getAll();
 
     ~EntityLoader();

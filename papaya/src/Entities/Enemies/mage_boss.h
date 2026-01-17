@@ -7,9 +7,6 @@
 #include <algorithm>
 #include <iostream>
 
-// ============================================================================
-// FIREBALL (bez zmian w strukturze - kompatybilność)
-// ============================================================================
 struct Fireball {
     Vector2 position = { 0, 0 };
     Vector2 velocity = { 0, 0 };
@@ -20,9 +17,6 @@ struct Fireball {
     float animTimer = 0.0f;
 };
 
-// ============================================================================
-// ZOPTYMALIZOWANY MAGE BOSS (kompatybilny z scene_game.cpp)
-// ============================================================================
 class MageBoss : public Entity {
 public:
     enum BossState {
@@ -46,7 +40,7 @@ public:
 
     Rectangle mArenaBounds = { 0, 0, 0, 0 };
 
-    // === STATYSTYKI ===
+    // Stats
     int mHealth = 70;
     int mMaxHealth = 70;
     float mFloatSpeed = 2.5f;
@@ -54,7 +48,7 @@ public:
     float mStartY = 0.0f;
     float mMoveSpeed = 70.0f;
 
-    // === TIMERY ===
+    // Timers
     float mStateTimer = 0.0f;
     float mIdleTimeBase = 1.5f;
     float mLaserChargeTimeBase = 2.0f;
@@ -65,7 +59,7 @@ public:
     float mLaserChargeTime = 2.0f;
     float mLaserFireTime = 1.8f;
 
-    // === LASER ===
+    // Laser
     float mLaserAngle = 0.0f;
     float mLaserTrackSpeedChargeBase = 3.0f;
     float mLaserTrackSpeedFireBase = 0.6f;
@@ -80,10 +74,10 @@ public:
     float mLaserAngle2 = 0.0f;
     Vector2 mLaserEnd2 = { 0, 0 };
 
-    // === FIREBALLE (zachowana kompatybilność!) ===
+    // Fireballs
     std::vector<Fireball> mFireballs;
-    static const int MAX_FIREBALLS = 32;  // Limit dla optymalizacji
-    float mFireballSpeed = 320.0f;
+    static const int MAX_FIREBALLS = 32;
+    float mFireballSpeed = 180.0f;
     int mFireballCountBase = 2;
     int mFireballCount = 2;
     float mFireballSpread = 25.0f;
@@ -96,25 +90,25 @@ public:
     int mCurrentBurst = 0;
     float mBurstTimer = 0.0f;
 
-    // === TELEPORTACJA ===
+    // Teleport
     float mTeleportationDuration = 0.4f;
     Vector2 mTeleportTarget = { 0, 0 };
     float mTeleportAlpha = 1.0f;
 
-    // === AOE ===
+    // AoE
     float mAoeRadius = 0.0f;
-    float mAoeMaxRadius = 100.0f;
+    float mAoeMaxRadius = 80.0f;
     float mAoeDuration = 0.6f;
-    float mAoeWarningTime = 1.4f;
+    float mAoeWarningTime = 1.1f;
     bool mAoeDealtDamage = false;
 
-    // === ENRAGE ===
+    // Enrage
     bool mIsEnraged = false;
     float mEnrageThreshold = 0.6f;
     float mEnrageSpeedMultiplier = 1.8f;
     Color mEnrageColor = { 255, 80, 80, 255 };
 
-    // === ANIMACJA ===
+    // Animation
     int mCurrentFrame = 0;
     float mFrameTimer = 0.0f;
     static constexpr float SPRITE_SIZE = 32.0f;
@@ -130,14 +124,11 @@ public:
     int mAttackCounter = 0;
     bool mTeleportAttack = false;
 
-    // === OPTYMALIZACJA ===
+    // Optimization helpers
     Vector2 mCachedCenter = { 0, 0 };
     float mCachedSinTime = 0.0f;
     int mUpdateCounter = 0;
 
-    // ========================================================================
-    // KONSTRUKTOR
-    // ========================================================================
     MageBoss(float x, float y, Texture tex, Entity* target)
         : Entity({ x, y }, MAGE_BOSS) {
         mPosition = { x, y };
@@ -149,7 +140,6 @@ public:
         mStartY = y;
         mCachedCenter = { x + mSize.x / 2, y + mSize.y / 2 };
 
-        // Pre-alokacja vectora (unika realokacji w runtime)
         mFireballs.reserve(MAX_FIREBALLS);
     }
 
@@ -157,9 +147,6 @@ public:
         mArenaBounds = { x, y, w, h };
     }
 
-    // ========================================================================
-    // ENRAGE
-    // ========================================================================
     void checkEnrage() {
         if (mIsEnraged) return;
 
@@ -186,9 +173,6 @@ public:
         }
     }
 
-    // ========================================================================
-    // DAMAGE
-    // ========================================================================
     void takeDamage(int amount) {
         if (mState == DYING || mState == INACTIVE || !mActive) return;
         if (mState == TELEPORT_OUT || mState == TELEPORT_IN) return;
@@ -207,9 +191,6 @@ public:
         }
     }
 
-    // ========================================================================
-    // TELEPORTACJA
-    // ========================================================================
     Vector2 chooseTeleportDestination(const std::vector<Entity*>& walls) {
         for (int attempt = 0; attempt < 8; attempt++) {
             Vector2 candidate = mPosition;
@@ -254,9 +235,6 @@ public:
         return mPosition;
     }
 
-    // ========================================================================
-    // GŁÓWNY UPDATE
-    // ========================================================================
     void updateBossLogic(float deltaTime, std::vector<Entity*>& walls) {
         if (!mActive) return;
 
@@ -274,7 +252,7 @@ public:
 
         mPrevPosition = mPosition;
 
-        // Lewitacja
+        // Levitation
         if (mState != TELEPORT_OUT && mState != TELEPORT_IN) {
             mFloatOffset += deltaTime * mFloatSpeed;
 
@@ -287,47 +265,36 @@ public:
         mPosition.x += mVelocity.x * deltaTime;
         if (mHurtTimer > 0) mHurtTimer -= deltaTime;
 
-        // Update fireballi (zoptymalizowany)
         updateFireballs(deltaTime, walls);
-
-        // Maszyna stanów
         updateStateMachine(deltaTime, walls);
         updateAnimation(deltaTime);
     }
 
-    // ========================================================================
-    // UPDATE FIREBALLI (zoptymalizowany, ale kompatybilny)
-    // ========================================================================
     void updateFireballs(float deltaTime, std::vector<Entity*>& walls) {
-        // Używamy indeksów zamiast iteratorów (szybsze usuwanie)
         for (int i = (int)mFireballs.size() - 1; i >= 0; i--) {
             Fireball& fb = mFireballs[i];
             if (!fb.active) {
-                // Swap and pop (szybsze niż erase)
                 std::swap(mFireballs[i], mFireballs.back());
                 mFireballs.pop_back();
                 continue;
             }
 
-            // Ruch
             fb.position.x += fb.velocity.x * deltaTime;
             fb.position.y += fb.velocity.y * deltaTime;
 
-            // Animacja
             fb.animTimer += deltaTime;
             if (fb.animTimer > 0.1f) {
                 fb.animTimer = 0.0f;
                 fb.animFrame = (fb.animFrame + 1) & 3;
             }
 
-            // Kolizje (sprawdzaj tylko co drugą klatkę dla odległych fireballi)
+            // Optimize collisions for distant fireballs
             bool checkCollision = true;
             float dxFromBoss = fb.position.x - mPosition.x;
             float dyFromBoss = fb.position.y - mPosition.y;
             float distSqFromBoss = dxFromBoss * dxFromBoss + dyFromBoss * dyFromBoss;
 
-            // Dalsze fireballe sprawdzaj rzadziej
-            if (distSqFromBoss > 250000.0f && (mUpdateCounter & 1)) {  // > 500px
+            if (distSqFromBoss > 250000.0f && (mUpdateCounter & 1)) {
                 checkCollision = false;
             }
 
@@ -341,16 +308,12 @@ public:
                 }
             }
 
-            // Limit dystansu
-            if (distSqFromBoss > 1000000.0f) {  // > 1000px
+            if (distSqFromBoss > 1000000.0f) {
                 fb.active = false;
             }
         }
     }
 
-    // ========================================================================
-    // MASZYNA STANÓW
-    // ========================================================================
     void updateStateMachine(float deltaTime, std::vector<Entity*>& walls) {
         switch (mState) {
         case INACTIVE:
@@ -546,7 +509,6 @@ public:
         }
         else if (mStateTimer < mAoeWarningTime + mAoeDuration) {
             mAoeRadius = mAoeMaxRadius * 1.2f;
-            mAoeDealtDamage = true;
         }
         else {
             mState = TELEPORT_OUT;
@@ -558,9 +520,6 @@ public:
         }
     }
 
-    // ========================================================================
-    // ANIMACJA
-    // ========================================================================
     void updateAnimation(float deltaTime) {
         mFrameTimer += deltaTime;
         float animSpeed = mIsEnraged ? 0.12f : 0.15f;
@@ -613,9 +572,6 @@ public:
         }
     }
 
-    // ========================================================================
-    // FIREBALL SPAWN
-    // ========================================================================
     void spawnFireballPattern() {
         if (!pTarget) return;
         if ((int)mFireballs.size() >= MAX_FIREBALLS) return;
@@ -663,9 +619,6 @@ public:
         }
     }
 
-    // ========================================================================
-    // LASER
-    // ========================================================================
     void calculateLaserEnd(std::vector<Entity*>& walls, float deltaTime) {
         if (!pTarget) return;
 
@@ -720,9 +673,6 @@ public:
         return { mLaserStart.x + dir.x * maxDist, mLaserStart.y + dir.y * maxDist };
     }
 
-    // ========================================================================
-    // KOLIZJE
-    // ========================================================================
     bool checkAoeCollision(Entity* player) {
         if (!player || mState != AOE_ATTACK) return false;
         if (mStateTimer < mAoeWarningTime) return false;
@@ -788,13 +738,10 @@ public:
         }
     }
 
-    // ========================================================================
-    // DRAW
-    // ========================================================================
     void draw() override {
         if (mState == INACTIVE || !mActive) return;
 
-        // AOE
+        // Draw AOE
         if (mState == AOE_ATTACK) {
             if (mStateTimer < mAoeWarningTime) {
                 if (mAoeRadius > 0) {
@@ -814,7 +761,7 @@ public:
             }
         }
 
-        // Fireballe
+        // Draw Fireballs
         for (const auto& fb : mFireballs) {
             if (!fb.active) continue;
 
@@ -829,7 +776,7 @@ public:
             DrawTexturePro(mTexture, source, dest, origin, fb.rotation, WHITE);
         }
 
-        // Laser
+        // Draw Laser
         if (mState == LASER_CHARGE) {
             if ((mUpdateCounter / 3) & 1) {
                 Color chargeColor = mIsEnraged ? Fade(ORANGE, 0.5f) : Fade(SKYBLUE, 0.5f);
@@ -856,7 +803,7 @@ public:
             }
         }
 
-        // Boss sprite
+        // Draw Boss
         Vector2 drawPos = {
             mPosition.x - (SPRITE_SIZE - mSize.x) / 2,
             mPosition.y - (SPRITE_SIZE - mSize.y) / 2
@@ -888,22 +835,5 @@ public:
         }
 
         DrawTextureRec(mTexture, source, drawPos, bossColor);
-
-        // HP bar
-        if (mState != INACTIVE && mState != TELEPORT_OUT && mState != TELEPORT_IN) {
-            float hpBarWidth = 50.0f;
-            float hpPercent = (float)mHealth / (float)mMaxHealth;
-
-            int barX = (int)mPosition.x - 9;
-            int barY = (int)mPosition.y - 12;
-
-            DrawRectangle(barX, barY, (int)hpBarWidth + 2, 6, BLACK);
-            DrawRectangle(barX + 1, barY + 1, (int)hpBarWidth, 4, DARKGRAY);
-            DrawRectangle(barX + 1, barY + 1, (int)(hpBarWidth * hpPercent), 4, mIsEnraged ? ORANGE : GREEN);
-
-            if (mIsEnraged) {
-                DrawText("!", (int)mPosition.x + (int)mSize.x / 2 - 2, (int)mPosition.y - 22, 12, RED);
-            }
-        }
     }
 };

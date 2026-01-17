@@ -28,7 +28,6 @@ struct Block {
     Layers layer;
 };
 
-// ZMIANA NAZWY: Wall -> CollisionRect
 struct CollisionRect {
     int x, y, w, h;
     CollisionRect(int x, int y, int w, int h) : x(x), y(y), w(w), h(h) {}
@@ -39,7 +38,6 @@ struct RenderTile {
     uint16_t textureID;
 };
 
-// Funkcje pomocnicze
 uint64_t createBlock(Block block);
 Block decodeBlock(uint64_t blockData);
 
@@ -64,7 +62,7 @@ public:
     explicit MapLoader(std::fstream& f);
     ~MapLoader() = default;
 
-    // ZMIANA: Zwraca CollisionRect zamiast Wall
     std::vector<CollisionRect> getCollisions();
+    std::vector<CollisionRect> getDamagingZones();
     std::vector<RenderTile> getRenderData();
 };

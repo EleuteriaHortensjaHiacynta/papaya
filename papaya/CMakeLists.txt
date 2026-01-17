@@ -20,6 +20,8 @@ set(PAPAYA_SOURCES
   src/Entities/entities.cpp
 
   src/Saves/saves.cpp
+
+  src/Core/GameWrapper.cpp
   
   # Scenes
   src/Scenes/scene_game.cpp
@@ -38,6 +40,9 @@ set(PAPAYA_HEADERS
   # Core utilities
   src/Core/InputHelper.h
   src/Core/MathUtils.h
+  src/Core/GameWrapper.hpp
+  src/Core/Physics.hpp
+  src/Core/GameConstants.hpp
   
   # Entities - Base
   src/Entities/Entity.h
@@ -61,7 +66,7 @@ set(PAPAYA_HEADERS
   # Scenes
   src/Scenes/main_menu.hpp
   src/Scenes/scene_functions.hpp
-  src/Scenes/scene_test_room.h
+  
   src/Scenes/scene_game.hpp
   
   # Saves

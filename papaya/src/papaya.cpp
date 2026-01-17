@@ -1,34 +1,37 @@
 #include <iostream>
-#include <raylib.h>
+#include "raylib.h"
+
 #include "Scenes/main_menu.hpp"
-#include "Scenes/scene_game.hpp"
 #include "level_editor/scene_level_editor.hpp"
+#include "Core/GameWrapper.hpp"
 
 int main() {
-    std::cout << "Hello Papaya!\n";
+    std::cout << "Starting Papaya Engine...\n";
 
-    int windowWidth = 1600;
-    int windowHeight = 900;
+    const int WINDOW_W = 1600;
+    const int WINDOW_H = 900;
 
-    InitWindow(windowWidth, windowHeight, "Papaya");
+    InitWindow(WINDOW_W, WINDOW_H, "Papaya");
     SetTargetFPS(60);
+    SetExitKey(KEY_NULL);
 
-    // Stan początkowy
     int state = 0;
     bool shouldQuit = false;
 
+    GameWrapper game(shouldQuit, state);
+
     while (!WindowShouldClose() && !shouldQuit) {
         switch (state) {
-        case 0: // MENU
-            sceneMainMenu(windowWidth, windowHeight, shouldQuit, state);
+        case 0:
+            sceneMainMenu(WINDOW_W, WINDOW_H, shouldQuit, state);
             break;
 
-        case 1: // GAMEPLAY
-            sceneGame(windowWidth, windowHeight, shouldQuit, state);
+        case 1:
+            game.runFrame(GetScreenWidth(), GetScreenHeight());
             break;
 
-        case 2: // EDITOR
-            sceneLevelEditor(shouldQuit, state, windowHeight, windowWidth);
+        case 2:
+            sceneLevelEditor(shouldQuit, state, WINDOW_H, WINDOW_W);
             break;
 
         default:
