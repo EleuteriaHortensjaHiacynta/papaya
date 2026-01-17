@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include "GUI/GUI_raylib.hpp"
 #include "Scenes/scene_functions.hpp"
+#include "Core/GameConstants.hpp"
 
 inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, int& state) {
 
@@ -36,6 +37,7 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
     gridButtonSetup(pMainGrid, pSave1Button, 0, 0);
 
     pSave1Button->storeFunction([&]() {
+        GameConstants::currentSavePath = "assets/saves/main_save";
         changeScene(state, 1, shouldLeave);
         });
 
@@ -44,6 +46,7 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
     gridButtonSetup(pMainGrid, pSave2Button, 1, 0);
 
     pSave2Button->storeFunction([&]() {
+        GameConstants::currentSavePath = "assets/saves/secondary_save";
         changeScene(state, 1, shouldLeave);
         });
 
@@ -52,6 +55,7 @@ inline void sceneMainMenu(int windowWidth, int windowHeight, bool& shouldQuit, i
     gridButtonSetup(pMainGrid, pSave3Button, 2, 0);
 
     pSave3Button->storeFunction([&]() {
+        GameConstants::currentSavePath = "assets/saves/tertiary_save";
         changeScene(state, 1, shouldLeave);
         });
 

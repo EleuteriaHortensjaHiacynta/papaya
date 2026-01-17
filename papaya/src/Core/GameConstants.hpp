@@ -13,6 +13,8 @@ namespace GameConstants {
     inline const std::string BOSS_TEXTURE_PATH = "assets/mage_boss.png";
     inline const std::string RABBIT_TEXTURE_PATH = "assets/rabbit.png";
     inline const std::string BACKGROUND_PATH = "assets/background.png";
-    inline const std::string SAVE_PATH = "assets/saves/main_save";
+
     inline const std::string EDITOR_PATH = "assets/editor";
+
+    inline std::string currentSavePath = "assets/saves/main_save";
 }

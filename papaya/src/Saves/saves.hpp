@@ -32,7 +32,10 @@ public:
     MapSaver& saveMap();
     EntityLoader& getEntities();
     EntitySaver& saveEntities();
+
+    EntityLoader& getSaveData();
     EntitySaver& saveEntityToMap();
+    void clearSaveData();
 
     void loadFromEditorDir(const std::string& pathToFolder);
 };
