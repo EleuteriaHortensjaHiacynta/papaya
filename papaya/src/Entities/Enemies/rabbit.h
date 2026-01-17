@@ -38,8 +38,6 @@ public:
     const float SAFE_DISTANCE = 120.0f;
     const float MORPH_TRIGGER_DIST = 80.0f;
 
-    //Vector2 mSize = RABBIT_SIZE;
-
     float mHopCooldown = 0.0f;
     float mHurtTimer = 0.0f;
     float mTurnCooldown = 0.0f;

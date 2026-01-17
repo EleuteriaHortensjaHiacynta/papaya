@@ -2,13 +2,10 @@
 #include "Core/InputHelper.h"
 #include "Core/MathUtils.h"
 #include <algorithm>
+#include <cmath>
 
 using namespace PlayerConstants;
 using namespace MathUtils;
-
-// ============================================================================
-// KONSTRUKTOR / DESTRUKTOR
-// ============================================================================
 
 Player::Player(float startX, float startY)
     : Entity({ startX, startY }, PLAYER)
@@ -28,10 +25,6 @@ Player::~Player() {
     UnloadTexture(mSlashTexture);
     UnloadTexture(mWingsTexture);
 }
-
-// ============================================================================
-// G£ÓWNA PÊTLA UPDATE
-// ============================================================================
 
 void Player::update(float deltaTime) {
     if (mHealth <= 0 || mPosition.y > 800.0f) {
@@ -58,10 +51,6 @@ void Player::lateUpdate(float deltaTime) {
     handleClimbing(deltaTime);
     updateAnimation(deltaTime);
 }
-
-// ============================================================================
-// INTERFEJS I GETTERY
-// ============================================================================
 
 Rectangle Player::getRect() {
     return { mPosition.x, mPosition.y, mSize.x, mSize.y };
@@ -103,9 +92,14 @@ void Player::setWeapon(WeaponType type) {
     mComboWindowOpen = false;
 }
 
-// ============================================================================
-// ZARZ¥DZANIE STANEM
-// ============================================================================
+void Player::pogoBounce() {
+    mVelocity.y = -JUMP_FORCE * 0.9f;
+
+    mIsPogoJump = true;
+    mJumpCount = 1;
+    mCanDash = true;
+    mIsDashing = false;
+}
 
 inline void Player::saveFrameState() {
     mPrevPosition = mPosition;
@@ -125,7 +119,6 @@ void Player::respawn() {
     mVelocity = { 0, 0 };
     mStamina = MAX_STAMINA;
 
-    // Reset stanów
     mRecoilTimer = 0;
     mInvincibilityTimer = 0;
     mIsDashing = false;
@@ -142,10 +135,6 @@ void Player::respawn() {
     mWasTouchingWall = false;
 }
 
-// ============================================================================
-// LOGIKA RUCHU I FIZYKI
-// ============================================================================
-
 void Player::updateTimers(float dt) {
     mJumpBufferCounter = Input::JumpPressed() ? JUMP_BUFFER_TIME : mJumpBufferCounter - dt;
     mCoyoteTimeCounter = mIsGrounded ? COYOTE_TIME : mCoyoteTimeCounter - dt;
@@ -156,7 +145,6 @@ void Player::updateTimers(float dt) {
     if (mMomentumTimer > 0) mMomentumTimer -= dt;
     if (mAttackCooldown > 0) mAttackCooldown -= dt;
 
-    // Recoil logic
     if (mRecoilTimer > 0) {
         mRecoilTimer -= dt;
         float absVelX = std::abs(mVelocity.x);
@@ -164,7 +152,6 @@ void Player::updateTimers(float dt) {
             mVelocity.x = Sign(mVelocity.x) * MAX_SPEED;
     }
 
-    // Combo window logic
     if (mComboWindowOpen) {
         mComboWindowTimer -= dt;
         if (mComboWindowTimer <= 0) {
@@ -173,7 +160,6 @@ void Player::updateTimers(float dt) {
         }
     }
 
-    // Attack timer logic
     if (mIsAttacking) {
         mAttackTimer -= dt;
         if (mAttackTimer <= 0) {
@@ -204,6 +190,20 @@ inline void Player::updateStamina(float dt) {
 }
 
 void Player::handleMovement(float dt) {
+    // --- POPRAWKA NOCLIP: LATANIE ---
+    if (mNoclip) {
+        float dirX = Input::GetHorizontalAxis();
+        float dirY = Input::GetVerticalAxis();
+        float flySpeed = 300.0f;
+
+        mVelocity.x = dirX * flySpeed;
+        mVelocity.y = dirY * flySpeed;
+
+        if (dirX != 0) mIsFacingRight = (dirX > 0);
+        return;
+    }
+    // --------------------------------
+
     if (mIsDashing || mIsClimbing) return;
 
     float moveDir = Input::GetHorizontalAxis();
@@ -250,7 +250,6 @@ void Player::handleJump(float dt) {
 
     bool jumped = false;
 
-    // Wall jump
     if (mWasTouchingWall && !mIsGrounded) {
         mVelocity.y = -JUMP_FORCE;
         mVelocity.x = -mPrevWallDir * WALL_JUMP_KICK;
@@ -259,13 +258,11 @@ void Player::handleJump(float dt) {
         mJumpCount = 1;
         jumped = true;
     }
-    // Ground jump
     else if (mCoyoteTimeCounter > 0) {
         mVelocity.y = -JUMP_FORCE;
         mJumpCount = 1;
         jumped = true;
     }
-    // Double jump
     else if (mJumpCount < MAX_JUMPS) {
         mVelocity.y = -JUMP_FORCE;
         mJumpCount++;
@@ -323,7 +320,6 @@ void Player::handleDash(float dt) {
 }
 
 void Player::handleClimbing(float dt) {
-    // Przerywanie wspinaczki jeœli spadamy za szybko (np. po skoku)
     if (!mTouchingWall || mStamina <= 0 || mVelocity.y < -100.0f) {
         mIsClimbing = false;
         return;
@@ -333,7 +329,6 @@ void Player::handleClimbing(float dt) {
     bool isGripping = (mWallDir == 1 && Input::IsMovingRight()) ||
         (mWallDir == -1 && Input::IsMovingLeft());
 
-    // Jeœli stoimy na ziemi i nie chcemy iœæ w górê, nie wspinamy siê
     if (mIsGrounded && !Input::IsMovingUp()) {
         mIsClimbing = false;
         return;
@@ -342,17 +337,23 @@ void Player::handleClimbing(float dt) {
     if (hasClimbInput && isGripping) {
         mCurrentState = AnimState::CLIMB;
         mIsClimbing = true;
+
+        if (mWallDir != 0) mIsFacingRight = (mWallDir == 1);
+
         float climbDir = Input::GetVerticalAxis();
         mStamina -= COST_CLIMB * dt;
         mStaminaRegenDelay = STAMINA_DELAY_TIME;
         mVelocity.y = climbDir * CLIMB_SPEED;
-        mVelocity.x = mWallDir * 100.0f; // Dopychanie do œciany
+        mVelocity.x = mWallDir * 100.0f;
     }
     else if (!mIsGrounded && isGripping) {
         mStamina -= (COST_CLIMB * 0.5f) * dt;
         mStaminaRegenDelay = STAMINA_DELAY_TIME;
         mCurrentState = AnimState::WALL_SLIDE;
         mIsClimbing = true;
+
+        if (mWallDir != 0) mIsFacingRight = (mWallDir == 1);
+
         mVelocity.y = WALL_SLIDE_SPEED;
         mVelocity.x = mWallDir * 100.0f;
     }
@@ -362,7 +363,7 @@ void Player::handleClimbing(float dt) {
 }
 
 void Player::applyPhysics(float dt) {
-    if (!mIsDashing && !mIsClimbing)
+    if (!mIsDashing && !mIsClimbing && !mNoclip)
         mVelocity.y += GRAVITY * dt;
 
     mIsGrounded = false;
@@ -370,15 +371,10 @@ void Player::applyPhysics(float dt) {
     mPosition.y += mVelocity.y * dt;
 }
 
-// ============================================================================
-// KOLIZJE - NAPRAWIONE AUTO-STEP
-// ============================================================================
-
 void Player::handleWallCollision(Rectangle wall) {
     float prevBottom = mPrevPosition.y + mSize.y;
     constexpr float THRESHOLD = 4.0f;
 
-    // 1. L¹dowanie (od góry)
     if (prevBottom <= wall.y + THRESHOLD) {
         mPosition.y = wall.y - mSize.y;
         mVelocity.y = 0;
@@ -387,7 +383,6 @@ void Player::handleWallCollision(Rectangle wall) {
         mIsJumping = false;
         mJumpCount = 0;
 
-        // Wave dash logic
         if (mIsDashing) {
             mIsDashing = false;
             float dashDir = Sign(mVelocity.x);
@@ -400,7 +395,6 @@ void Player::handleWallCollision(Rectangle wall) {
         return;
     }
 
-    // 2. Uderzenie w sufit (od do³u)
     if (mPrevPosition.y >= wall.y + wall.height - THRESHOLD) {
         float playerCenter = mPosition.x + mSize.x / 2.0f;
         float wallCenter = wall.x + wall.width / 2.0f;
@@ -414,7 +408,6 @@ void Player::handleWallCollision(Rectangle wall) {
         }
     }
 
-    // 3. Kolizja boczna i AUTO-STEP
     float playerCenterX = mPrevPosition.x + mSize.x / 2.0f;
     float wallCenterX = wall.x + wall.width / 2.0f;
     float playerBottom = mPosition.y + mSize.y;
@@ -423,29 +416,26 @@ void Player::handleWallCollision(Rectangle wall) {
     bool movingTowardsWall = (playerCenterX < wallCenterX && Input::IsMovingRight()) ||
         (playerCenterX > wallCenterX && Input::IsMovingLeft());
 
-    // Ustawiamy bezpieczn¹ wysokoœæ kroku (np. 12px dla kratek 8x8 + margines)
-    // Dziêki temu mamy pewnoœæ, ¿e zadzia³a niezale¿nie od sta³ych globalnych.
     constexpr float MAX_STEP_HEIGHT = 12.0f;
 
     bool canAutoStep = (mWasGrounded || mIsGrounded) &&
         stepHeight > 0.0f &&
         stepHeight <= MAX_STEP_HEIGHT &&
         movingTowardsWall &&
-        mVelocity.y >= -50.0f && // Lekko zwiêkszona tolerancja
+        mVelocity.y >= -50.0f &&
         mVelocity.y <= 150.0f &&
         !mIsDashing &&
         !mIsClimbing &&
-        std::abs(mVelocity.x) > 0.1f; // Mniejszy próg prêdkoœci (³apie nawet wolne ruchy)
+        std::abs(mVelocity.x) > 0.1f;
 
     if (canAutoStep) {
-        mPosition.y = wall.y - mSize.y; // Wskocz na schodek
+        mPosition.y = wall.y - mSize.y;
         mIsGrounded = true;
         mVelocity.y = 0;
         mCanDash = true;
         mJumpCount = 0;
     }
     else {
-        // Standardowa kolizja ze œcian¹
         if (playerCenterX < wallCenterX) {
             mPosition.x = wall.x - mSize.x;
             mWallDir = 1;
@@ -458,10 +448,6 @@ void Player::handleWallCollision(Rectangle wall) {
         mVelocity.x = 0;
     }
 }
-
-// ============================================================================
-// WALKA I ANIMACJE
-// ============================================================================
 
 void Player::handleAttack(float dt) {
     if (!Input::AttackPressed() || mIsAttacking || mAttackCooldown > 0.0f)
@@ -626,7 +612,21 @@ void Player::handleGhosts(float dt) {
         mGhostSpawnTimer -= dt;
         if (mGhostSpawnTimer <= 0) {
             mGhostSpawnTimer = GHOST_SPAWN_INTERVAL;
-            mGhosts.push_back({ mPosition, mFrameRec, mIsFacingRight, 0.5f });
+
+            float offsetX = (FRAME_WIDTH - HITBOX_WIDTH) / 2.0f;
+            float offsetY = (FRAME_HEIGHT - HITBOX_HEIGHT) / 2.0f;
+
+            Vector2 visualPos = {
+                mPosition.x - offsetX,
+                mPosition.y - offsetY
+            };
+
+            if (mCurrentState == AnimState::CLIMB || mCurrentState == AnimState::WALL_SLIDE) {
+                float climbOffset = 5.0f;
+                visualPos.x += mIsFacingRight ? climbOffset : -climbOffset;
+            }
+
+            mGhosts.push_back({ visualPos, mFrameRec, mIsFacingRight, 0.5f });
         }
     }
     else {
@@ -644,7 +644,9 @@ void Player::drawGhosts() {
     for (const auto& ghost : mGhosts) {
         float width = ghost.facingRight ? ghost.frameRec.width : -ghost.frameRec.width;
         Rectangle src = { ghost.frameRec.x, ghost.frameRec.y, width, ghost.frameRec.height };
-        Vector2 pos = { std::floor(ghost.position.x - 3), std::floor(ghost.position.y - 2) };
+
+        Vector2 pos = { std::floor(ghost.position.x), std::floor(ghost.position.y) };
+
         Rectangle dest = { pos.x, pos.y, FRAME_WIDTH, FRAME_HEIGHT };
         DrawTexturePro(mTexture, src, dest, { 0, 0 }, 0.0f, Fade(WHITE, ghost.alpha));
     }
@@ -785,7 +787,8 @@ void Player::drawPlayer() {
     };
 
     if (mCurrentState == AnimState::CLIMB || mCurrentState == AnimState::WALL_SLIDE) {
-        drawPos.x += mIsFacingRight ? 2.0f : -2.0f;
+        float climbOffset = 5.0f;
+        drawPos.x += mIsFacingRight ? climbOffset : -climbOffset;
     }
 
     float srcWidth = mIsFacingRight ? mFrameRec.width : -mFrameRec.width;
@@ -821,16 +824,8 @@ void Player::drawUI() {
     }
 
     if (mIsAttacking || mComboWindowOpen) {
-        const char* text = (mComboCount == 0) ? "1" :
-            (mComboCount == 1) ? "2" : "3!";
-        Color color = (mComboCount == 0) ? WHITE :
-            (mComboCount == 1) ? SKYBLUE : GOLD;
-        DrawText(text, (int)mPosition.x + 2, (int)mPosition.y - 18, 8, color);
-
-        if (mComboWindowOpen) {
-            float progress = mComboWindowTimer / COMBO_WINDOW;
-            DrawRectangle((int)mPosition.x - 3, (int)mPosition.y - 12,
-                (int)(16.0f * progress), 2, YELLOW);
-        }
+        float progress = mComboWindowTimer / COMBO_WINDOW;
+        DrawRectangle((int)mPosition.x - 3, (int)mPosition.y - 12,
+            (int)(16.0f * progress), 2, YELLOW);
     }
 }

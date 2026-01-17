@@ -70,8 +70,6 @@ Block decodeBlock(uint64_t data) {
     return block;
 }
 
-// === MapSaver ===
-
 MapSaver::MapSaver(std::fstream& f) : fileStream(&f) {}
 
 void MapSaver::addBlock(Block block) {
@@ -159,8 +157,6 @@ void MapSaver::fromEditor(const std::string& jsonStr) {
     }
 }
 
-// === MapLoader ===
-
 MapLoader::MapLoader(std::fstream& f) : fileStream(&f) {}
 
 std::vector<CollisionRect> MapLoader::getCollisions() {
@@ -184,6 +180,29 @@ std::vector<CollisionRect> MapLoader::getCollisions() {
 
     fileStream->clear();
     return collisions;
+}
+
+std::vector<CollisionRect> MapLoader::getDamagingZones() {
+    fileStream->clear();
+    fileStream->seekg(0, std::ios::beg);
+
+    std::vector<CollisionRect> zones;
+    uint64_t blockData;
+
+    while (fileStream->read(reinterpret_cast<char*>(&blockData), sizeof(blockData))) {
+        Block block = decodeBlock(blockData);
+        if (block.extraData == ExtraData::DAMAGING) {
+            zones.emplace_back(
+                block.x * TILE_SIZE,
+                block.y * TILE_SIZE,
+                block.x_length * TILE_SIZE,
+                block.y_length * TILE_SIZE
+            );
+        }
+    }
+
+    fileStream->clear();
+    return zones;
 }
 
 std::vector<RenderTile> MapLoader::getRenderData() {

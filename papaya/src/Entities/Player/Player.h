@@ -2,8 +2,8 @@
 #include "raylib.h"
 #include <vector>
 #include "Entities/Entity.h"
+#include "PlayerConstants.h" 
 #include "PlayerTypes.h"
-#include "PlayerConstants.h"
 
 class Player : public Entity {
 public:
@@ -21,6 +21,17 @@ public:
     WeaponStats getCurrentWeaponStats() const;
     void setWeapon(WeaponType type);
 
+    void pogoBounce();
+
+    // Getters for UI
+    int getJumpCount() const { return mJumpCount; }
+    int getMaxJumps() const { return PlayerConstants::MAX_JUMPS; }
+    bool canDash() const { return mCanDash; }
+    bool isDashing() const { return mIsDashing; }
+
+    // NOWE POLE
+    bool mNoclip = false;
+
     Vector2 mVelocity = { 0, 0 };
     Vector2 mPrevPosition = { 0, 0 };
     bool mIsAttacking = false;
@@ -29,6 +40,9 @@ public:
     float mInvincibilityTimer = 0.0f;
     int mMaxHealth = 5;
     int mHealth = 5;
+
+    AttackDirection mAttackDir = AttackDirection::HORIZONTAL;
+    WeaponType getCurrentWeaponType() const { return mCurrentWeapon; }
 
 private:
     Vector2 mStartPosition;
@@ -51,6 +65,7 @@ private:
     float mJumpBufferCounter = 0.0f;
     float mCoyoteTimeCounter = 0.0f;
 
+    WeaponType mCurrentWeapon = WeaponType::SWORD_DEFAULT;
     float mDashTimer = 0.0f;
     float mDashCooldownTimer = 0.0f;
     float mMomentumTimer = 0.0f;
@@ -58,10 +73,9 @@ private:
     float mStamina = PlayerConstants::MAX_STAMINA;
     float mStaminaRegenDelay = 0.0f;
 
-    WeaponType mCurrentWeapon = WeaponType::SWORD_DEFAULT;
     float mAttackTimer = 0.0f;
     float mAttackCooldown = 0.0f;
-    AttackDirection mAttackDir = AttackDirection::HORIZONTAL;
+
     int mComboCount = 0;
     float mComboWindowTimer = 0.0f;
     bool mComboWindowOpen = false;
