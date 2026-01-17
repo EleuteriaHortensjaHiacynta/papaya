@@ -13,6 +13,10 @@
 
 using namespace GameConstants;
 
+// =============================================================================
+// POMOCNICZE STRUKTURY
+// =============================================================================
+
 void GameMap::init(const std::vector<RenderTile>& rawTiles) {
     if (rawTiles.empty()) return;
 
@@ -135,6 +139,10 @@ bool WeaponUIState::isAnimating() const {
     return changeTimer > 0;
 }
 
+// =============================================================================
+// GAME WRAPPER
+// =============================================================================
+
 GameWrapper::GameWrapper(bool& shouldQuit, int& state)
     : mShouldQuit(shouldQuit)
     , mState(state)
@@ -142,15 +150,14 @@ GameWrapper::GameWrapper(bool& shouldQuit, int& state)
     std::cout << "[GameWrapper] Inicjalizacja..." << std::endl;
 
     {
-        Saves tempSaves(SAVE_PATH);
+        Saves tempSaves(currentSavePath);
         if (tempSaves.getMap().getRenderData().empty()) {
-            std::cout << "[SYSTEM] Wykryto pust¹ mapê. Próba importu z '" << EDITOR_PATH << "'..." << std::endl;
+            std::cout << "[SYSTEM] Wykryto pusty save startowy. Próba importu..." << std::endl;
             try {
                 tempSaves.loadFromEditorDir(EDITOR_PATH);
-                std::cout << "[SYSTEM] Import zakoñczony." << std::endl;
             }
             catch (const std::exception& e) {
-                std::cout << "[ERROR] B³¹d importu mapy: " << e.what() << std::endl;
+                std::cout << "[ERROR] B³¹d importu: " << e.what() << std::endl;
             }
         }
     }
@@ -171,13 +178,72 @@ GameWrapper::GameWrapper(bool& shouldQuit, int& state)
     }
 
     mInitialized = true;
-    std::cout << "[GameWrapper] Inicjalizacja zakoñczona!" << std::endl;
+    std::cout << "[GameWrapper] Gotowy!" << std::endl;
 }
 
 GameWrapper::~GameWrapper() {
-    std::cout << "[GameWrapper] Sprz¹tanie..." << std::endl;
+    std::cout << "[GameWrapper] Zamykanie (zapis stanu)..." << std::endl;
+    saveGame();
     unloadTextures();
     UnloadRenderTexture(mRenderTarget);
+}
+
+void GameWrapper::reloadSave() {
+    std::cout << "[GameWrapper] Prze³¹czanie na slot: " << currentSavePath << std::endl;
+
+    // Czyœcimy wszystko
+    mActiveEntities.clear();
+    mWallEntities.clear();
+    mBosses.clear();
+    mRabbits.clear();
+    mBossSpawnPoints.clear();
+    mLiquidRects.clear();
+    mNearbyObstacles.clear();
+    mPlayerPtr = nullptr;
+    mCollisionGrid.clear();
+
+    // Sprawdzamy czy slot pusty
+    {
+        Saves tempSaves(currentSavePath);
+        if (tempSaves.getMap().getRenderData().empty()) {
+            std::cout << "[SYSTEM] Nowy slot pusty - import z edytora..." << std::endl;
+            try {
+                tempSaves.loadFromEditorDir(EDITOR_PATH);
+            }
+            catch (const std::exception& e) {
+                std::cout << "[ERROR] B³¹d importu: " << e.what() << std::endl;
+            }
+        }
+    }
+
+    loadMap();
+    loadEntities();
+
+    if (mPlayerPtr) {
+        std::cout << "[RELOAD] Gracz ustawiony na: " << mPlayerPtr->mPosition.x << ", " << mPlayerPtr->mPosition.y << std::endl;
+        mSmoothCamera.setPosition(mPlayerPtr->mPosition);
+        mCamera.target = mSmoothCamera.getPosition();
+        mCheats.showMessage("GAME LOADED");
+    }
+    else {
+        std::cout << "[RELOAD] B£¥D: Gracz nie zosta³ stworzony!" << std::endl;
+    }
+}
+
+void GameWrapper::saveGame() {
+    if (!mPlayerPtr) return;
+
+    Saves saves(currentSavePath);
+    saves.clearSaveData();
+
+    EntityS pData;
+    pData.x = (int16_t)(mPlayerPtr->mPosition.x / TILE_SIZE_PX);
+    pData.y = (int16_t)(mPlayerPtr->mPosition.y / TILE_SIZE_PX);
+    pData.entityType = PLAYER;
+    pData.health = (uint8_t)mPlayerPtr->mHealth;
+
+    saves.saveEntityToMap().addEntityS(pData);
+    std::cout << "[GAME] Zapisano stan w: " << currentSavePath << std::endl;
 }
 
 void GameWrapper::loadTextures() {
@@ -203,103 +269,85 @@ void GameWrapper::unloadTextures() {
 }
 
 void GameWrapper::loadMap() {
-    Saves saves(SAVE_PATH);
+    Saves saves(currentSavePath);
 
     mGameMap.init(saves.getMap().getRenderData());
-    std::cout << "[INFO] Mapa: " << mGameMap.width << "x" << mGameMap.height
-        << " min=(" << mGameMap.minX << "," << mGameMap.minY << ")" << std::endl;
+    mCollisionGrid.init(mGameMap.width * TILE_SIZE_PX + 1000, mGameMap.height * TILE_SIZE_PX + 1500, mGameMap.minX - 500, mGameMap.minY - 1000);
 
-    mCollisionGrid.init(
-        mGameMap.width * TILE_SIZE_PX + 1000,
-        mGameMap.height * TILE_SIZE_PX + 1500,
-        mGameMap.minX - 500,
-        mGameMap.minY - 1000
-    );
-
-    std::vector<CollisionRect> collisions = saves.getMap().getCollisions();
-    std::cout << "[INFO] Za³adowano " << collisions.size() << " kolizji." << std::endl;
-
+    auto collisions = saves.getMap().getCollisions();
     for (const auto& col : collisions) {
-        auto wallEnt = std::make_unique<Wall>(
-            static_cast<float>(col.x),
-            static_cast<float>(col.y),
-            static_cast<float>(col.w),
-            static_cast<float>(col.h)
-        );
-        mCollisionGrid.insertStatic(wallEnt.get());
-        mWallEntities.push_back(wallEnt.get());
-        mActiveEntities.push_back(std::move(wallEnt));
+        auto wall = std::make_unique<Wall>((float)col.x, (float)col.y, (float)col.w, (float)col.h);
+        mCollisionGrid.insertStatic(wall.get());
+        mWallEntities.push_back(wall.get());
+        mActiveEntities.push_back(std::move(wall));
     }
 
     mLiquidRects = saves.getMap().getDamagingZones();
-    std::cout << "[INFO] Za³adowano " << mLiquidRects.size() << " stref cieczy." << std::endl;
 }
 
 void GameWrapper::loadEntities() {
-    Saves saves(SAVE_PATH);
+    Saves saves(currentSavePath);
+
+    // Próba wczytania gracza z zapisu
+    Vector2 spawnPos = mPlayerSpawnPoint; // Domyœlny start
+    int spawnHP = 5;
+
+    try {
+        auto savedData = saves.getSaveData().getAll();
+        bool found = false;
+        for (const auto& s : savedData) {
+            if (s.entityType == PLAYER) {
+                spawnPos.x = (float)(s.x * TILE_SIZE_PX);
+                spawnPos.y = (float)(s.y * TILE_SIZE_PX);
+                spawnHP = s.health;
+                found = true;
+                std::cout << "[LOAD] Znaleziono zapis gracza: " << spawnPos.x << ", " << spawnPos.y << std::endl;
+                break;
+            }
+        }
+        if (!found) std::cout << "[LOAD] Brak gracza w zapisie - u¿ywam spawnu domyœlnego." << std::endl;
+    }
+    catch (...) {
+        std::cout << "[LOAD] B³¹d odczytu saves.bin - u¿ywam spawnu domyœlnego." << std::endl;
+    }
 
     {
-        auto playerEntity = std::make_unique<Player>(mPlayerSpawnPoint.x, mPlayerSpawnPoint.y);
-        playerEntity->mTexture = mPlayerTexture;
-        mPlayerPtr = playerEntity.get();
-        mActiveEntities.push_back(std::move(playerEntity));
+        auto p = std::make_unique<Player>(spawnPos.x, spawnPos.y);
+        p->mTexture = mPlayerTexture;
+        p->mHealth = spawnHP;
+        mPlayerPtr = p.get();
+        mActiveEntities.push_back(std::move(p));
     }
 
     auto rawEntities = saves.getEntities().getAll();
-    std::cout << "[DEBUG] Liczba encji w pliku binarnym: " << rawEntities.size() << std::endl;
+    for (const auto& e : rawEntities) {
+        if (e.entityType == PLAYER) continue;
+        float px = (float)(e.x * TILE_SIZE_PX);
+        float py = (float)(e.y * TILE_SIZE_PX);
 
-    for (const auto& eData : rawEntities) {
-        std::cout << "[DEBUG] Znaleziono encjê -> ID: " << (int)eData.entityType
-            << " X: " << eData.x << " Y: " << eData.y
-            << " Health: " << eData.health << std::endl;
-
-        if (eData.entityType == PLAYER) continue;
-
-        float pixelX = static_cast<float>(eData.x * TILE_SIZE_PX);
-        float pixelY = static_cast<float>(eData.y * TILE_SIZE_PX);
-
-        if (eData.entityType == MAGE_BOSS) {
-            auto boss = std::make_unique<MageBoss>(pixelX, pixelY, mBossTexture, mPlayerPtr);
-            Rectangle arena = {
-                boss->mPosition.x - 116.0f,
-                boss->mPosition.y - 50.0f,
-                232.0f,
-                100.0f
-            };
+        if (e.entityType == MAGE_BOSS) {
+            auto boss = std::make_unique<MageBoss>(px, py, mBossTexture, mPlayerPtr);
+            Rectangle arena = { boss->mPosition.x - 116, boss->mPosition.y - 50, 232, 100 };
             boss->setArenaBounds(arena.x, arena.y, arena.width, arena.height);
-
-            std::cout << "[DEBUG] Boss created with HP: " << boss->mHealth
-                << "/" << boss->mMaxHealth << std::endl;
-
-            mBossSpawnPoints.push_back({ {pixelX, pixelY}, arena, boss->mMaxHealth });
+            mBossSpawnPoints.push_back({ {px, py}, arena, boss->mMaxHealth });
             mBosses.push_back(boss.get());
             mActiveEntities.push_back(std::move(boss));
         }
-        else if (eData.entityType == RABBIT) {
-            auto rabbit = std::make_unique<RabbitEnemy>(pixelX, pixelY, mRabbitTexture, mPlayerPtr);
-            if (eData.health > 0) rabbit->mHealth = eData.health;
-            mRabbits.push_back(rabbit.get());
-            mActiveEntities.push_back(std::move(rabbit));
+        else if (e.entityType == RABBIT) {
+            auto r = std::make_unique<RabbitEnemy>(px, py, mRabbitTexture, mPlayerPtr);
+            if (e.health > 0) r->mHealth = e.health;
+            mRabbits.push_back(r.get());
+            mActiveEntities.push_back(std::move(r));
         }
     }
 
-    if (mBosses.empty() && mRabbits.empty()) {
-        createTestEnemies();
-    }
-
-    std::cout << "[INFO] Bosses: " << mBosses.size() << ", Rabbits: " << mRabbits.size() << std::endl;
+    if (mBosses.empty() && mRabbits.empty()) createTestEnemies();
 }
 
 void GameWrapper::createTestEnemies() {
-    std::cout << "[INFO] Brak wrogów w pliku - tworzê testowych." << std::endl;
-
     auto testBoss = std::make_unique<MageBoss>(666.0f, -376.0f, mBossTexture, mPlayerPtr);
     Rectangle arena = { 550.0f, -448.0f, 232.0f, 100.0f };
     testBoss->setArenaBounds(arena.x, arena.y, arena.width, arena.height);
-
-    std::cout << "[DEBUG] Test boss created with HP: " << testBoss->mHealth
-        << "/" << testBoss->mMaxHealth << std::endl;
-
     mBossSpawnPoints.push_back({ {666.0f, -376.0f}, arena, testBoss->mMaxHealth });
     mBosses.push_back(testBoss.get());
     mActiveEntities.push_back(std::move(testBoss));
@@ -328,165 +376,85 @@ void GameWrapper::runFrame(int windowWidth, int windowHeight) {
 
 void GameWrapper::handleInput(float dt) {
     if (IsKeyPressed(KEY_ESCAPE)) {
+        saveGame(); // ZAPIS PRZED WYJŒCIEM DO MENU
         mState = 0;
         return;
     }
-
     if (IsKeyPressed(KEY_F3)) mShowDebug = !mShowDebug;
 
     if (mPlayerPtr) {
         bool weaponChanged = false;
-
-        if (IsKeyPressed(KEY_ONE)) {
-            mPlayerPtr->setWeapon(WeaponType::SWORD_DEFAULT);
-            weaponChanged = true;
-        }
-        else if (IsKeyPressed(KEY_TWO)) {
-            mPlayerPtr->setWeapon(WeaponType::DAGGER_SWIFT);
-            weaponChanged = true;
-        }
-        else if (IsKeyPressed(KEY_THREE)) {
-            mPlayerPtr->setWeapon(WeaponType::AXE_HEAVY);
-            weaponChanged = true;
-        }
-        else if (IsKeyPressed(KEY_FOUR)) {
-            mPlayerPtr->setWeapon(WeaponType::SPEAR_LONG);
-            weaponChanged = true;
-        }
-        else if (IsKeyPressed(KEY_FIVE)) {
-            mPlayerPtr->setWeapon(WeaponType::KATANA_BLOOD);
-            weaponChanged = true;
-        }
-
-        if (weaponChanged) {
-            mWeaponUI.triggerChange();
-        }
+        if (IsKeyPressed(KEY_ONE)) { mPlayerPtr->setWeapon(WeaponType::SWORD_DEFAULT); weaponChanged = true; }
+        else if (IsKeyPressed(KEY_TWO)) { mPlayerPtr->setWeapon(WeaponType::DAGGER_SWIFT); weaponChanged = true; }
+        else if (IsKeyPressed(KEY_THREE)) { mPlayerPtr->setWeapon(WeaponType::AXE_HEAVY); weaponChanged = true; }
+        else if (IsKeyPressed(KEY_FOUR)) { mPlayerPtr->setWeapon(WeaponType::SPEAR_LONG); weaponChanged = true; }
+        else if (IsKeyPressed(KEY_FIVE)) { mPlayerPtr->setWeapon(WeaponType::KATANA_BLOOD); weaponChanged = true; }
+        if (weaponChanged) mWeaponUI.triggerChange();
     }
 
     if (IsKeyPressed(KEY_G)) {
         mCheats.godMode = !mCheats.godMode;
         mCheats.showMessage(mCheats.godMode ? "GODMODE: ON" : "GODMODE: OFF");
     }
-
     if (IsKeyPressed(KEY_N)) {
         mCheats.noclip = !mCheats.noclip;
-        // --- POPRAWKA: Przekazanie noclip do gracza ---
         if (mPlayerPtr) mPlayerPtr->mNoclip = mCheats.noclip;
-        // ----------------------------------------------
         mCheats.showMessage(mCheats.noclip ? "NOCLIP: ON" : "NOCLIP: OFF");
     }
-
-    if (IsKeyPressed(KEY_R)) {
-        respawnAllBosses();
-    }
-
+    if (IsKeyPressed(KEY_R)) respawnAllBosses();
     if (IsKeyPressed(KEY_T)) {
         if (mPlayerPtr && !mBosses.empty()) {
-            MageBoss* nearestBoss = mBosses[0];
-            mPlayerPtr->mPosition = {
-                nearestBoss->mPosition.x - 60.0f,
-                nearestBoss->mPosition.y
-            };
-            mPlayerPtr->mVelocity = { 0, 0 };
+            mPlayerPtr->mPosition = { mBosses[0]->mPosition.x - 60.0f, mBosses[0]->mPosition.y };
+            mPlayerPtr->mVelocity = { 0,0 };
             mSmoothCamera.setPosition(mPlayerPtr->mPosition);
             mCheats.showMessage("TELEPORTED TO BOSS!");
         }
     }
-
-    if (IsKeyPressed(KEY_H)) {
-        if (mPlayerPtr) {
-            mPlayerPtr->mHealth = mPlayerPtr->mMaxHealth;
-            mCheats.showMessage("HEALTH RESTORED!");
-        }
+    if (IsKeyPressed(KEY_H) && mPlayerPtr) {
+        mPlayerPtr->mHealth = mPlayerPtr->mMaxHealth;
+        mCheats.showMessage("HEALTH RESTORED!");
     }
-
     if (IsKeyPressed(KEY_K)) {
-        for (MageBoss* boss : mBosses) {
-            if (boss && boss->mActive) {
-                boss->takeDamage(9999);
-            }
-        }
+        for (auto* b : mBosses) if (b && b->mActive) b->takeDamage(9999);
         mCheats.showMessage("BOSSES KILLED!");
     }
-
     if (IsKeyPressed(KEY_L)) {
-        for (MageBoss* boss : mBosses) {
-            if (boss && boss->mActive && boss->mState != MageBoss::DYING) {
-                boss->takeDamage(10);
-                mCheats.showMessage(TextFormat("BOSS DAMAGED! HP: %d/%d", boss->mHealth, boss->mMaxHealth));
-                break;
-            }
-        }
+        for (auto* b : mBosses) if (b && b->mActive) { b->takeDamage(10); break; }
     }
-
     if (IsKeyPressed(KEY_F1)) {
         respawnPlayer();
         respawnAllBosses();
         mCheats.showMessage("FULL RESET!");
     }
-
     if (IsKeyPressed(KEY_F2)) {
-        for (MageBoss* boss : mBosses) {
-            if (boss && boss->mActive && !boss->mIsEnraged) {
-                boss->mHealth = (int)(boss->mMaxHealth * 0.4f);
-                boss->checkEnrage();
-                mCheats.showMessage(TextFormat("BOSS ENRAGED! HP: %d/%d", boss->mHealth, boss->mMaxHealth));
-                break;
-            }
-        }
+        for (auto* b : mBosses) if (b && b->mActive) { b->mHealth = (int)(b->mMaxHealth * 0.4f); b->checkEnrage(); break; }
+        mCheats.showMessage("BOSS ENRAGED!");
     }
 }
 
 void GameWrapper::updateEntities(float dt) {
     if (mPlayerPtr && mPlayerPtr->mActive) {
         mPlayerPtr->update(dt);
-
         if (mCheats.godMode) {
             mPlayerPtr->mHealth = mPlayerPtr->mMaxHealth;
             mPlayerPtr->mInvincibilityTimer = 0.5f;
         }
     }
-
-    for (MageBoss* boss : mBosses) {
-        if (boss && boss->mActive) {
-            boss->updateBossLogic(dt, mWallEntities);
-        }
-    }
-
-    for (RabbitEnemy* rabbit : mRabbits) {
-        if (rabbit && rabbit->mActive) {
-            rabbit->update(dt);
-        }
-    }
+    for (auto* b : mBosses) if (b && b->mActive) b->updateBossLogic(dt, mWallEntities);
+    for (auto* r : mRabbits) if (r && r->mActive) r->update(dt);
 }
 
 void GameWrapper::updateCollisions() {
-    if (mCheats.noclip) {
-        for (auto& ent : mActiveEntities) {
-            if (!ent || !ent->mActive || ent->mType == WALL) continue;
-            if (ent.get() == mPlayerPtr) continue;
+    for (auto& ent : mActiveEntities) {
+        if (!ent || !ent->mActive || ent->mType == WALL) continue;
+        if (mCheats.noclip && ent.get() == mPlayerPtr) continue;
 
-            mNearbyObstacles.clear();
-            mCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, mNearbyObstacles);
+        mNearbyObstacles.clear();
+        mCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, mNearbyObstacles);
 
-            for (Entity* obs : mNearbyObstacles) {
-                if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
-                    ent->onCollision(obs);
-                }
-            }
-        }
-    }
-    else {
-        for (auto& ent : mActiveEntities) {
-            if (!ent || !ent->mActive || ent->mType == WALL) continue;
-
-            mNearbyObstacles.clear();
-            mCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, mNearbyObstacles);
-
-            for (Entity* obs : mNearbyObstacles) {
-                if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
-                    ent->onCollision(obs);
-                }
+        for (Entity* obs : mNearbyObstacles) {
+            if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
+                ent->onCollision(obs);
             }
         }
     }
@@ -494,165 +462,102 @@ void GameWrapper::updateCollisions() {
 
 void GameWrapper::updateLiquids(float dt) {
     if (!mPlayerPtr || !mPlayerPtr->mActive) return;
-
-    Rectangle playerRect = mPlayerPtr->getRect();
+    Rectangle pRect = mPlayerPtr->getRect();
 
     for (const auto& liq : mLiquidRects) {
-        Rectangle liquidRect = { (float)liq.x, (float)liq.y, (float)liq.w, (float)liq.h };
-
-        if (CheckCollisionRecs(playerRect, liquidRect)) {
+        if (CheckCollisionRecs(pRect, { (float)liq.x, (float)liq.y, (float)liq.w, (float)liq.h })) {
             if (mPlayerPtr->mInvincibilityTimer <= 0) {
                 mPlayerPtr->mHealth -= 1;
                 mPlayerPtr->mInvincibilityTimer = 1.0f;
                 if (mPlayerPtr->mVelocity.y > 0) mPlayerPtr->mVelocity.y = -50.0f;
             }
-
             mPlayerPtr->mVelocity.x *= 0.9f;
-
-            const float PUSH_FORCE = 900.0f;
-            if (mPlayerPtr->mVelocity.y > 0) {
-                mPlayerPtr->mVelocity.y -= PUSH_FORCE * 1.2f * dt;
-            }
-            else {
-                mPlayerPtr->mVelocity.y -= PUSH_FORCE * 0.4f * dt;
-            }
-
-            if (mPlayerPtr->mVelocity.y > 60.0f) {
-                mPlayerPtr->mVelocity.y = 60.0f;
-            }
+            float push = 900.0f;
+            if (mPlayerPtr->mVelocity.y > 0) mPlayerPtr->mVelocity.y -= push * 1.2f * dt;
+            else mPlayerPtr->mVelocity.y -= push * 0.4f * dt;
+            if (mPlayerPtr->mVelocity.y > 60.0f) mPlayerPtr->mVelocity.y = 60.0f;
         }
     }
 }
 
 void GameWrapper::updateCombat() {
     if (!mPlayerPtr || !mPlayerPtr->mActive) return;
+    Vector2 pc = Physics::GetEntityCenter(mPlayerPtr);
 
-    Vector2 playerCenter = Physics::GetEntityCenter(mPlayerPtr);
-
-    for (MageBoss* boss : mBosses) {
+    for (auto* boss : mBosses) {
         if (!boss || !boss->mActive) continue;
-
-        if (mPlayerPtr->mIsAttacking) {
-            if (CheckCollisionRecs(mPlayerPtr->mAttackArea, boss->getRect())) {
-                if (!mPlayerPtr->hasHit(boss)) {
-                    Vector2 enemyCenter = Physics::GetEntityCenter(boss);
-
-                    mNearbyObstacles.clear();
-                    mCollisionGrid.getNearby(playerCenter.x, playerCenter.y, mNearbyObstacles);
-
-                    if (!Physics::IsPathBlocked(playerCenter, enemyCenter, mNearbyObstacles)) {
-                        if (mPlayerPtr->mAttackDir == AttackDirection::DOWN) {
-                            mPlayerPtr->pogoBounce();
-                        }
-
-                        mPlayerPtr->mHitEntities.push_back(boss);
-                        int damage = mPlayerPtr->getAttackDamage();
-                        boss->takeDamage(damage);
-                    }
+        if (mPlayerPtr->mIsAttacking && CheckCollisionRecs(mPlayerPtr->mAttackArea, boss->getRect())) {
+            if (!mPlayerPtr->hasHit(boss)) {
+                Vector2 ec = Physics::GetEntityCenter(boss);
+                mNearbyObstacles.clear();
+                mCollisionGrid.getNearby(pc.x, pc.y, mNearbyObstacles);
+                if (!Physics::IsPathBlocked(pc, ec, mNearbyObstacles)) {
+                    if (mPlayerPtr->mAttackDir == AttackDirection::DOWN) mPlayerPtr->pogoBounce();
+                    mPlayerPtr->mHitEntities.push_back(boss);
+                    boss->takeDamage(mPlayerPtr->getAttackDamage());
                 }
             }
         }
-
-        if (boss->mState != MageBoss::VULNERABLE &&
-            boss->mState != MageBoss::DYING &&
-            boss->mState != MageBoss::INACTIVE) {
-            if (CheckCollisionRecs(mPlayerPtr->getRect(), boss->getRect())) {
-                if (mPlayerPtr->mInvincibilityTimer <= 0) {
-                    mPlayerPtr->mHealth -= 1;
-                    mPlayerPtr->mInvincibilityTimer = 1.0f;
-                    float knockDir = Physics::GetKnockbackDirection(boss->mPosition.x, mPlayerPtr->mPosition.x);
-                    Physics::ApplyKnockback(mPlayerPtr->mVelocity, knockDir, 120.0f, 80.0f);
-                }
+        if (boss->mState != MageBoss::VULNERABLE && boss->mState != MageBoss::DYING && boss->mState != MageBoss::INACTIVE) {
+            if (CheckCollisionRecs(mPlayerPtr->getRect(), boss->getRect()) && mPlayerPtr->mInvincibilityTimer <= 0) {
+                mPlayerPtr->mHealth -= 1;
+                mPlayerPtr->mInvincibilityTimer = 1.0f;
+                float dir = Physics::GetKnockbackDirection(boss->mPosition.x, mPlayerPtr->mPosition.x);
+                Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 120.0f, 80.0f);
             }
         }
-
         if (mCheats.godMode) continue;
-
         for (auto& fb : boss->mFireballs) {
-            if (!fb.active) continue;
-            if (mPlayerPtr->mInvincibilityTimer <= 0) {
-                Rectangle playerRect = mPlayerPtr->getRect();
-                if (CheckCollisionCircleRec(fb.position, fb.radius, playerRect)) {
-                    mPlayerPtr->mHealth -= 1;
-                    mPlayerPtr->mInvincibilityTimer = 1.0f;
-                    float knockDir = Physics::GetKnockbackDirection(fb.position.x, mPlayerPtr->mPosition.x);
-                    Physics::ApplyKnockback(mPlayerPtr->mVelocity, knockDir, 150.0f, 100.0f);
-                    fb.active = false;
-                }
+            if (fb.active && mPlayerPtr->mInvincibilityTimer <= 0 && CheckCollisionCircleRec(fb.position, fb.radius, mPlayerPtr->getRect())) {
+                mPlayerPtr->mHealth -= 1;
+                mPlayerPtr->mInvincibilityTimer = 1.0f;
+                float dir = Physics::GetKnockbackDirection(fb.position.x, mPlayerPtr->mPosition.x);
+                Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 150.0f, 100.0f);
+                fb.active = false;
             }
         }
-
-        if (boss->mState == MageBoss::LASER_FIRE) {
-            if (mPlayerPtr->mInvincibilityTimer <= 0) {
-                if (boss->checkLaserCollision(mPlayerPtr)) {
-                    mPlayerPtr->mHealth -= 2;
-                    mPlayerPtr->mInvincibilityTimer = 1.5f;
-                    float knockDir = Physics::GetKnockbackDirection(boss->mPosition.x, mPlayerPtr->mPosition.x);
-                    Physics::ApplyKnockback(mPlayerPtr->mVelocity, knockDir, 200.0f, 150.0f);
-                }
-            }
+        if (boss->mState == MageBoss::LASER_FIRE && mPlayerPtr->mInvincibilityTimer <= 0 && boss->checkLaserCollision(mPlayerPtr)) {
+            mPlayerPtr->mHealth -= 2;
+            mPlayerPtr->mInvincibilityTimer = 1.5f;
+            float dir = Physics::GetKnockbackDirection(boss->mPosition.x, mPlayerPtr->mPosition.x);
+            Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 200.0f, 150.0f);
         }
-
-        if (boss->checkAoeCollision(mPlayerPtr)) {
-            if (mPlayerPtr->mInvincibilityTimer <= 0) {
-                mPlayerPtr->mHealth -= 2;
-                mPlayerPtr->mInvincibilityTimer = 1.5f;
-                float dx = mPlayerPtr->mPosition.x - boss->mPosition.x;
-                float dy = mPlayerPtr->mPosition.y - boss->mPosition.y;
-                float len = std::sqrt(dx * dx + dy * dy);
-                if (len > 0) {
-                    mPlayerPtr->mVelocity.x = (dx / len) * 250.0f;
-                    mPlayerPtr->mVelocity.y = (dy / len) * 250.0f - 100.0f;
-                }
-                boss->mAoeDealtDamage = true;
+        if (boss->checkAoeCollision(mPlayerPtr) && mPlayerPtr->mInvincibilityTimer <= 0) {
+            mPlayerPtr->mHealth -= 2;
+            mPlayerPtr->mInvincibilityTimer = 1.5f;
+            float dx = mPlayerPtr->mPosition.x - boss->mPosition.x;
+            float dy = mPlayerPtr->mPosition.y - boss->mPosition.y;
+            float len = std::sqrt(dx * dx + dy * dy);
+            if (len > 0) {
+                mPlayerPtr->mVelocity.x = (dx / len) * 250.0f;
+                mPlayerPtr->mVelocity.y = (dy / len) * 250.0f - 100.0f;
             }
+            boss->mAoeDealtDamage = true;
         }
     }
 
-    for (RabbitEnemy* rabbit : mRabbits) {
-        if (!rabbit || !rabbit->mActive || rabbit->mIsDead) continue;
-
-        if (mPlayerPtr->mIsAttacking) {
-            if (CheckCollisionRecs(mPlayerPtr->mAttackArea, rabbit->getRect())) {
-                if (!mPlayerPtr->hasHit(rabbit)) {
-                    Vector2 enemyCenter = Physics::GetEntityCenter(rabbit);
-
-                    mNearbyObstacles.clear();
-                    mCollisionGrid.getNearby(playerCenter.x, playerCenter.y, mNearbyObstacles);
-
-                    if (!Physics::IsPathBlocked(playerCenter, enemyCenter, mNearbyObstacles)) {
-                        if (mPlayerPtr->mAttackDir == AttackDirection::DOWN) {
-                            mPlayerPtr->pogoBounce();
-                        }
-
-                        mPlayerPtr->mHitEntities.push_back(rabbit);
-                        int damage = mPlayerPtr->getAttackDamage();
-                        rabbit->takeDamage(damage);
-
-                        if (rabbit->mIsDead) {
-                            rabbit->mActive = false;
-                        }
-                    }
+    for (auto* r : mRabbits) {
+        if (!r || !r->mActive || r->mIsDead) continue;
+        if (mPlayerPtr->mIsAttacking && CheckCollisionRecs(mPlayerPtr->mAttackArea, r->getRect())) {
+            if (!mPlayerPtr->hasHit(r)) {
+                Vector2 ec = Physics::GetEntityCenter(r);
+                mNearbyObstacles.clear();
+                mCollisionGrid.getNearby(pc.x, pc.y, mNearbyObstacles);
+                if (!Physics::IsPathBlocked(pc, ec, mNearbyObstacles)) {
+                    if (mPlayerPtr->mAttackDir == AttackDirection::DOWN) mPlayerPtr->pogoBounce();
+                    mPlayerPtr->mHitEntities.push_back(r);
+                    r->takeDamage(mPlayerPtr->getAttackDamage());
+                    if (r->mIsDead) r->mActive = false;
                 }
             }
         }
-
         if (mCheats.godMode) continue;
-
-        if (!rabbit->mIsDead) {
-            if (CheckCollisionRecs(mPlayerPtr->getRect(), rabbit->getRect())) {
-                if (mPlayerPtr->mInvincibilityTimer <= 0) {
-                    int damage = 1;
-                    if (rabbit->mState >= RabbitEnemy::MONSTER_CHARGE &&
-                        rabbit->mState <= RabbitEnemy::MONSTER_TURN) {
-                        damage = 2;
-                    }
-                    mPlayerPtr->mHealth -= damage;
-                    mPlayerPtr->mInvincibilityTimer = 1.0f;
-                    float knockDir = Physics::GetKnockbackDirection(rabbit->mPosition.x, mPlayerPtr->mPosition.x);
-                    Physics::ApplyKnockback(mPlayerPtr->mVelocity, knockDir, 100.0f, 60.0f);
-                }
-            }
+        if (!r->mIsDead && CheckCollisionRecs(mPlayerPtr->getRect(), r->getRect()) && mPlayerPtr->mInvincibilityTimer <= 0) {
+            int dmg = (r->mState >= RabbitEnemy::MONSTER_CHARGE && r->mState <= RabbitEnemy::MONSTER_TURN) ? 2 : 1;
+            mPlayerPtr->mHealth -= dmg;
+            mPlayerPtr->mInvincibilityTimer = 1.0f;
+            float dir = Physics::GetKnockbackDirection(r->mPosition.x, mPlayerPtr->mPosition.x);
+            Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 100.0f, 60.0f);
         }
     }
 }
@@ -667,23 +572,13 @@ void GameWrapper::updateCamera(float dt) {
 
 void GameWrapper::drawWorld() {
     BeginTextureMode(mRenderTarget);
-
     ClearBackground({ 2, 2, 5, 255 });
-
-    Color abyssTop = { 0, 0, 0, 255 };
-    Color abyssBottom = { 10, 15, 30, 255 };
-
-    DrawRectangleGradientV(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, abyssTop, abyssBottom);
+    DrawRectangleGradientV(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, { 0, 0, 0, 255 }, { 10, 15, 30, 255 });
 
     if (mBackground.id > 0) {
-        float parallaxFactor = 0.15f;
-        float offsetX = mCamera.target.x * parallaxFactor;
-
-        Rectangle src = { offsetX, 0.0f, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT };
-        Rectangle dest = { 0, 0, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT };
-        Color bgTint = { 80, 80, 100, 255 };
-
-        DrawTexturePro(mBackground, src, dest, { 0, 0 }, 0.0f, bgTint);
+        float px = mCamera.target.x * 0.15f;
+        DrawTexturePro(mBackground, { px, 0, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT },
+            { 0, 0, (float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT }, { 0,0 }, 0.0f, { 80, 80, 100, 255 });
     }
 
     BeginMode2D(mCamera);
@@ -697,81 +592,153 @@ void GameWrapper::drawWorld() {
         for (int gx = std::max(0, camL); gx < std::min(mGameMap.width, camR); ++gx) {
             int id = mGameMap.getTileAt(gx, gy);
             if (id == 0) continue;
-            Rectangle src = {
-                (float)(id % ATLAS_COLUMNS) * TILE_SIZE_PX,
-                (float)(id / ATLAS_COLUMNS) * TILE_SIZE_PX,
-                (float)TILE_SIZE_PX,
-                (float)TILE_SIZE_PX
-            };
-            Vector2 pos = {
-                (float)(gx * TILE_SIZE_PX + mGameMap.minX),
-                (float)(gy * TILE_SIZE_PX + mGameMap.minY)
-            };
-            DrawTextureRec(mTileset, src, pos, WHITE);
+            Rectangle src = { (float)(id % ATLAS_COLUMNS) * TILE_SIZE_PX, (float)(id / ATLAS_COLUMNS) * TILE_SIZE_PX, (float)TILE_SIZE_PX, (float)TILE_SIZE_PX };
+            DrawTextureRec(mTileset, src, { (float)(gx * TILE_SIZE_PX + mGameMap.minX), (float)(gy * TILE_SIZE_PX + mGameMap.minY) }, WHITE);
         }
     }
 
-    for (RabbitEnemy* rabbit : mRabbits) {
-        if (rabbit && rabbit->mActive) {
-            rabbit->draw();
-        }
-    }
-
-    for (MageBoss* boss : mBosses) {
-        if (boss && boss->mActive) {
-            boss->draw();
-        }
-    }
+    for (auto* r : mRabbits) if (r && r->mActive) r->draw();
+    for (auto* b : mBosses) if (b && b->mActive) b->draw();
 
     if (mPlayerPtr && mPlayerPtr->mActive) {
         mPlayerPtr->draw();
-
-        if (mCheats.godMode) {
-            DrawCircleLines(
-                (int)(mPlayerPtr->mPosition.x + mPlayerPtr->mSize.x / 2),
-                (int)(mPlayerPtr->mPosition.y + mPlayerPtr->mSize.y / 2),
-                (int)(mPlayerPtr->mSize.x * 0.8f + sinf(GetTime() * 5) * 3),
-                Fade(GOLD, 0.5f)
-            );
-        }
-
-        if (mCheats.noclip) {
-            DrawCircleLines(
-                (int)(mPlayerPtr->mPosition.x + mPlayerPtr->mSize.x / 2),
-                (int)(mPlayerPtr->mPosition.y + mPlayerPtr->mSize.y / 2),
-                (int)(mPlayerPtr->mSize.x * 0.6f),
-                Fade(SKYBLUE, 0.6f)
-            );
-        }
+        if (mCheats.godMode) DrawCircleLines((int)(mPlayerPtr->mPosition.x + 8), (int)(mPlayerPtr->mPosition.y + 8), 12, Fade(GOLD, 0.5f));
+        if (mCheats.noclip) DrawCircleLines((int)(mPlayerPtr->mPosition.x + 8), (int)(mPlayerPtr->mPosition.y + 8), 10, Fade(SKYBLUE, 0.6f));
     }
 
     if (mShowDebug) {
         if (mPlayerPtr) {
             DrawRectangleLinesEx(mPlayerPtr->getRect(), 1, GREEN);
-            if (mPlayerPtr->mIsAttacking) {
-                DrawRectangleLinesEx(mPlayerPtr->mAttackArea, 1, YELLOW);
-            }
-            DrawText(TextFormat("%.0f,%.0f", mPlayerPtr->mPosition.x, mPlayerPtr->mPosition.y),
-                (int)mPlayerPtr->mPosition.x - 15, (int)mPlayerPtr->mPosition.y - 20, 5, LIME);
+            if (mPlayerPtr->mIsAttacking) DrawRectangleLinesEx(mPlayerPtr->mAttackArea, 1, YELLOW);
         }
-
-        for (RabbitEnemy* rabbit : mRabbits) {
-            if (rabbit && rabbit->mActive) {
-                DrawRectangleLinesEx(rabbit->getRect(), 1, ORANGE);
-            }
-        }
-
-        for (MageBoss* boss : mBosses) {
-            if (boss && boss->mActive) {
-                DrawText(TextFormat("HP:%d/%d", boss->mHealth, boss->mMaxHealth),
-                    (int)boss->mPosition.x, (int)boss->mPosition.y - 30, 6,
-                    boss->mIsEnraged ? ORANGE : GREEN);
-            }
-        }
+        for (auto* r : mRabbits) if (r && r->mActive) DrawRectangleLinesEx(r->getRect(), 1, ORANGE);
+        for (auto* b : mBosses) if (b && b->mActive) DrawText(TextFormat("HP:%d", b->mHealth), (int)b->mPosition.x, (int)b->mPosition.y - 20, 6, GREEN);
     }
 
     EndMode2D();
     EndTextureMode();
+}
+
+void GameWrapper::drawUI(int windowWidth, int windowHeight) {
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    float scale = std::min((float)windowWidth / VIRTUAL_WIDTH, (float)windowHeight / VIRTUAL_HEIGHT);
+    DrawTexturePro(mRenderTarget.texture, { 0, 0, (float)mRenderTarget.texture.width, -(float)mRenderTarget.texture.height },
+        { (windowWidth - VIRTUAL_WIDTH * scale) / 2, (windowHeight - VIRTUAL_HEIGHT * scale) / 2, VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale },
+        { 0, 0 }, 0, WHITE);
+
+    Color panelBg = Fade(BLACK, 0.75f);
+    Color panelBorder = { 60, 70, 110, 255 };
+    Color textNormal = { 200, 200, 220, 255 };
+    Color textAccent = { 100, 180, 255, 255 };
+    Color hpColor = { 180, 40, 60, 255 };
+
+    if (mPlayerPtr) {
+        int px = windowWidth - 240, py = 20;
+        DrawRectangle(px, py, 220, 100, panelBg);
+        DrawRectangleLines(px, py, 220, 100, panelBorder);
+
+        WeaponStats ws = mPlayerPtr->getCurrentWeaponStats();
+        Color wc = ws.slashColor;
+        if (mWeaponUI.isAnimating()) wc = ColorAlpha(wc, 0.5f + sinf(mWeaponUI.changeTimer * 20.0f) * 0.5f);
+
+        const char* wName = "WEAPON";
+        switch (mPlayerPtr->getCurrentWeaponType()) {
+        case WeaponType::SWORD_DEFAULT: wName = "VOID BLADE"; break;
+        case WeaponType::DAGGER_SWIFT: wName = "SHADOW DAGGER"; break;
+        case WeaponType::AXE_HEAVY: wName = "ABYSS AXE"; break;
+        case WeaponType::SPEAR_LONG: wName = "PIERCER"; break;
+        case WeaponType::KATANA_BLOOD: wName = "BLOOD KATANA"; break;
+        }
+        DrawText(wName, px + 10, py + 10, 20, wc);
+        DrawText(TextFormat("DMG: %.0f  RNG: %.0f", ws.damage, ws.reachX), px + 10, py + 35, 14, textNormal);
+        DrawText(TextFormat("SPD: %.2fs", ws.attackCooldown), px + 10, py + 55, 14, textAccent);
+
+        // Icons
+        for (int i = 0; i < 5; i++) {
+            bool sel = ((int)mPlayerPtr->getCurrentWeaponType() == i);
+            WeaponStats s = WeaponStats::GetStats((WeaponType)i);
+            DrawRectangle(px + 120, py + 35 + i * 12, 10, 10, sel ? s.slashColor : Fade(s.slashColor, 0.3f));
+            DrawText(TextFormat("%d", i + 1), px + 135, py + 35 + i * 12, 10, sel ? WHITE : GRAY);
+        }
+
+        // Stats Panel
+        int sy = py + 110;
+        DrawRectangle(px, sy, 220, 110, panelBg);
+        DrawRectangleLines(px, sy, 220, 110, panelBorder);
+        DrawText("VITALITY", px + 10, sy + 10, 10, GRAY);
+
+        float hpPct = (float)mPlayerPtr->mHealth / (float)mPlayerPtr->mMaxHealth;
+        DrawRectangle(px + 10, sy + 25, 140, 12, Fade(BLACK, 0.5f));
+        DrawRectangle(px + 10, sy + 25, (int)(140 * hpPct), 12, mCheats.godMode ? GOLD : hpColor);
+        DrawRectangleLines(px + 10, sy + 25, 140, 12, Fade(WHITE, 0.2f));
+        DrawText(TextFormat("%d/%d", mPlayerPtr->mHealth, mPlayerPtr->mMaxHealth), px + 160, sy + 25, 10, WHITE);
+
+        if (mPlayerPtr->mInvincibilityTimer > 0) DrawText("GHOST FORM", px + 10, sy + 45, 10, GOLD);
+
+        DrawText("AGILITY", px + 10, sy + 70, 10, GRAY);
+        int jumps = mPlayerPtr->getMaxJumps() - mPlayerPtr->getJumpCount();
+        for (int i = 0; i < mPlayerPtr->getMaxJumps(); i++) DrawRectangle(px + 10 + i * 15, sy + 85, 10, 10, (i < jumps) ? SKYBLUE : DARKBLUE);
+        DrawText(mPlayerPtr->canDash() ? "DASH READY" : "RECHARGE", px + 60, sy + 85, 10, mPlayerPtr->canDash() ? LIME : MAROON);
+    }
+
+    // Boss Bar
+    for (auto* b : mBosses) {
+        if (b && b->mActive && b->mState != MageBoss::INACTIVE) {
+            int bx = windowWidth / 2 - 200, by = 40;
+            DrawRectangle(bx - 2, by - 2, 404, 14, BLACK);
+            DrawRectangle(bx, by, 400, 10, DARKGRAY);
+            DrawRectangle(bx, by, (int)(400 * ((float)b->mHealth / b->mMaxHealth)), 10, b->mIsEnraged ? RED : PURPLE);
+            DrawText("ABYSS MAGE", bx, by - 20, 20, textNormal);
+            if (b->mIsEnraged) DrawText("FRENZY", bx + 410, by - 2, 12, RED);
+            break;
+        }
+    }
+
+    // Controls
+    int cx = 20, cy = windowHeight - 160;
+    DrawRectangle(cx, cy, 180, 140, panelBg);
+    DrawRectangleLines(cx, cy, 180, 140, panelBorder);
+    int ty = cy + 10;
+    DrawText("CONTROLS", cx + 10, ty, 10, GRAY); ty += 20;
+    DrawText("[ARROWS]", cx + 10, ty, 10, YELLOW); DrawText("Move", cx + 70, ty, 10, textNormal); ty += 18;
+    DrawText("[SPACE]", cx + 10, ty, 10, YELLOW); DrawText("Jump", cx + 70, ty, 10, textNormal); ty += 18;
+    DrawText("[C]", cx + 10, ty, 10, YELLOW); DrawText("Dash", cx + 70, ty, 10, textNormal); ty += 18;
+    DrawText("[Z]", cx + 10, ty, 10, YELLOW); DrawText("Attack", cx + 70, ty, 10, textNormal); ty += 18;
+    DrawText("[F3]", cx + 10, ty, 10, YELLOW); DrawText("Debug", cx + 70, ty, 10, textNormal);
+
+    // Messages
+    if (mCheats.hasActiveMessage()) {
+        const char* txt = mCheats.message.c_str();
+        DrawText(txt, (windowWidth - MeasureText(txt, 24)) / 2, windowHeight / 2 - 50, 24, Fade(YELLOW, std::min(mCheats.messageTimer, 1.0f)));
+    }
+
+    // Debug Overlay
+    if (mShowDebug) {
+        int dx = 20, dy = 20;
+        DrawRectangle(dx, dy, 180, 280, Fade(BLACK, 0.9f));
+        DrawRectangleLines(dx, dy, 180, 280, LIME);
+        int dty = dy + 10;
+        DrawText(TextFormat("FPS: %d", GetFPS()), dx + 10, dty, 10, LIME); dty += 15;
+        DrawText(TextFormat("ENTITIES: %d", (int)mActiveEntities.size()), dx + 10, dty, 10, WHITE); dty += 15;
+        if (mPlayerPtr) DrawText(TextFormat("POS: %.0f, %.0f", mPlayerPtr->mPosition.x, mPlayerPtr->mPosition.y), dx + 10, dty, 10, WHITE); dty += 30;
+
+        DrawText("CHEATS:", dx + 10, dty, 10, YELLOW); dty += 15;
+        DrawText("GOD:", dx + 10, dty, 10, WHITE); DrawText(mCheats.godMode ? "ON" : "OFF", dx + 60, dty, 10, mCheats.godMode ? GOLD : RED); dty += 15;
+        DrawText("NOCLIP:", dx + 10, dty, 10, WHITE); DrawText(mCheats.noclip ? "ON" : "OFF", dx + 60, dty, 10, mCheats.noclip ? SKYBLUE : RED); dty += 30;
+
+        DrawText("KEYS:", dx + 10, dty, 10, YELLOW); dty += 15;
+        DrawText("[G] God Mode", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[N] Noclip", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[H] Heal", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[T] TP to Boss", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[K] Kill Boss", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[R] Respawn", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[F1] Reset", dx + 10, dty, 10, GRAY);
+    }
+
+    EndDrawing();
 }
 
 void GameWrapper::respawnAllBosses() {
@@ -779,35 +746,28 @@ void GameWrapper::respawnAllBosses() {
     for (MageBoss* boss : mBosses) {
         if (boss && bossIndex < (int)mBossSpawnPoints.size()) {
             const auto& spawn = mBossSpawnPoints[bossIndex];
-
             boss->mPosition = spawn.position;
             boss->mStartY = spawn.position.y;
             boss->mPrevPosition = spawn.position;
-
             boss->mHealth = spawn.maxHealth;
             boss->mMaxHealth = spawn.maxHealth;
-
             boss->mState = MageBoss::INACTIVE;
             boss->mActive = true;
             boss->mIsEnraged = false;
             boss->mDualLaser = false;
             boss->mTeleportAttack = false;
-
             boss->mStateTimer = 0.0f;
             boss->mHurtTimer = 0.0f;
             boss->mFloatOffset = 0.0f;
             boss->mTeleportAlpha = 1.0f;
             boss->mLaserInitialized = false;
-
             boss->mCurrentFrame = 0;
             boss->mFrameTimer = 0.0f;
-
             boss->mFireballs.clear();
             boss->mAttackCounter = 0;
             boss->mCurrentBurst = 0;
             boss->mAoeRadius = 0.0f;
             boss->mAoeDealtDamage = false;
-
             boss->mIdleTime = boss->mIdleTimeBase;
             boss->mLaserChargeTime = boss->mLaserChargeTimeBase;
             boss->mLaserFireTime = boss->mLaserFireTimeBase;
@@ -818,17 +778,7 @@ void GameWrapper::respawnAllBosses() {
             boss->mMoveSpeed = 70.0f;
             boss->mAoeMaxRadius = 100.0f;
             boss->mAoeWarningTime = 1.4f;
-
-            boss->setArenaBounds(
-                spawn.arenaBounds.x,
-                spawn.arenaBounds.y,
-                spawn.arenaBounds.width,
-                spawn.arenaBounds.height
-            );
-
-            std::cout << "[DEBUG] Boss respawned with HP: " << boss->mHealth
-                << "/" << boss->mMaxHealth << std::endl;
-
+            boss->setArenaBounds(spawn.arenaBounds.x, spawn.arenaBounds.y, spawn.arenaBounds.width, spawn.arenaBounds.height);
             bossIndex++;
         }
     }
@@ -850,220 +800,4 @@ void GameWrapper::respawnPlayer() {
 void GameWrapper::reset() {
     respawnPlayer();
     respawnAllBosses();
-}
-
-void GameWrapper::drawUI(int windowWidth, int windowHeight) {
-    BeginDrawing();
-    ClearBackground(BLACK);
-
-    float scale = std::min((float)windowWidth / VIRTUAL_WIDTH, (float)windowHeight / VIRTUAL_HEIGHT);
-    DrawTexturePro(
-        mRenderTarget.texture,
-        { 0, 0, (float)mRenderTarget.texture.width, -(float)mRenderTarget.texture.height },
-        { (windowWidth - VIRTUAL_WIDTH * scale) / 2, (windowHeight - VIRTUAL_HEIGHT * scale) / 2,
-          VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale },
-        { 0, 0 }, 0, WHITE
-    );
-
-    Color panelBg = Fade(BLACK, 0.75f);
-    Color panelBorder = { 60, 70, 110, 255 };
-    Color textNormal = { 200, 200, 220, 255 };
-    Color textAccent = { 100, 180, 255, 255 };
-    Color hpColor = { 180, 40, 60, 255 };
-
-    if (mPlayerPtr) {
-        WeaponStats currentWeapon = mPlayerPtr->getCurrentWeaponStats();
-        int panelW = 220;
-        int panelX = windowWidth - panelW - 20;
-        int panelY = 20;
-        int panelH = 100;
-
-        DrawRectangle(panelX, panelY, panelW, panelH, panelBg);
-        DrawRectangleLines(panelX, panelY, panelW, panelH, panelBorder);
-
-        const char* weaponName = "???";
-        WeaponType currentType = mPlayerPtr->getCurrentWeaponType();
-        switch (currentType) {
-        case WeaponType::SWORD_DEFAULT: weaponName = "VOID BLADE"; break;
-        case WeaponType::DAGGER_SWIFT:  weaponName = "SHADOW DAGGER"; break;
-        case WeaponType::AXE_HEAVY:     weaponName = "ABYSS AXE"; break;
-        case WeaponType::SPEAR_LONG:    weaponName = "PIERCER"; break;
-        case WeaponType::KATANA_BLOOD:  weaponName = "BLOOD KATANA"; break;
-        }
-
-        Color weaponColor = currentWeapon.slashColor;
-        if (mWeaponUI.isAnimating()) {
-            float pulse = sinf(mWeaponUI.changeTimer * 20.0f) * 0.5f + 0.5f;
-            weaponColor = ColorAlpha(weaponColor, 0.5f + pulse * 0.5f);
-        }
-
-        DrawText(weaponName, panelX + 10, panelY + 10, 20, weaponColor);
-
-        int statY = panelY + 35;
-        DrawText(TextFormat("DMG: %.0f", currentWeapon.damage), panelX + 10, statY, 14, textNormal);
-        statY += 18;
-        DrawText(TextFormat("RNG: %.0f", currentWeapon.reachX), panelX + 10, statY, 14, textAccent);
-        statY += 18;
-        DrawText(TextFormat("SPD: %.2fs", currentWeapon.attackCooldown), panelX + 10, statY, 14, ORANGE);
-
-        int iconX = panelX + 120;
-        int iconY = panelY + 35;
-        const WeaponType allWeapons[] = {
-            WeaponType::SWORD_DEFAULT, WeaponType::DAGGER_SWIFT, WeaponType::AXE_HEAVY,
-            WeaponType::SPEAR_LONG, WeaponType::KATANA_BLOOD
-        };
-
-        for (int i = 0; i < 5; i++) {
-            WeaponStats ws = WeaponStats::GetStats(allWeapons[i]);
-            bool isSelected = (allWeapons[i] == currentType);
-            Color iconColor = isSelected ? ws.slashColor : Fade(ws.slashColor, 0.3f);
-            int size = isSelected ? 10 : 8;
-            DrawRectangle(iconX, iconY + i * 12, size, size, iconColor);
-            DrawText(TextFormat("%d", i + 1), iconX + 14, iconY + i * 12, 10, isSelected ? WHITE : GRAY);
-        }
-
-        int statsY = panelY + panelH + 10;
-        int statsH = 110;
-
-        DrawRectangle(panelX, statsY, panelW, statsH, panelBg);
-        DrawRectangleLines(panelX, statsY, panelW, statsH, panelBorder);
-
-        DrawText("VITALITY", panelX + 10, statsY + 10, 10, GRAY);
-        float hpPercent = (float)mPlayerPtr->mHealth / (float)mPlayerPtr->mMaxHealth;
-        int barW = 140;
-        int barH = 12;
-        DrawRectangle(panelX + 10, statsY + 25, barW, barH, Fade(BLACK, 0.5f));
-        DrawRectangle(panelX + 10, statsY + 25, (int)(barW * hpPercent), barH, mCheats.godMode ? GOLD : hpColor);
-        DrawRectangleLines(panelX + 10, statsY + 25, barW, barH, Fade(WHITE, 0.2f));
-        DrawText(TextFormat("%d / %d", mPlayerPtr->mHealth, mPlayerPtr->mMaxHealth), panelX + barW + 20, statsY + 25, 10, WHITE);
-
-        if (mPlayerPtr->mInvincibilityTimer > 0) {
-            DrawText("GHOST FORM", panelX + 10, statsY + 45, 10, GOLD);
-            float invW = (mPlayerPtr->mInvincibilityTimer / 1.0f) * barW;
-            if (invW > barW) invW = barW;
-            DrawRectangle(panelX + 10, statsY + 56, (int)invW, 2, GOLD);
-        }
-
-        int jumpY = statsY + 70;
-        DrawText("AGILITY", panelX + 10, jumpY, 10, GRAY);
-
-        int jumps = mPlayerPtr->getMaxJumps() - mPlayerPtr->getJumpCount();
-        for (int i = 0; i < mPlayerPtr->getMaxJumps(); i++) {
-            Color jColor = (i < jumps) ? SKYBLUE : Fade(DARKBLUE, 0.3f);
-            DrawRectangle(panelX + 10 + (i * 15), jumpY + 15, 10, 10, jColor);
-        }
-        DrawText("JUMPS", panelX + 45, jumpY + 15, 10, textNormal);
-
-        Color dashColor = mPlayerPtr->canDash() ? LIME : Fade(MAROON, 0.5f);
-        DrawRectangle(panelX + 100, jumpY + 15, 10, 10, dashColor);
-        DrawText(mPlayerPtr->canDash() ? "DASH READY" : "RECHARGING", panelX + 115, jumpY + 15, 10, mPlayerPtr->canDash() ? textNormal : GRAY);
-    }
-
-    if (mCheats.hasActiveMessage()) {
-        float alpha = std::min(mCheats.messageTimer, 1.0f);
-        int textWidth = MeasureText(mCheats.message.c_str(), 24);
-        DrawText(mCheats.message.c_str(),
-            (windowWidth - textWidth) / 2,
-            windowHeight / 2 - 50,
-            24,
-            Fade(YELLOW, alpha));
-    }
-
-    for (MageBoss* boss : mBosses) {
-        if (boss && boss->mActive && boss->mState != MageBoss::INACTIVE) {
-            float bossBarWidth = 400.0f;
-            float bossBarX = (windowWidth - bossBarWidth) / 2;
-            float bossBarY = 40.0f;
-            float hpPercent = (float)boss->mHealth / (float)boss->mMaxHealth;
-
-            DrawRectangle((int)bossBarX - 2, (int)bossBarY - 2, (int)bossBarWidth + 4, 14, BLACK);
-            DrawRectangle((int)bossBarX, (int)bossBarY, (int)bossBarWidth, 10, Fade(DARKGRAY, 0.8f));
-            DrawRectangle((int)bossBarX, (int)bossBarY, (int)(bossBarWidth * hpPercent), 10,
-                boss->mIsEnraged ? RED : PURPLE);
-
-            DrawText("ABYSS MAGE", (int)bossBarX, (int)bossBarY - 20, 20, textNormal);
-
-            if (boss->mIsEnraged) {
-                DrawText("FRENZY", (int)(bossBarX + bossBarWidth + 10), (int)bossBarY - 2, 12, RED);
-            }
-            break;
-        }
-    }
-
-    int ctrlX = 20;
-    int ctrlH = 140;
-    int ctrlY = windowHeight - ctrlH - 20;
-    int ctrlW = 180;
-
-    DrawRectangle(ctrlX, ctrlY, ctrlW, ctrlH, panelBg);
-    DrawRectangleLines(ctrlX, ctrlY, ctrlW, ctrlH, panelBorder);
-
-    int txtY = ctrlY + 10;
-    int gap = 18;
-    int fontSize = 10;
-    Color keyColor = YELLOW;
-    Color descColor = textNormal;
-
-    DrawText("CONTROLS", ctrlX + 10, txtY, 10, GRAY); txtY += 20;
-
-    DrawText("[ARROWS]", ctrlX + 10, txtY, fontSize, keyColor);
-    DrawText("Move / Climb", ctrlX + 70, txtY, fontSize, descColor); txtY += gap;
-
-    DrawText("[SPACE]", ctrlX + 10, txtY, fontSize, keyColor);
-    DrawText("Jump / Wall", ctrlX + 70, txtY, fontSize, descColor); txtY += gap;
-
-    DrawText("[C]", ctrlX + 10, txtY, fontSize, keyColor);
-    DrawText("Dash", ctrlX + 70, txtY, fontSize, descColor); txtY += gap;
-
-    DrawText("[Z]", ctrlX + 10, txtY, fontSize, keyColor);
-    DrawText("Attack", ctrlX + 70, txtY, fontSize, descColor); txtY += gap;
-
-    DrawText("[1-5]", ctrlX + 10, txtY, fontSize, keyColor);
-    DrawText("Weapon", ctrlX + 70, txtY, fontSize, descColor); txtY += gap;
-
-    DrawText("[F3]", ctrlX + 10, txtY, fontSize, keyColor);
-    DrawText("Debug Info", ctrlX + 70, txtY, fontSize, descColor);
-
-    if (mShowDebug) {
-        int dbgX = 20;
-        int dbgY = 20;
-        int dbgW = 180;
-        int dbgH = 280;
-
-        DrawRectangle(dbgX, dbgY, dbgW, dbgH, Fade(BLACK, 0.9f));
-        DrawRectangleLines(dbgX, dbgY, dbgW, dbgH, LIME);
-
-        int dy = dbgY + 10;
-        int dGap = 15;
-
-        DrawText(TextFormat("FPS: %d", GetFPS()), dbgX + 10, dy, 10, LIME); dy += dGap;
-        DrawText(TextFormat("ENTITIES: %d", (int)mActiveEntities.size()), dbgX + 10, dy, 10, WHITE); dy += dGap;
-
-        if (mPlayerPtr) {
-            DrawText(TextFormat("POS: %.0f, %.0f", mPlayerPtr->mPosition.x, mPlayerPtr->mPosition.y), dbgX + 10, dy, 10, WHITE);
-            dy += dGap * 2;
-        }
-
-        DrawText("STATUS:", dbgX + 10, dy, 10, YELLOW); dy += dGap;
-
-        DrawText("GOD MODE:", dbgX + 10, dy, 10, WHITE);
-        DrawText(mCheats.godMode ? "ON" : "OFF", dbgX + 90, dy, 10, mCheats.godMode ? GOLD : RED);
-        dy += dGap;
-
-        DrawText("NOCLIP:", dbgX + 10, dy, 10, WHITE);
-        DrawText(mCheats.noclip ? "ON" : "OFF", dbgX + 90, dy, 10, mCheats.noclip ? SKYBLUE : RED);
-        dy += dGap * 2;
-
-        DrawText("CHEAT KEYS:", dbgX + 10, dy, 10, YELLOW); dy += dGap;
-        DrawText("[G] God Mode", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[N] Noclip", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[H] Heal", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[T] TP to Boss", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[K] Kill Boss", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[R] Respawn", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[F1] Reset", dbgX + 10, dy, 10, GRAY); dy += dGap;
-        DrawText("[F2] Enrage", dbgX + 10, dy, 10, GRAY);
-    }
-
-    EndDrawing();
 }

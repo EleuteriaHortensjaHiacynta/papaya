@@ -190,7 +190,6 @@ inline void Player::updateStamina(float dt) {
 }
 
 void Player::handleMovement(float dt) {
-    // --- POPRAWKA NOCLIP: LATANIE ---
     if (mNoclip) {
         float dirX = Input::GetHorizontalAxis();
         float dirY = Input::GetVerticalAxis();
@@ -202,7 +201,6 @@ void Player::handleMovement(float dt) {
         if (dirX != 0) mIsFacingRight = (dirX > 0);
         return;
     }
-    // --------------------------------
 
     if (mIsDashing || mIsClimbing) return;
 
@@ -626,7 +624,7 @@ void Player::handleGhosts(float dt) {
                 visualPos.x += mIsFacingRight ? climbOffset : -climbOffset;
             }
 
-            mGhosts.push_back({ visualPos, mFrameRec, mIsFacingRight, 0.5f });
+            mGhosts.push_back({ visualPos, mFrameRec, mIsFacingRight, 0.8f });
         }
     }
     else {
@@ -648,7 +646,8 @@ void Player::drawGhosts() {
         Vector2 pos = { std::floor(ghost.position.x), std::floor(ghost.position.y) };
 
         Rectangle dest = { pos.x, pos.y, FRAME_WIDTH, FRAME_HEIGHT };
-        DrawTexturePro(mTexture, src, dest, { 0, 0 }, 0.0f, Fade(WHITE, ghost.alpha));
+
+        DrawTexturePro(mTexture, src, dest, { 0, 0 }, 0.0f, Fade(SKYBLUE, ghost.alpha));
     }
 }
 

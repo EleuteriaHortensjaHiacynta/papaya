@@ -71,9 +71,25 @@ EntitySaver& Saves::saveEntities() {
     return *entitySaver;
 }
 
+EntityLoader& Saves::getSaveData() {
+    if (!entitySavesLoader) throw std::runtime_error("EntitySavesLoader not initialized");
+    return *entitySavesLoader;
+}
+
 EntitySaver& Saves::saveEntityToMap() {
     if (!entitySavesSaver) throw std::runtime_error("EntitySavesSaver not initialized");
     return *entitySavesSaver;
+}
+
+void Saves::clearSaveData() {
+    if (entitiesSaveFile.is_open()) {
+        entitiesSaveFile.close();
+    }
+    std::filesystem::path p = path / "saves.bin";
+    entitiesSaveFile.open(p, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+
+    entitySavesLoader = std::make_unique<EntityLoader>(entitiesSaveFile);
+    entitySavesSaver = std::make_unique<EntitySaver>(entitiesSaveFile);
 }
 
 void Saves::loadFromEditorDir(const std::string& pathToFolder) {

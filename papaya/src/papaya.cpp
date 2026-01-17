@@ -16,11 +16,18 @@ int main() {
     SetExitKey(KEY_NULL);
 
     int state = 0;
+    int previousState = 0;
     bool shouldQuit = false;
 
     GameWrapper game(shouldQuit, state);
 
     while (!WindowShouldClose() && !shouldQuit) {
+
+        if (previousState == 0 && state == 1) {
+            game.reloadSave();
+        }
+        previousState = state;
+
         switch (state) {
         case 0:
             sceneMainMenu(WINDOW_W, WINDOW_H, shouldQuit, state);

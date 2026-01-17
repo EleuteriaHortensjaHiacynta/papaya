@@ -85,6 +85,7 @@ public:
 
     void runFrame(int windowWidth, int windowHeight);
     void reset();
+    void reloadSave();
 
 private:
     bool& mShouldQuit;
@@ -94,8 +95,6 @@ private:
     Texture2D mPlayerTexture;
     Texture2D mBossTexture;
     Texture2D mRabbitTexture;
-
-    // NOWE
     Texture2D mBackground;
 
     RenderTexture2D mRenderTarget;
@@ -139,4 +138,6 @@ private:
 
     void respawnAllBosses();
     void respawnPlayer();
+
+    void saveGame();
 };
