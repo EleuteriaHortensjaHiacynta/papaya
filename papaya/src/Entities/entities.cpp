@@ -23,9 +23,10 @@ uint64_t createEntityS(EntityS entity) {
     // Layout (bits): [63..48]=x (16) | [47..32]=y (16) | [31..24]=x_length (8) | [23..16]=y_length (8)
     //                 [15..8]=textureID (8) | [7..4]=extraData (4) | [3..0]=layer (4)
 
-    // [POPRAWIONE] Rzutowanie na uint16_t (zgodnie ze struktur¹ EntityS)
+    // Rzutujemy int16_t na uint16_t, aby zachowaæ uk³ad bitów (bit cast)
     entityData |= (static_cast<uint64_t>(static_cast<uint16_t>(entity.x)) & 0xFFFFULL) << 48;
     entityData |= (static_cast<uint64_t>(static_cast<uint16_t>(entity.y)) & 0xFFFFULL) << 32;
+
     entityData |= (static_cast<uint64_t>(entity.entityType) & 0xFFULL) << 24;
     entityData |= (static_cast<uint64_t>(entity.health) & 0xFFULL) << 16;
     return entityData;
@@ -33,9 +34,11 @@ uint64_t createEntityS(EntityS entity) {
 
 EntityS decodeEntityS(uint64_t entityData) {
     EntityS entity;
-    // [POPRAWIONE] Odkodowanie jako uint16_t
+
+    // Odczytujemy jako uint16_t, a potem rzutujemy na int16_t, aby przywróciæ znak
     entity.x = static_cast<uint16_t>((entityData >> 48) & 0xFFFF);
     entity.y = static_cast<uint16_t>((entityData >> 32) & 0xFFFF);
+
     entity.entityType = static_cast<EntityType>((entityData >> 24) & 0xFF);
     entity.health = static_cast<int8_t>((entityData >> 16) & 0xFF);
     return entity;
@@ -71,8 +74,10 @@ void EntitySaver::addEntityS(EntityS entity) {
 
 void EntitySaver::addEntity(const std::unique_ptr<Entity>& entity) {
     EntityS entityS;
-    entityS.x = static_cast<uint16_t>(entity->mPosition.x);
-    entityS.y = static_cast<uint16_t>(entity->mPosition.y);
+    // Konwersja z Pixeli (Gra) na Kafelki (Zapis)
+    // Zak³adamy, ¿e entity->mPosition to piksele, a TILE_SIZE to 8
+    entityS.x = static_cast<int16_t>(entity->mPosition.x / 8.0f);
+    entityS.y = static_cast<int16_t>(entity->mPosition.y / 8.0f);
     entityS.entityType = entity->mType;
     entityS.health = static_cast<uint8_t>(entity->mHealth);
 
@@ -83,34 +88,57 @@ void EntitySaver::fromEditor(std::string json) {
     using jsonn = nlohmann::json;
     auto doc = jsonn::parse(json);
 
-    if (!doc.contains("chunkData")) return; // Zabezpieczenie
+    if (!doc.contains("chunkData")) return;
 
     auto arr = doc["chunkData"]["entities"];
     int chunkX = doc["chunkData"]["x"].get<int>();
     int chunkY = doc["chunkData"]["y"].get<int>();
 
-    if (arr.is_null() || !arr.is_array() || arr.size() == 0) {
-        // Mo¿na pomin¹æ rzucanie b³êdu, jeœli chunk jest pusty
-        return;
-    }
+    if (arr.is_null() || !arr.is_array() || arr.size() == 0) return;
 
-    // i = Wiersz (Y), j = Kolumna (X)
+    std::cout << "[SYSTEM] Przetwarzanie chunka (" << chunkX << "," << chunkY << ")..." << std::endl;
+
     for (long unsigned int i = 0; i < arr.size(); ++i) {
         for (long unsigned int j = 0; j < arr[i].size(); ++j) {
-            uint8_t item = arr[i][j];
 
-            if (item == 0) continue;
+            // 1. Pobieramy surowe ID z edytora (numer obrazka w atlasie)
+            uint8_t editorID = arr[i][j];
 
-            // [POPRAWIONE] Zamieniono i z j przy obliczaniu X i Y
-            uint16_t x = j + static_cast<uint16_t>(chunkX * 64); // j to X
-            uint16_t y = i + static_cast<uint16_t>(chunkY * 64); // i to Y
+            if (editorID == 0) continue; // Puste pole
 
-            EntityS entity = {
-                x,
-                y,
-                static_cast<EntityType>(item),
-                10 // Domyœlne HP, bo w JSON z edytora mo¿e go nie byæ
-            };
+            // 2. T³umaczenie: Editor Sprite ID -> Game Enum
+            EntityType gameType;
+
+            // UWAGA: SprawdŸ w swoim atlasie (pliku .png), który to obrazek!
+            // Zak³adam: 
+            // 1 = Królik (drugi obrazek, bo 0 to pierwszy)
+            // 2 = Boss
+            switch (editorID) {
+            case 1:
+                gameType = RABBIT;
+                std::cout << " -> Mapowanie: EditorID 1 -> RABBIT" << std::endl;
+                break;
+            case 2:
+                gameType = MAGE_BOSS;
+                std::cout << " -> Mapowanie: EditorID 2 -> MAGE_BOSS" << std::endl;
+                break;
+            default:
+                // Jeœli nie wiesz co to, dajemy królika dla testu
+                std::cout << " -> WARNING: Nieznane ID (" << (int)editorID << "), ustawiam RABBIT" << std::endl;
+                gameType = RABBIT;
+                break;
+            }
+
+            // 3. Obliczanie pozycji globalnej (w kafelkach)
+            int globalTileX = static_cast<int>(j) + (chunkX * 64);
+            int globalTileY = static_cast<int>(i) + (chunkY * 64);
+
+            EntityS entity;
+            entity.x = static_cast<int16_t>(globalTileX);
+            entity.y = static_cast<int16_t>(globalTileY);
+            entity.entityType = gameType; // Tu zapisujemy ju¿ poprawne ID gry!
+            entity.health = 10;
+
             this->addEntityS(entity);
         }
     }
