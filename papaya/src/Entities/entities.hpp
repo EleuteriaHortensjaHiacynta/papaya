@@ -10,8 +10,8 @@
 #define BLOCK_SIZE sizeof(uint64_t)
 
 struct EntityS {
-    uint16_t x;
-    uint16_t y;
+    int16_t x;
+    int16_t y;
     EntityType entityType;
     uint8_t health;
     uint8_t textureID;

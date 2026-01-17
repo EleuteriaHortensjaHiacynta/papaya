@@ -188,12 +188,21 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     // ENTITIES
     // =========================================================================
     std::vector<std::unique_ptr<Entity>> activeEntities;
-    std::vector<Entity*> wallEntities;  // Wskaźniki do ścian dla bossa
+    std::vector<Entity*> wallEntities;
     Player* playerPtr = nullptr;
 
-    // Osobne listy dla wrogów (dla łatwiejszego dostępu)
     std::vector<MageBoss*> bosses;
     std::vector<RabbitEnemy*> rabbits;
+
+    // =========================================================================
+    // DANE DO RESPAWNU BOSSÓW
+    // =========================================================================
+    struct BossSpawnData {
+        Vector2 position;
+        Rectangle arenaBounds;
+        int maxHealth;
+    };
+    std::vector<BossSpawnData> bossSpawnPoints;
 
     // --- 1. Ściany z kolizji mapy ---
     {
@@ -214,8 +223,9 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     }
 
     // --- 2. Gracz ---
+    Vector2 playerSpawnPoint = { 464.5f, 442.0f };
     {
-        auto playerEntity = std::make_unique<Player>(464.5f, 442.0f);
+        auto playerEntity = std::make_unique<Player>(playerSpawnPoint.x, playerSpawnPoint.y);
         playerEntity->mTexture = playerTexture;
         playerPtr = playerEntity.get();
         activeEntities.push_back(std::move(playerEntity));
@@ -224,27 +234,44 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     // --- 3. Wrogowie z pliku ---
     {
         auto rawEntities = saves.getEntities().getAll();
-        std::cout << "[INFO] Wczytano " << rawEntities.size() << " encji z pliku." << std::endl;
+        std::cout << "[DEBUG] Liczba encji w pliku binarnym: " << rawEntities.size() << std::endl;
 
         for (const auto& eData : rawEntities) {
+            std::cout << "[DEBUG] Znaleziono encję -> ID: " << (int)eData.entityType
+                << " X: " << eData.x << " Y: " << eData.y
+                << " Health: " << eData.health << std::endl;
+
             if (eData.entityType == PLAYER) continue;
+
+            float pixelX = static_cast<float>(eData.x * TILE_SIZE_PX);
+            float pixelY = static_cast<float>(eData.y * TILE_SIZE_PX);
 
             if (eData.entityType == MAGE_BOSS) {
                 auto boss = std::make_unique<MageBoss>(
-                    eData.x, eData.y,
+                    pixelX, pixelY,
                     bossTexture,
                     playerPtr
                 );
-                if (eData.health > 0) {
-                    boss->mHealth = eData.health;
-                    boss->mMaxHealth = eData.health;
-                }
+
+                Rectangle arena = {
+                    boss->mPosition.x - 116.0f,
+                    boss->mPosition.y - 50.0f,
+                    232.0f,
+                    100.0f
+                };
+                boss->setArenaBounds(arena.x, arena.y, arena.width, arena.height);
+
+                std::cout << "[DEBUG] Boss created with HP: " << boss->mHealth
+                    << "/" << boss->mMaxHealth << std::endl;
+
+                bossSpawnPoints.push_back({ {pixelX, pixelY}, arena, boss->mMaxHealth });
+
                 bosses.push_back(boss.get());
                 activeEntities.push_back(std::move(boss));
             }
             else if (eData.entityType == RABBIT) {
                 auto rabbit = std::make_unique<RabbitEnemy>(
-                    eData.x, eData.y,
+                    pixelX, pixelY,
                     rabbitTexture,
                     playerPtr
                 );
@@ -259,17 +286,23 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     if (bosses.empty() && rabbits.empty()) {
         std::cout << "[INFO] Brak wrogów w pliku - tworzę testowych." << std::endl;
 
-        // Testowy boss
         auto testBoss = std::make_unique<MageBoss>(
             666.0f, -376.0f,
             bossTexture,
             playerPtr
         );
 
+        Rectangle arena = { 550.0f, -448.0f, 232.0f, 100.0f };
+        testBoss->setArenaBounds(arena.x, arena.y, arena.width, arena.height);
+
+        std::cout << "[DEBUG] Test boss created with HP: " << testBoss->mHealth
+            << "/" << testBoss->mMaxHealth << std::endl;
+
+        bossSpawnPoints.push_back({ {666.0f, -376.0f}, arena, testBoss->mMaxHealth });
+
         bosses.push_back(testBoss.get());
         activeEntities.push_back(std::move(testBoss));
 
-        // Testowe króliki
         auto testRabbit = std::make_unique<RabbitEnemy>(
             270.0f, 322.0f,
             rabbitTexture,
@@ -280,25 +313,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     }
 
     std::cout << "[INFO] Bosses: " << bosses.size() << ", Rabbits: " << rabbits.size() << std::endl;
-
-    // --- WAŻNE: Aktualizacja granic mapy (ARENA 550,-448 do 782,-348) ---
-    {
-        // Obliczamy wymiary na podstawie podanych punktów:
-        // X: od 550 do 782 -> Szerokość = 782 - 550 = 232
-        // Y: od -448 do -348 -> Wysokość = |-348 - (-448)| = 100
-        // Top-Left: (550, -448)
-
-        for (MageBoss* boss : bosses) {
-            boss->setArenaBounds(
-                550.0f,     // X
-                -448.0f,    // Y (górna krawędź, mniejsza wartość = wyżej w Y-down niekoniecznie, ale tu są ujemne)
-                // Zakładamy, że -448 to góra, a -348 to dół.
-                232.0f,     // Szerokość
-                100.0f      // Wysokość
-            );
-            std::cout << "[INFO] Boss Arena set to: 550, -448 (232x100)" << std::endl;
-        }
-    }
 
     // =========================================================================
     // KAMERA
@@ -314,10 +328,103 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
 
     // =========================================================================
-    // POMOCNICZE
+    // POMOCNICZE + CHEATY
     // =========================================================================
     std::vector<Entity*> nearbyObstacles;
     bool showDebug = false;
+
+    // ====== CHEATY ======
+    bool godMode = false;
+    bool noclip = false;
+    float cheatMessageTimer = 0.0f;
+    std::string cheatMessage = "";
+
+    // ====== SYSTEM BRONI ======
+    float weaponChangeTimer = 0.0f;
+    const float WEAPON_CHANGE_ANIM_TIME = 0.3f;
+
+    auto showCheatMessage = [&](const std::string& msg) {
+        cheatMessage = msg;
+        cheatMessageTimer = 2.0f;
+        std::cout << "[CHEAT] " << msg << std::endl;
+        };
+
+    // Funkcja respawnu bossów
+    auto respawnAllBosses = [&]() {
+        int bossIndex = 0;
+        for (MageBoss* boss : bosses) {
+            if (boss && bossIndex < (int)bossSpawnPoints.size()) {
+                const auto& spawn = bossSpawnPoints[bossIndex];
+
+                boss->mPosition = spawn.position;
+                boss->mStartY = spawn.position.y;
+                boss->mPrevPosition = spawn.position;
+
+                boss->mHealth = spawn.maxHealth;
+                boss->mMaxHealth = spawn.maxHealth;
+
+                boss->mState = MageBoss::INACTIVE;
+                boss->mActive = true;
+                boss->mIsEnraged = false;
+                boss->mDualLaser = false;
+                boss->mTeleportAttack = false;
+
+                boss->mStateTimer = 0.0f;
+                boss->mHurtTimer = 0.0f;
+                boss->mFloatOffset = 0.0f;
+                boss->mTeleportAlpha = 1.0f;
+                boss->mLaserInitialized = false;
+
+                boss->mCurrentFrame = 0;
+                boss->mFrameTimer = 0.0f;
+
+                boss->mFireballs.clear();
+                boss->mAttackCounter = 0;
+                boss->mCurrentBurst = 0;
+                boss->mAoeRadius = 0.0f;
+                boss->mAoeDealtDamage = false;
+
+                boss->mIdleTime = boss->mIdleTimeBase;
+                boss->mLaserChargeTime = boss->mLaserChargeTimeBase;
+                boss->mLaserFireTime = boss->mLaserFireTimeBase;
+                boss->mLaserTrackSpeedCharge = boss->mLaserTrackSpeedChargeBase;
+                boss->mLaserTrackSpeedFire = boss->mLaserTrackSpeedFireBase;
+                boss->mFireballCount = boss->mFireballCountBase;
+                boss->mFireballSpeed = 320.0f;
+                boss->mMoveSpeed = 70.0f;
+                boss->mAoeMaxRadius = 100.0f;
+                boss->mAoeWarningTime = 1.4f;
+
+                boss->setArenaBounds(
+                    spawn.arenaBounds.x,
+                    spawn.arenaBounds.y,
+                    spawn.arenaBounds.width,
+                    spawn.arenaBounds.height
+                );
+
+                std::cout << "[DEBUG] Boss respawned with HP: " << boss->mHealth
+                    << "/" << boss->mMaxHealth << std::endl;
+
+                bossIndex++;
+            }
+        }
+
+        showCheatMessage("BOSSES RESPAWNED!");
+        };
+
+    // Funkcja respawnu gracza
+    auto respawnPlayer = [&]() {
+        if (playerPtr) {
+            playerPtr->mPosition = playerSpawnPoint;
+            playerPtr->mVelocity = { 0, 0 };
+            playerPtr->mHealth = playerPtr->mMaxHealth;
+            playerPtr->mInvincibilityTimer = 1.0f;
+            playerPtr->mActive = true;
+
+            smoothCam.currentPos = playerSpawnPoint;
+        }
+        showCheatMessage("PLAYER RESPAWNED!");
+        };
 
     // =========================================================================
     // GŁÓWNA PĘTLA
@@ -325,11 +432,130 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
     while (!WindowShouldClose() && !shouldQuit) {
         float dt = std::min(GetFrameTime(), 0.033f);
 
+        // =====================================================================
+        // INPUT - CHEATY + BROŃ
+        // =====================================================================
         if (IsKeyPressed(KEY_ESCAPE)) {
             state = 0;
             break;
         }
         if (IsKeyPressed(KEY_F3)) showDebug = !showDebug;
+
+        // ====== ZMIANA BRONI (1-5) ======
+        if (playerPtr) {
+            // [FIX] Sprawdzanie dmg 2.0 (Sword), a nie 15.0
+            WeaponType newWeapon = playerPtr->getCurrentWeaponStats().damage == 2.0f ?
+                WeaponType::SWORD_DEFAULT :
+                (WeaponType)0; // dummy
+            bool weaponChanged = false;
+
+            if (IsKeyPressed(KEY_ONE)) {
+                playerPtr->setWeapon(WeaponType::SWORD_DEFAULT);
+                weaponChanged = true;
+            }
+            else if (IsKeyPressed(KEY_TWO)) {
+                playerPtr->setWeapon(WeaponType::DAGGER_SWIFT);
+                weaponChanged = true;
+            }
+            else if (IsKeyPressed(KEY_THREE)) {
+                playerPtr->setWeapon(WeaponType::AXE_HEAVY);
+                weaponChanged = true;
+            }
+            else if (IsKeyPressed(KEY_FOUR)) {
+                playerPtr->setWeapon(WeaponType::SPEAR_LONG);
+                weaponChanged = true;
+            }
+            else if (IsKeyPressed(KEY_FIVE)) {
+                playerPtr->setWeapon(WeaponType::KATANA_BLOOD);
+                weaponChanged = true;
+            }
+
+            if (weaponChanged) {
+                weaponChangeTimer = WEAPON_CHANGE_ANIM_TIME;
+                WeaponStats stats = playerPtr->getCurrentWeaponStats();
+                // [FIX] Logi poprawione dla nowego dmg
+                std::cout << "[WEAPON] Zmieniono na: " << WeaponStats::GetName(playerPtr->getCurrentWeaponStats().damage == 2.0f ? WeaponType::SWORD_DEFAULT : WeaponType::DAGGER_SWIFT) << std::endl;
+            }
+        }
+
+        // ====== CHEATY ======
+        if (IsKeyPressed(KEY_G)) {
+            godMode = !godMode;
+            showCheatMessage(godMode ? "GODMODE: ON" : "GODMODE: OFF");
+        }
+
+        if (IsKeyPressed(KEY_N)) {
+            noclip = !noclip;
+            showCheatMessage(noclip ? "NOCLIP: ON" : "NOCLIP: OFF");
+        }
+
+        if (IsKeyPressed(KEY_R)) {
+            respawnAllBosses();
+        }
+
+        if (IsKeyPressed(KEY_T)) {
+            if (playerPtr && !bosses.empty()) {
+                MageBoss* nearestBoss = bosses[0];
+                playerPtr->mPosition = {
+                    nearestBoss->mPosition.x - 60.0f,
+                    nearestBoss->mPosition.y
+                };
+                playerPtr->mVelocity = { 0, 0 };
+                smoothCam.currentPos = playerPtr->mPosition;
+                showCheatMessage("TELEPORTED TO BOSS!");
+            }
+        }
+
+        if (IsKeyPressed(KEY_H)) {
+            if (playerPtr) {
+                playerPtr->mHealth = playerPtr->mMaxHealth;
+                showCheatMessage("HEALTH RESTORED!");
+            }
+        }
+
+        if (IsKeyPressed(KEY_K)) {
+            for (MageBoss* boss : bosses) {
+                if (boss && boss->mActive) {
+                    boss->takeDamage(9999);
+                }
+            }
+            showCheatMessage("BOSSES KILLED!");
+        }
+
+        if (IsKeyPressed(KEY_L)) {
+            for (MageBoss* boss : bosses) {
+                if (boss && boss->mActive && boss->mState != MageBoss::DYING) {
+                    boss->takeDamage(10);
+                    showCheatMessage(TextFormat("BOSS DAMAGED! HP: %d/%d", boss->mHealth, boss->mMaxHealth));
+                    break;
+                }
+            }
+        }
+
+        if (IsKeyPressed(KEY_F1)) {
+            respawnPlayer();
+            respawnAllBosses();
+            showCheatMessage("FULL RESET!");
+        }
+
+        if (IsKeyPressed(KEY_F2)) {
+            for (MageBoss* boss : bosses) {
+                if (boss && boss->mActive && !boss->mIsEnraged) {
+                    boss->mHealth = (int)(boss->mMaxHealth * 0.4f);
+                    boss->checkEnrage();
+                    showCheatMessage(TextFormat("BOSS ENRAGED! HP: %d/%d", boss->mHealth, boss->mMaxHealth));
+                    break;
+                }
+            }
+        }
+
+        // Timery
+        if (cheatMessageTimer > 0) {
+            cheatMessageTimer -= dt;
+        }
+        if (weaponChangeTimer > 0) {
+            weaponChangeTimer -= dt;
+        }
 
         // =====================================================================
         // UPDATE
@@ -338,9 +564,14 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
         // --- 1. Update gracza ---
         if (playerPtr && playerPtr->mActive) {
             playerPtr->update(dt);
+
+            if (godMode) {
+                playerPtr->mHealth = playerPtr->mMaxHealth;
+                playerPtr->mInvincibilityTimer = 0.5f;
+            }
         }
 
-        // --- 2. Update bossów (specjalna logika z wallEntities) ---
+        // --- 2. Update bossów ---
         for (MageBoss* boss : bosses) {
             if (!boss || !boss->mActive) continue;
             boss->updateBossLogic(dt, wallEntities);
@@ -353,15 +584,32 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
         }
 
         // --- 4. Kolizje ze ścianami ---
-        for (auto& ent : activeEntities) {
-            if (!ent || !ent->mActive || ent->mType == WALL) continue;
+        if (!noclip) {
+            for (auto& ent : activeEntities) {
+                if (!ent || !ent->mActive || ent->mType == WALL) continue;
 
-            nearbyObstacles.clear();
-            staticCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, nearbyObstacles);
+                nearbyObstacles.clear();
+                staticCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, nearbyObstacles);
 
-            for (Entity* obs : nearbyObstacles) {
-                if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
-                    ent->onCollision(obs);
+                for (Entity* obs : nearbyObstacles) {
+                    if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
+                        ent->onCollision(obs);
+                    }
+                }
+            }
+        }
+        else {
+            for (auto& ent : activeEntities) {
+                if (!ent || !ent->mActive || ent->mType == WALL) continue;
+                if (ent.get() == playerPtr) continue;
+
+                nearbyObstacles.clear();
+                staticCollisionGrid.getNearby(ent->mPosition.x, ent->mPosition.y, nearbyObstacles);
+
+                for (Entity* obs : nearbyObstacles) {
+                    if (CheckCollisionRecs(ent->getRect(), obs->getRect())) {
+                        ent->onCollision(obs);
+                    }
                 }
             }
         }
@@ -373,7 +621,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
             for (MageBoss* boss : bosses) {
                 if (!boss || !boss->mActive) continue;
 
-                // Atak gracza na bossa
                 if (playerPtr->mIsAttacking) {
                     if (CheckCollisionRecs(playerPtr->mAttackArea, boss->getRect())) {
                         if (!playerPtr->hasHit(boss)) {
@@ -384,7 +631,8 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     }
                 }
 
-                // Fireballe bossa vs gracz
+                if (godMode) continue;
+
                 for (auto& fb : boss->mFireballs) {
                     if (!fb.active) continue;
 
@@ -403,7 +651,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     }
                 }
 
-                // Laser bossa vs gracz
                 if (boss->mState == MageBoss::LASER_FIRE) {
                     if (playerPtr->mInvincibilityTimer <= 0) {
                         if (boss->checkLaserCollision(playerPtr)) {
@@ -417,7 +664,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     }
                 }
 
-                // AOE bossa vs gracz
                 if (boss->checkAoeCollision(playerPtr)) {
                     if (playerPtr->mInvincibilityTimer <= 0) {
                         playerPtr->mHealth -= 2;
@@ -435,7 +681,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     }
                 }
 
-                // Dotyk bossa (gdy NIE VULNERABLE)
                 if (boss->mState != MageBoss::VULNERABLE &&
                     boss->mState != MageBoss::DYING &&
                     boss->mState != MageBoss::INACTIVE) {
@@ -456,7 +701,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
             for (RabbitEnemy* rabbit : rabbits) {
                 if (!rabbit || !rabbit->mActive || rabbit->mIsDead) continue;
 
-                // Atak gracza na królika
                 if (playerPtr->mIsAttacking) {
                     if (CheckCollisionRecs(playerPtr->mAttackArea, rabbit->getRect())) {
                         if (!playerPtr->hasHit(rabbit)) {
@@ -471,11 +715,11 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     }
                 }
 
-                // Dotyk królika vs gracz
+                if (godMode) continue;
+
                 if (!rabbit->mIsDead) {
                     if (CheckCollisionRecs(playerPtr->getRect(), rabbit->getRect())) {
                         if (playerPtr->mInvincibilityTimer <= 0) {
-                            // Monster form zadaje więcej obrażeń
                             int damage = 1;
                             if (rabbit->mState >= RabbitEnemy::MONSTER_CHARGE &&
                                 rabbit->mState <= RabbitEnemy::MONSTER_TURN) {
@@ -550,11 +794,28 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
         // --- Gracz ---
         if (playerPtr && playerPtr->mActive) {
             playerPtr->draw();
+
+            if (godMode) {
+                DrawCircleLines(
+                    (int)(playerPtr->mPosition.x + playerPtr->mSize.x / 2),
+                    (int)(playerPtr->mPosition.y + playerPtr->mSize.y / 2),
+                    (int)(playerPtr->mSize.x * 0.8f + sinf(GetTime() * 5) * 3),
+                    Fade(GOLD, 0.5f)
+                );
+            }
+
+            if (noclip) {
+                DrawCircleLines(
+                    (int)(playerPtr->mPosition.x + playerPtr->mSize.x / 2),
+                    (int)(playerPtr->mPosition.y + playerPtr->mSize.y / 2),
+                    (int)(playerPtr->mSize.x * 0.6f),
+                    Fade(SKYBLUE, 0.6f)
+                );
+            }
         }
 
         // --- Debug ---
         if (showDebug) {
-            // Koordynaty gracza
             if (playerPtr) {
                 DrawRectangleLinesEx(playerPtr->getRect(), 1, GREEN);
                 if (playerPtr->mIsAttacking) {
@@ -564,7 +825,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     (int)playerPtr->mPosition.x - 15, (int)playerPtr->mPosition.y - 20, 5, LIME);
             }
 
-            // Koordynaty kursora myszy w świecie
             Vector2 mouseScreen = GetMousePosition();
             float scale = std::min((float)windowWidth / VIRTUAL_WIDTH, (float)windowHeight / VIRTUAL_HEIGHT);
             float offsetX = (windowWidth - VIRTUAL_WIDTH * scale) / 2;
@@ -575,7 +835,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                 (mouseScreen.y - offsetY) / scale + camera.target.y - VIRTUAL_HEIGHT / 2.0f
             };
 
-            // Krzyżyk na kursorze
             DrawLine((int)mouseWorld.x - 6, (int)mouseWorld.y,
                 (int)mouseWorld.x + 6, (int)mouseWorld.y, YELLOW);
             DrawLine((int)mouseWorld.x, (int)mouseWorld.y - 6,
@@ -583,7 +842,6 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
             DrawText(TextFormat("%.0f,%.0f", mouseWorld.x, mouseWorld.y),
                 (int)mouseWorld.x + 8, (int)mouseWorld.y - 3, 5, YELLOW);
 
-            // Stany wrogów
             for (RabbitEnemy* rabbit : rabbits) {
                 if (rabbit && rabbit->mActive) {
                     DrawRectangleLinesEx(rabbit->getRect(), 1, ORANGE);
@@ -622,7 +880,10 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     DrawText(stateText, (int)boss->mPosition.x, (int)boss->mPosition.y - 20, 8,
                         boss->mIsEnraged ? RED : WHITE);
 
-                    // Rysuj granice areny w debugu
+                    DrawText(TextFormat("HP:%d/%d", boss->mHealth, boss->mMaxHealth),
+                        (int)boss->mPosition.x, (int)boss->mPosition.y - 30, 6,
+                        boss->mIsEnraged ? ORANGE : GREEN);
+
                     DrawRectangleLines(
                         (int)boss->mArenaBounds.x,
                         (int)boss->mArenaBounds.y,
@@ -650,14 +911,102 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
             { 0, 0 }, 0, WHITE
         );
 
-        // --- UI ---
+        // =====================================================================
+        // UI - BROŃ + STATYSTYKI
+        // =====================================================================
         if (playerPtr) {
-            DrawText(TextFormat("HP: %d", playerPtr->mHealth), 20, 20, 24, RED);
+            WeaponStats currentWeapon = playerPtr->getCurrentWeaponStats();
+
+            // HP gracza (lewy górny róg)
+            Color hpColor = godMode ? GOLD : RED;
+            DrawText(TextFormat("HP: %d", playerPtr->mHealth), 20, 20, 24, hpColor);
+
+            // === PANEL BRONI (prawy górny róg) ===
+            int panelX = windowWidth - 220;
+            int panelY = 15;
+            float animProgress = 1.0f - (weaponChangeTimer / WEAPON_CHANGE_ANIM_TIME);
+
+            // Tło panelu
+            DrawRectangle(panelX - 5, panelY - 5, 210, 90, Fade(BLACK, 0.7f));
+            DrawRectangleLines(panelX - 5, panelY - 5, 210, 90, Fade(currentWeapon.slashColor, 0.8f));
+
+            // Nazwa broni [POPRAWIONE: DOSTOSOWANE DO NOWYCH OBRAŻEŃ]
+            const char* weaponName = "???";
+            if (currentWeapon.damage == 2.0f) weaponName = "MIECZ";       // Było 15.0f
+            else if (currentWeapon.damage == 1.0f) weaponName = "SZTYLET"; // Było 8.0f
+            else if (currentWeapon.damage == 5.0f) weaponName = "TOPOR";   // Było 28.0f
+            else if (currentWeapon.damage == 1.5f) weaponName = "WLOCNIA"; // Było 12.0f
+            else if (currentWeapon.damage == 3.5f) weaponName = "KATANA";  // Było 20.0f
+
+            Color weaponColor = currentWeapon.slashColor;
+            if (weaponChangeTimer > 0) {
+                // Pulsowanie przy zmianie
+                float pulse = sinf(weaponChangeTimer * 20.0f) * 0.5f + 0.5f;
+                weaponColor = ColorAlpha(weaponColor, 0.5f + pulse * 0.5f);
+            }
+
+            DrawText(weaponName, panelX, panelY, 20, weaponColor);
+
+            // Statystyki
+            int statY = panelY + 25;
+            DrawText(TextFormat("DMG: %.0f", currentWeapon.damage), panelX, statY, 14, WHITE);
+            statY += 16;
+            DrawText(TextFormat("RNG: %.0f", currentWeapon.reachX), panelX, statY, 14, SKYBLUE);
+            statY += 16;
+
+            // Prędkość ataku (im niższy cooldown tym szybsza)
+            float attackSpeed = 1.0f / currentWeapon.attackCooldown;
+            DrawText(TextFormat("SPD: %.1f/s", attackSpeed), panelX, statY, 14, YELLOW);
+
+            // Ikony mini broni (1-5)
+            int iconX = panelX + 120;
+            int iconY = panelY + 25;
+            const WeaponType allWeapons[] = {
+                WeaponType::SWORD_DEFAULT,
+                WeaponType::DAGGER_SWIFT,
+                WeaponType::AXE_HEAVY,
+                WeaponType::SPEAR_LONG,
+                WeaponType::KATANA_BLOOD
+            };
+
+            for (int i = 0; i < 5; i++) {
+                WeaponStats ws = WeaponStats::GetStats(allWeapons[i]);
+                bool isSelected = (ws.damage == currentWeapon.damage &&
+                    ws.reachX == currentWeapon.reachX);
+
+                Color iconColor = isSelected ? ws.slashColor : Fade(ws.slashColor, 0.3f);
+                int size = isSelected ? 10 : 8;
+
+                DrawRectangle(iconX, iconY + i * 12, size, size, iconColor);
+                DrawText(TextFormat("%d", i + 1), iconX + 14, iconY + i * 12, 8,
+                    isSelected ? WHITE : GRAY);
+            }
+
+            // Ikony cheatów
+            int cheatY = 60;
+            if (godMode) {
+                DrawText("GOD", 20, cheatY, 16, GOLD);
+                cheatY += 18;
+            }
+            if (noclip) {
+                DrawText("NOCLIP", 20, cheatY, 16, SKYBLUE);
+                cheatY += 18;
+            }
+        }
+
+        // Wiadomość cheata
+        if (cheatMessageTimer > 0) {
+            float alpha = std::min(cheatMessageTimer, 1.0f);
+            int textWidth = MeasureText(cheatMessage.c_str(), 24);
+            DrawText(cheatMessage.c_str(),
+                (windowWidth - textWidth) / 2,
+                windowHeight / 2 - 50,
+                24,
+                Fade(YELLOW, alpha));
         }
 
         // Debug UI
         if (showDebug) {
-            // Recalculate mouse world position for UI
             Vector2 mouseScreen = GetMousePosition();
             float offsetX = (windowWidth - VIRTUAL_WIDTH * scale) / 2;
             float offsetY = (windowHeight - VIRTUAL_HEIGHT * scale) / 2;
@@ -666,20 +1015,37 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                 (mouseScreen.y - offsetY) / scale + camera.target.y - VIRTUAL_HEIGHT / 2.0f
             };
 
-            DrawText(TextFormat("Player: %.0f, %.0f", playerPtr->mPosition.x, playerPtr->mPosition.y),
-                20, 50, 16, LIME);
-            DrawText(TextFormat("Mouse:  %.0f, %.0f", mouseWorld.x, mouseWorld.y),
-                20, 70, 16, YELLOW);
-            DrawText(TextFormat("Camera: %.0f, %.0f", camera.target.x, camera.target.y),
-                20, 90, 16, SKYBLUE);
-            DrawText(TextFormat("Enemies: %d boss, %d rabbit", (int)bosses.size(), (int)rabbits.size()),
-                20, 110, 16, WHITE);
+            int debugY = windowHeight - 180;
+            DrawRectangle(15, debugY - 5, 300, 155, Fade(BLACK, 0.7f));
 
-            DrawText("[F3] Debug Mode", 20, windowHeight - 30, 14, GRAY);
+            DrawText(TextFormat("Player: %.0f, %.0f", playerPtr->mPosition.x, playerPtr->mPosition.y),
+                20, debugY, 14, LIME);
+            debugY += 18;
+            DrawText(TextFormat("Mouse:  %.0f, %.0f", mouseWorld.x, mouseWorld.y),
+                20, debugY, 14, YELLOW);
+            debugY += 18;
+            DrawText(TextFormat("Camera: %.0f, %.0f", camera.target.x, camera.target.y),
+                20, debugY, 14, SKYBLUE);
+            debugY += 18;
+            DrawText(TextFormat("Enemies: %d boss, %d rabbit", (int)bosses.size(), (int)rabbits.size()),
+                20, debugY, 14, WHITE);
+            debugY += 18;
+
+            for (MageBoss* boss : bosses) {
+                if (boss && boss->mActive) {
+                    DrawText(TextFormat("Boss HP: %d/%d %s",
+                        boss->mHealth, boss->mMaxHealth,
+                        boss->mIsEnraged ? "(ENRAGED)" : ""),
+                        20, debugY, 14, boss->mIsEnraged ? RED : GREEN);
+                    debugY += 18;
+                    break;
+                }
+            }
+
             DrawFPS(windowWidth - 100, 20);
         }
 
-        // Pasek HP bossa na górze ekranu
+        // Pasek HP bossa
         for (MageBoss* boss : bosses) {
             if (boss && boss->mActive && boss->mState != MageBoss::INACTIVE) {
                 float bossBarWidth = 200.0f;
@@ -698,14 +1064,24 @@ void sceneGame(int windowWidth, int windowHeight, bool& shouldQuit, int& state) 
                     DrawText("ENRAGED!", (int)(bossBarX + bossBarWidth + 10), (int)bossBarY - 2, 12, RED);
                 }
 
-                break;  // Tylko jeden boss na ekranie
+                break;
             }
         }
 
-        if (showDebug) {
-            DrawText("F3: Debug", 20, windowHeight - 30, 16, GRAY);
-            DrawFPS(windowWidth - 100, 20);
-        }
+        // === PASEK STEROWANIA (dół ekranu) ===
+        int controlsY = windowHeight - 30;
+        DrawRectangle(0, controlsY - 5, windowWidth, 35, Fade(BLACK, 0.8f));
+
+        // Lewa strona - broń
+        DrawText("[1-5] Bron", 20, controlsY, 14, YELLOW);
+
+        // Środek - cheaty
+        const char* cheats = "[G]od [N]oclip [R]espawn [T]TP [H]eal [K]ill [L]Dmg [F1]Reset [F2]Rage";
+        int cheatWidth = MeasureText(cheats, 12);
+        DrawText(cheats, (windowWidth - cheatWidth) / 2, controlsY + 2, 12, GRAY);
+
+        // Prawa strona - debug
+        DrawText("[F3] Debug", windowWidth - 120, controlsY, 14, GRAY);
 
         EndDrawing();
     }

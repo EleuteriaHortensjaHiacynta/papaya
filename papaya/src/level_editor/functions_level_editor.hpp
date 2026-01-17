@@ -66,9 +66,9 @@ inline std::string saveChunkToImage(const char* title) {
 
 }
 
-inline void autoSave(std::shared_ptr<InteractiveGrid> grid) {
+// Dodajemy argumenty chunkX i chunkY
+inline void autoSave(std::shared_ptr<InteractiveGrid> grid, int chunkX, int chunkY) {
 	std::filesystem::path currentPath = std::filesystem::current_path();
-
 	std::filesystem::path saveDir = currentPath / "assets/editor/";
 
 	if (!std::filesystem::exists(saveDir)) {
@@ -76,7 +76,8 @@ inline void autoSave(std::shared_ptr<InteractiveGrid> grid) {
 	}
 	saveDir = saveDir / "last_edited_chunk.autosave.json";
 
-	grid->chunkToJson(saveDir.string().c_str(), 0, 0);
+	// U¿ywamy przekazanych zmiennych zamiast zer!
+	grid->chunkToJson(saveDir.string().c_str(), chunkX, chunkY);
 }
 
 inline void changeDisplayedCoordinate(std::shared_ptr<Button> button, std::string coordinate, int value) {

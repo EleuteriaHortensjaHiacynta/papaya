@@ -88,6 +88,16 @@ void Saves::loadFromEditorDir(const std::string& pathToFolder) {
 
     for (const auto& entry : std::filesystem::directory_iterator(editorPath)) {
         if (entry.path().extension() == ".json") {
+
+            // --- NOWY FRAGMENT KODU ---
+            // Sprawdzamy, czy nazwa pliku zawiera "autosave". Jeśli tak, pomijamy go.
+            std::string filename = entry.path().filename().string();
+            if (filename.find("autosave") != std::string::npos) {
+                std::cout << "[SYSTEM] Pominieto plik autozapisu: " << filename << std::endl;
+                continue;
+            }
+            // --------------------------
+
             std::ifstream jsonFile(entry.path());
             if (jsonFile.is_open()) {
                 std::string content(
@@ -98,6 +108,11 @@ void Saves::loadFromEditorDir(const std::string& pathToFolder) {
 
                 if (mapSaver) {
                     mapSaver->fromEditor(content);
+                }
+
+                // Pamiętaj o tym, co dodaliśmy wcześniej!
+                if (entitySaver) {
+                    entitySaver->fromEditor(content);
                 }
             }
         }
