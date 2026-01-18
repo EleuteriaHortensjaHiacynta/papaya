@@ -140,4 +140,8 @@ private:
     void respawnPlayer();
 
     void saveGame();
+    
+    int mCurrentMusicTrack = 1; // 1 = Abyss, 2 = Abyss_deep
+    void updateBackgroundMusic();
+    void loadAudio();
 };

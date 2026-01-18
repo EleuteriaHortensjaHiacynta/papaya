@@ -1,5 +1,6 @@
 #include "GameWrapper.hpp"
 #include "Physics.hpp"
+#include "Audio/AudioManager.hpp"
 
 #include "../Saves/saves.hpp"
 #include "../Entities/Entity.h"
@@ -14,7 +15,7 @@
 using namespace GameConstants;
 
 // =============================================================================
-// POMOCNICZE STRUKTURY
+// MAPA I KAMERA
 // =============================================================================
 
 void GameMap::init(const std::vector<RenderTile>& rawTiles) {
@@ -140,7 +141,7 @@ bool WeaponUIState::isAnimating() const {
 }
 
 // =============================================================================
-// GAME WRAPPER
+// GAME WRAPPER - LOGIKA GRY
 // =============================================================================
 
 GameWrapper::GameWrapper(bool& shouldQuit, int& state)
@@ -148,6 +149,8 @@ GameWrapper::GameWrapper(bool& shouldQuit, int& state)
     , mState(state)
 {
     std::cout << "[GameWrapper] Inicjalizacja..." << std::endl;
+
+    AudioManager::getInstance()->init();
 
     {
         Saves tempSaves(currentSavePath);
@@ -163,6 +166,7 @@ GameWrapper::GameWrapper(bool& shouldQuit, int& state)
     }
 
     loadTextures();
+    loadAudio();
     loadMap();
     loadEntities();
 
@@ -185,13 +189,48 @@ GameWrapper::~GameWrapper() {
     std::cout << "[GameWrapper] Zamykanie (zapis stanu)..." << std::endl;
     saveGame();
     unloadTextures();
+    AudioManager::getInstance()->shutdown();
     UnloadRenderTexture(mRenderTarget);
 }
 
+void GameWrapper::loadAudio() {
+    AudioManager* am = AudioManager::getInstance();
+
+    am->loadSound("jump", "assets/audio/jump.wav");
+    am->loadSound("dash", "assets/audio/jump.wav");
+    am->loadSound("attack", "assets/audio/attack.wav");
+    am->loadSound("hurt", "assets/audio/hurt.wav");
+    am->loadSound("death", "assets/audio/death.wav");
+
+    //am->loadMusic("bgm1", "assets/audio/Abyss.ogg");
+    //am->loadMusic("bgm2", "assets/audio/Abyss_deep.ogg");
+
+    mCurrentMusicTrack = 1;
+    am->playMusic("bgm1", false);
+}
+
+void GameWrapper::updateBackgroundMusic() {
+    AudioManager* am = AudioManager::getInstance();
+
+    if (!am->isMusicPlaying()) {
+
+        if (mCurrentMusicTrack == 1) {
+            mCurrentMusicTrack = 2;
+            am->playMusic("bgm2", false);
+            std::cout << "[AUDIO] Track 1 koniec -> Gramy Abyss_deep" << std::endl;
+        }
+        else {
+            mCurrentMusicTrack = 1;
+            am->playMusic("bgm1", false);
+            std::cout << "[AUDIO] Track 2 koniec -> Gramy Abyss" << std::endl;
+        }
+    }
+}
+
 void GameWrapper::reloadSave() {
+
     std::cout << "[GameWrapper] Prze³¹czanie na slot: " << currentSavePath << std::endl;
 
-    // Czyœcimy wszystko
     mActiveEntities.clear();
     mWallEntities.clear();
     mBosses.clear();
@@ -202,7 +241,6 @@ void GameWrapper::reloadSave() {
     mPlayerPtr = nullptr;
     mCollisionGrid.clear();
 
-    // Sprawdzamy czy slot pusty
     {
         Saves tempSaves(currentSavePath);
         if (tempSaves.getMap().getRenderData().empty()) {
@@ -288,28 +326,22 @@ void GameWrapper::loadMap() {
 void GameWrapper::loadEntities() {
     Saves saves(currentSavePath);
 
-    // Próba wczytania gracza z zapisu
-    Vector2 spawnPos = mPlayerSpawnPoint; // Domyœlny start
+    Vector2 spawnPos = mPlayerSpawnPoint;
     int spawnHP = 5;
 
     try {
         auto savedData = saves.getSaveData().getAll();
-        bool found = false;
         for (const auto& s : savedData) {
             if (s.entityType == PLAYER) {
                 spawnPos.x = (float)(s.x * TILE_SIZE_PX);
                 spawnPos.y = (float)(s.y * TILE_SIZE_PX);
                 spawnHP = s.health;
-                found = true;
                 std::cout << "[LOAD] Znaleziono zapis gracza: " << spawnPos.x << ", " << spawnPos.y << std::endl;
                 break;
             }
         }
-        if (!found) std::cout << "[LOAD] Brak gracza w zapisie - u¿ywam spawnu domyœlnego." << std::endl;
     }
-    catch (...) {
-        std::cout << "[LOAD] B³¹d odczytu saves.bin - u¿ywam spawnu domyœlnego." << std::endl;
-    }
+    catch (...) {}
 
     {
         auto p = std::make_unique<Player>(spawnPos.x, spawnPos.y);
@@ -360,6 +392,8 @@ void GameWrapper::createTestEnemies() {
 void GameWrapper::runFrame(int windowWidth, int windowHeight) {
     float dt = std::min(GetFrameTime(), 0.033f);
 
+    AudioManager::getInstance()->updateMusic();
+
     handleInput(dt);
     updateEntities(dt);
     updateCollisions();
@@ -376,7 +410,7 @@ void GameWrapper::runFrame(int windowWidth, int windowHeight) {
 
 void GameWrapper::handleInput(float dt) {
     if (IsKeyPressed(KEY_ESCAPE)) {
-        saveGame(); // ZAPIS PRZED WYJŒCIEM DO MENU
+        saveGame();
         mState = 0;
         return;
     }
@@ -498,33 +532,47 @@ void GameWrapper::updateCombat() {
                 }
             }
         }
+
+        // Zderzenie z bossem (obra¿enia)
         if (boss->mState != MageBoss::VULNERABLE && boss->mState != MageBoss::DYING && boss->mState != MageBoss::INACTIVE) {
             if (CheckCollisionRecs(mPlayerPtr->getRect(), boss->getRect()) && mPlayerPtr->mInvincibilityTimer <= 0) {
                 mPlayerPtr->mHealth -= 1;
                 mPlayerPtr->mInvincibilityTimer = 1.0f;
+
+                AudioManager::getInstance()->playSound("hurt");
                 float dir = Physics::GetKnockbackDirection(boss->mPosition.x, mPlayerPtr->mPosition.x);
                 Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 120.0f, 80.0f);
             }
         }
+
         if (mCheats.godMode) continue;
+
+        // Fireballs
         for (auto& fb : boss->mFireballs) {
             if (fb.active && mPlayerPtr->mInvincibilityTimer <= 0 && CheckCollisionCircleRec(fb.position, fb.radius, mPlayerPtr->getRect())) {
                 mPlayerPtr->mHealth -= 1;
                 mPlayerPtr->mInvincibilityTimer = 1.0f;
+                AudioManager::getInstance()->playSound("hurt");
                 float dir = Physics::GetKnockbackDirection(fb.position.x, mPlayerPtr->mPosition.x);
                 Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 150.0f, 100.0f);
                 fb.active = false;
             }
         }
+
+        // Laser
         if (boss->mState == MageBoss::LASER_FIRE && mPlayerPtr->mInvincibilityTimer <= 0 && boss->checkLaserCollision(mPlayerPtr)) {
             mPlayerPtr->mHealth -= 2;
             mPlayerPtr->mInvincibilityTimer = 1.5f;
+            AudioManager::getInstance()->playSound("hurt");
             float dir = Physics::GetKnockbackDirection(boss->mPosition.x, mPlayerPtr->mPosition.x);
             Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 200.0f, 150.0f);
         }
+
+        // AOE
         if (boss->checkAoeCollision(mPlayerPtr) && mPlayerPtr->mInvincibilityTimer <= 0) {
             mPlayerPtr->mHealth -= 2;
             mPlayerPtr->mInvincibilityTimer = 1.5f;
+            AudioManager::getInstance()->playSound("hurt");
             float dx = mPlayerPtr->mPosition.x - boss->mPosition.x;
             float dy = mPlayerPtr->mPosition.y - boss->mPosition.y;
             float len = std::sqrt(dx * dx + dy * dy);
@@ -556,9 +604,14 @@ void GameWrapper::updateCombat() {
             int dmg = (r->mState >= RabbitEnemy::MONSTER_CHARGE && r->mState <= RabbitEnemy::MONSTER_TURN) ? 2 : 1;
             mPlayerPtr->mHealth -= dmg;
             mPlayerPtr->mInvincibilityTimer = 1.0f;
+            AudioManager::getInstance()->playSound("hurt");
             float dir = Physics::GetKnockbackDirection(r->mPosition.x, mPlayerPtr->mPosition.x);
             Physics::ApplyKnockback(mPlayerPtr->mVelocity, dir, 100.0f, 60.0f);
         }
+    }
+
+    if (mPlayerPtr && mPlayerPtr->mHealth <= 0 && mPlayerPtr->mActive) {
+        AudioManager::getInstance()->playSound("death");
     }
 }
 
@@ -652,10 +705,16 @@ void GameWrapper::drawUI(int windowWidth, int windowHeight) {
         case WeaponType::KATANA_BLOOD: wName = "BLOOD KATANA"; break;
         }
         DrawText(wName, px + 10, py + 10, 20, wc);
+
+        std::string sName = "SAVE: ???";
+        if (currentSavePath.find("main") != std::string::npos) sName = "SAVE: 1";
+        else if (currentSavePath.find("secondary") != std::string::npos) sName = "SAVE: 2";
+        else if (currentSavePath.find("tertiary") != std::string::npos) sName = "SAVE: 3";
+        DrawText(sName.c_str(), px + 150, py + 12, 10, GRAY);
+
         DrawText(TextFormat("DMG: %.0f  RNG: %.0f", ws.damage, ws.reachX), px + 10, py + 35, 14, textNormal);
         DrawText(TextFormat("SPD: %.2fs", ws.attackCooldown), px + 10, py + 55, 14, textAccent);
 
-        // Icons
         for (int i = 0; i < 5; i++) {
             bool sel = ((int)mPlayerPtr->getCurrentWeaponType() == i);
             WeaponStats s = WeaponStats::GetStats((WeaponType)i);
@@ -663,7 +722,6 @@ void GameWrapper::drawUI(int windowWidth, int windowHeight) {
             DrawText(TextFormat("%d", i + 1), px + 135, py + 35 + i * 12, 10, sel ? WHITE : GRAY);
         }
 
-        // Stats Panel
         int sy = py + 110;
         DrawRectangle(px, sy, 220, 110, panelBg);
         DrawRectangleLines(px, sy, 220, 110, panelBorder);
@@ -683,7 +741,6 @@ void GameWrapper::drawUI(int windowWidth, int windowHeight) {
         DrawText(mPlayerPtr->canDash() ? "DASH READY" : "RECHARGE", px + 60, sy + 85, 10, mPlayerPtr->canDash() ? LIME : MAROON);
     }
 
-    // Boss Bar
     for (auto* b : mBosses) {
         if (b && b->mActive && b->mState != MageBoss::INACTIVE) {
             int bx = windowWidth / 2 - 200, by = 40;
@@ -696,7 +753,6 @@ void GameWrapper::drawUI(int windowWidth, int windowHeight) {
         }
     }
 
-    // Controls
     int cx = 20, cy = windowHeight - 160;
     DrawRectangle(cx, cy, 180, 140, panelBg);
     DrawRectangleLines(cx, cy, 180, 140, panelBorder);
@@ -708,13 +764,11 @@ void GameWrapper::drawUI(int windowWidth, int windowHeight) {
     DrawText("[Z]", cx + 10, ty, 10, YELLOW); DrawText("Attack", cx + 70, ty, 10, textNormal); ty += 18;
     DrawText("[F3]", cx + 10, ty, 10, YELLOW); DrawText("Debug", cx + 70, ty, 10, textNormal);
 
-    // Messages
     if (mCheats.hasActiveMessage()) {
         const char* txt = mCheats.message.c_str();
         DrawText(txt, (windowWidth - MeasureText(txt, 24)) / 2, windowHeight / 2 - 50, 24, Fade(YELLOW, std::min(mCheats.messageTimer, 1.0f)));
     }
 
-    // Debug Overlay
     if (mShowDebug) {
         int dx = 20, dy = 20;
         DrawRectangle(dx, dy, 180, 280, Fade(BLACK, 0.9f));
@@ -732,7 +786,7 @@ void GameWrapper::drawUI(int windowWidth, int windowHeight) {
         DrawText("[G] God Mode", dx + 10, dty, 10, GRAY); dty += 15;
         DrawText("[N] Noclip", dx + 10, dty, 10, GRAY); dty += 15;
         DrawText("[H] Heal", dx + 10, dty, 10, GRAY); dty += 15;
-        DrawText("[T] TP to Boss", dx + 10, dty, 10, GRAY); dty += 15;
+        DrawText("[T] TP Boss", dx + 10, dty, 10, GRAY); dty += 15;
         DrawText("[K] Kill Boss", dx + 10, dty, 10, GRAY); dty += 15;
         DrawText("[R] Respawn", dx + 10, dty, 10, GRAY); dty += 15;
         DrawText("[F1] Reset", dx + 10, dty, 10, GRAY);

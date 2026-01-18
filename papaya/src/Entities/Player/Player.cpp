@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Core/InputHelper.h"
 #include "Core/MathUtils.h"
+#include "Audio/AudioManager.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -272,6 +273,7 @@ void Player::handleJump(float dt) {
     }
 
     if (jumped) {
+        AudioManager::getInstance()->playSoundRandomPitch("jump");
         mCoyoteTimeCounter = 0;
         mJumpBufferCounter = 0;
         mIsGrounded = false;
@@ -459,6 +461,9 @@ void Player::handleAttack(float dt) {
     mComboWindowOpen = false;
 
     WeaponStats stats = getCurrentWeaponStats();
+
+    AudioManager::getInstance()->playSoundRandomPitch("attack");
+
     mIsAttacking = true;
     mCurrentState = AnimState::ATTACK;
 

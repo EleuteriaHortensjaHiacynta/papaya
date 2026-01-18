@@ -22,6 +22,9 @@ set(PAPAYA_SOURCES
   src/Saves/saves.cpp
 
   src/Core/GameWrapper.cpp
+
+  # Audio
+  src/Audio/AudioManager.cpp
   
   # Scenes
   src/Scenes/scene_game.cpp
@@ -44,6 +47,9 @@ set(PAPAYA_HEADERS
   src/Core/Physics.hpp
   src/Core/GameConstants.hpp
   
+  # Audio
+  src/Audio/AudioManager.hpp
+
   # Entities - Base
   src/Entities/Entity.h
   
