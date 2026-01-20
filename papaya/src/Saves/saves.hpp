@@ -2,40 +2,40 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
-
-#include "map.hpp"
-#include "entities.hpp"
-#include "raylib.h"
+#include <memory>
+#include "Map/map.hpp"
+#include "Entities/entities.hpp"
 
 class Saves {
-    private:
+private:
     std::filesystem::path path;
 
     std::fstream mapFile;
     std::fstream entitiesFile;
     std::fstream entitiesSaveFile;
-    
-    MapLoader mapLoader;
-    MapSaver mapSaver;
 
-    EntitySaver entitySaver;
-    EntityLoader entityLoader;
+    std::unique_ptr<MapLoader> mapLoader;
+    std::unique_ptr<MapSaver> mapSaver;
+    std::unique_ptr<EntityLoader> entityLoader;
+    std::unique_ptr<EntitySaver> entitySaver;
+    std::unique_ptr<EntityLoader> entitySavesLoader;
+    std::unique_ptr<EntitySaver> entitySavesSaver;
 
-    EntitySaver entitySavesSaver;
-    EntityLoader entitySavesLoader;
+    void openFile(std::fstream& file, const std::filesystem::path& filePath);
 
-    bool isSaveAvailable();
+public:
+    explicit Saves(const std::string& pathToFolder);
 
-    public:
-    explicit Saves(std::string pathToFolder);
+    void refresh();
 
-    MapLoader getMap();
-    MapSaver saveMap();
-    EntityLoader getEntities();
-    EntitySaver saveEntities();
-    EntitySaver saveEntityToMap();
-    void loadFromEditorDir(std::string pathToFolder);
-    
-    // void addIcon();
-    // Texture2D getIcon();
+    MapLoader& getMap();
+    MapSaver& saveMap();
+    EntityLoader& getEntities();
+    EntitySaver& saveEntities();
+
+    EntityLoader& getSaveData();
+    EntitySaver& saveEntityToMap();
+    void clearSaveData();
+
+    void loadFromEditorDir(const std::string& pathToFolder);
 };

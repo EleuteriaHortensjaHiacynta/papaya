@@ -17406,17 +17406,17 @@
 "textureID": 8
 },
 {
-"collision": true,
+"collision": false,
 "damage": false,
 "textureID": 785
 },
 {
-"collision": true,
+"collision": false,
 "damage": false,
 "textureID": 784
 },
 {
-"collision": true,
+"collision": false,
 "damage": false,
 "textureID": 722
 },
@@ -18572,7 +18572,7 @@
 "textureID": 5
 },
 {
-"collision": true,
+"collision": false,
 "damage": false,
 "textureID": 8
 },
@@ -23362,7 +23362,7 @@
 0,
 0,
 0,
-0,
+1,
 0,
 0,
 0,

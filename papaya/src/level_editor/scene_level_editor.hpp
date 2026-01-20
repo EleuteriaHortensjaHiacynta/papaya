@@ -438,7 +438,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 		// localtime_s(&localTime, &currentTime);
 
 		if (autoSaveTimer >= autoSaveInterval) {
-			autoSave(pDrawingScreen);
+			autoSave(pDrawingScreen, chunkX, chunkY); // Przekazujemy aktualne chunkX i chunkY
 			std::cout << "Auto save complete. " << std::endl;
 			autoSaveTimer = 0.0f;
 		}
@@ -589,9 +589,7 @@ void sceneLevelEditor(bool& shouldQuit, int& state, int windowHeight, int window
 	UnloadTexture(textureAtlas);
 	UnloadTexture(spriteAtlas);
 	
-	autoSave(pDrawingScreen);
-	
-
+	autoSave(pDrawingScreen, chunkX, chunkY);
 }
 
 

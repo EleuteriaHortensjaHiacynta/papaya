@@ -2,69 +2,64 @@
 #include <raylib.h>
 
 inline void changeScene(int& state, int value, bool& shouldLeave) {
-	state = value;
-	shouldLeave = true;
+    state = value;
+    shouldLeave = true;
 }
 
 inline void exitProgram(bool& shouldQuit) {
-	shouldQuit = true;
+    shouldQuit = true;
 }
 
 inline void subgridSetup(std::shared_ptr<Grid> subGrid, std::shared_ptr<Grid> grid, int row, int column) {
-	grid->insertWidget(row, column, subGrid);
+    grid->insertWidget(row, column, subGrid);
 
-	// .get gives a raw pointer instead of shared ptr
-	subGrid->setParent(grid.get());
-	subGrid->setPosition(grid->cells[row][column].rect);
-	subGrid->expandSubgridToFillCell();
+    subGrid->setParent(grid.get());
+    subGrid->setPosition(grid->cells[row][column].rect);
+    subGrid->expandSubgridToFillCell();
 }
 
 inline void gridButtonSetup(std::shared_ptr<Grid> grid, std::shared_ptr<Button> button, int row, int column) {
-	grid->insertWidget(row, column, button);
-	button->setPosition(grid->cells[row][column].rect);
+    grid->insertWidget(row, column, button);
+    button->setPosition(grid->cells[row][column].rect);
 }
 
 inline float smoothing(float current, float target, float speed) {
-	return current + (target - current) * (1.0f - expf(-speed * GetFrameTime()));
+    return current + (target - current) * (1.0f - expf(-speed * GetFrameTime()));
 }
 
-inline void shiftingBackground(Texture2D image, Vector2 mouse, int windowWidth, int windowHeight, float xShift, float yShift, float time, float &shiftX, float &shiftY) {
-	
-	float x = mouse.x * 0.1f / (windowWidth * 5.0f);
-	float y = mouse.y * 0.1f / (windowHeight * 5.0f);
+inline void shiftingBackground(Texture2D image, Vector2 mouse, int windowWidth, int windowHeight, float xShift, float yShift, float time, float& shiftX, float& shiftY) {
 
-	float baseX = sinf(time * 0.25f) * 0.005f * xShift;
-	float baseY = cosf(time * 0.25f) * 0.005f * yShift;
-	
-	float mouseShiftX = x * xShift;
-	float mouseShiftY = y * yShift;
+    float x = mouse.x * 0.1f / (windowWidth * 5.0f);
+    float y = mouse.y * 0.1f / (windowHeight * 5.0f);
 
-	float shiftBaseX = baseX + mouseShiftX;
-	float shiftBaseY = baseY + mouseShiftY;
+    float baseX = sinf(time * 0.25f) * 0.005f * xShift;
+    float baseY = cosf(time * 0.25f) * 0.005f * yShift;
 
-	shiftX = smoothing(shiftX, shiftBaseX, 0.1f);
-	shiftY = smoothing(shiftY, shiftBaseY, 0.1f);
+    float mouseShiftX = x * xShift;
+    float mouseShiftY = y * yShift;
 
-	DrawTexturePro(image, Rectangle{ (float)image.width * (0.25f + shiftX), (float)image.height * (0.25f + shiftY), (float)image.width * 0.75f, (float)image.height * 0.75f}, Rectangle{0, 0, (float)windowWidth, (float)windowHeight}, {0, 0}, 0.0f, WHITE);
+    float shiftBaseX = baseX + mouseShiftX;
+    float shiftBaseY = baseY + mouseShiftY;
+
+    shiftX = smoothing(shiftX, shiftBaseX, 0.1f);
+    shiftY = smoothing(shiftY, shiftBaseY, 0.1f);
+
+    DrawTexturePro(image, Rectangle{ (float)image.width * (0.25f + shiftX), (float)image.height * (0.25f + shiftY), (float)image.width * 0.75f, (float)image.height * 0.75f }, Rectangle{ 0, 0, (float)windowWidth, (float)windowHeight }, { 0, 0 }, 0.0f, WHITE);
 }
 
 bool clearDir(const std::filesystem::path& dir) {
-	
-	std::error_code ec;
 
-	std::filesystem::path currentPath = std::filesystem::current_path();
+    std::error_code ec;
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path saveDir = currentPath / dir;
 
-	std::filesystem::path saveDir = currentPath / dir;
+    if (!dir.string().starts_with("assets/saves")) return false;
 
-	if (!dir.string().starts_with("assets/saves")) return false;
+    std::filesystem::remove_all(saveDir, ec);
+    if (ec) return false;
 
-	// Remove everything inside (and the directory itself)
-	std::filesystem::remove_all(saveDir, ec);
-	if (ec) return false;
+    std::filesystem::create_directories(saveDir, ec);
+    if (ec) return false;
 
-	// Recreate the directory empty
-	std::filesystem::create_directories(saveDir, ec);
-	if (ec) return false;
-
-	return true;
+    return true;
 }

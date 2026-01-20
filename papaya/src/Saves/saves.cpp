@@ -1,94 +1,135 @@
-#include "saves.hpp"
-#include <filesystem>
-#include <fstream>
+﻿#include "saves.hpp"
 #include <iostream>
 
-namespace fs = std::filesystem;
+void Saves::openFile(std::fstream& file, const std::filesystem::path& filePath) {
+    file.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
 
-MapLoader getMap();
-MapSaver saveMap();
-EntityLoader getEntities();
-EntitySaver saveEntities();
-EntitySaver saveEntityToMap();
+    if (!file.is_open()) {
+        std::ofstream create(filePath, std::ios::binary);
+        create.close();
+        file.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
+    }
+}
 
-Saves::Saves(const std::string pathToFolder) 
-    : path(pathToFolder), 
-      mapFile(), 
-      entitiesFile(),
-      entitiesSaveFile(),
-      
-      mapLoader(mapFile),
-      mapSaver(mapFile),
-      entitySaver(entitiesFile),
-      entityLoader(entitiesFile),
-      entitySavesSaver(entitiesSaveFile),
-      entitySavesLoader(entitiesSaveFile)
-{
-    if (!fs::exists(path)) {
-        fs::create_directory(path);
+Saves::Saves(const std::string& pathToFolder) : path(pathToFolder) {
+    if (!std::filesystem::exists(path)) {
+        std::filesystem::create_directories(path);
     }
 
-    auto ensureFileExists = [](fs::path p) {
-        if (!fs::exists(p)) {
-            std::ofstream(p).close(); // Create and immediately close
+    openFile(mapFile, path / "map.bin");
+    openFile(entitiesFile, path / "entities.bin");
+    openFile(entitiesSaveFile, path / "saves.bin");
+
+    if (mapFile.is_open()) {
+        mapLoader = std::make_unique<MapLoader>(mapFile);
+        mapSaver = std::make_unique<MapSaver>(mapFile);
+    }
+
+    if (entitiesFile.is_open()) {
+        entityLoader = std::make_unique<EntityLoader>(entitiesFile);
+        entitySaver = std::make_unique<EntitySaver>(entitiesFile);
+    }
+
+    if (entitiesSaveFile.is_open()) {
+        entitySavesLoader = std::make_unique<EntityLoader>(entitiesSaveFile);
+        entitySavesSaver = std::make_unique<EntitySaver>(entitiesSaveFile);
+    }
+}
+
+void Saves::refresh() {
+    auto resetStream = [](std::fstream& stream) {
+        if (stream.is_open()) {
+            stream.flush();
+            stream.clear();
+            stream.seekg(0, std::ios::beg);
+            stream.seekp(0, std::ios::end);
         }
-    };
+        };
 
-    ensureFileExists(path / "map.dat");
-    ensureFileExists(path / "entities.dat");
-    ensureFileExists(path / "entities.dat.save");
-
-    auto flags = std::ios::in | std::ios::out | std::ios::binary | std::ios::ate;
-    
-    mapFile.open(path / "map.dat", flags);
-    entitiesFile.open(path / "entities.dat", flags);
-    entitiesSaveFile.open(path / "entities.dat.save", flags);
+    resetStream(mapFile);
+    resetStream(entitiesFile);
+    resetStream(entitiesSaveFile);
 }
 
-bool Saves::isSaveAvailable() {
-    if (entitySavesLoader.getAll().empty()) {
-        return false;
+MapLoader& Saves::getMap() {
+    if (!mapLoader) throw std::runtime_error("MapLoader not initialized");
+    return *mapLoader;
+}
+
+MapSaver& Saves::saveMap() {
+    if (!mapSaver) throw std::runtime_error("MapSaver not initialized");
+    return *mapSaver;
+}
+
+EntityLoader& Saves::getEntities() {
+    if (!entityLoader) throw std::runtime_error("EntityLoader not initialized");
+    return *entityLoader;
+}
+
+EntitySaver& Saves::saveEntities() {
+    if (!entitySaver) throw std::runtime_error("EntitySaver not initialized");
+    return *entitySaver;
+}
+
+EntityLoader& Saves::getSaveData() {
+    if (!entitySavesLoader) throw std::runtime_error("EntitySavesLoader not initialized");
+    return *entitySavesLoader;
+}
+
+EntitySaver& Saves::saveEntityToMap() {
+    if (!entitySavesSaver) throw std::runtime_error("EntitySavesSaver not initialized");
+    return *entitySavesSaver;
+}
+
+void Saves::clearSaveData() {
+    if (entitiesSaveFile.is_open()) {
+        entitiesSaveFile.close();
     }
-    return true;
+    std::filesystem::path p = path / "saves.bin";
+    entitiesSaveFile.open(p, std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc);
+
+    entitySavesLoader = std::make_unique<EntityLoader>(entitiesSaveFile);
+    entitySavesSaver = std::make_unique<EntitySaver>(entitiesSaveFile);
 }
 
-EntityLoader Saves::getEntities() {
-    if (isSaveAvailable()) {
-        return entitySavesLoader;
+void Saves::loadFromEditorDir(const std::string& pathToFolder) {
+    std::filesystem::path editorPath(pathToFolder);
+
+    if (!std::filesystem::exists(editorPath)) {
+        std::cerr << "[ERROR] Folder nie istnieje: " << pathToFolder << std::endl;
+        return;
     }
-    return entityLoader;
-}
 
-EntitySaver Saves::saveEntities() {
-    return entitySavesSaver;
-}
+    std::cout << "[SYSTEM] Import z '" << pathToFolder << "'..." << std::endl;
 
-EntitySaver Saves::saveEntityToMap() {
-    return entitySaver;
-}
+    for (const auto& entry : std::filesystem::directory_iterator(editorPath)) {
+        if (entry.path().extension() == ".json") {
 
-MapLoader Saves::getMap() {
-    return mapLoader;
-}
-
-MapSaver Saves::saveMap() {
-    return mapSaver;
-}
-
-void Saves::loadFromEditorDir(std::string pathToFolder) {
-    fs::path editorPath(pathToFolder);
-
-    for (auto& file : fs::directory_iterator(editorPath)) {
-        if (file.path().extension() == ".json") {
-            std::fstream fileStream(file.path(), std::ios::in | std::ios::binary);
-            if (!fileStream.is_open()) {
-                throw std::runtime_error("Failed to open file: " + file.path().string());
+            std::string filename = entry.path().filename().string();
+            if (filename.find("autosave") != std::string::npos) {
+                std::cout << "[SYSTEM] Pominieto plik autozapisu: " << filename << std::endl;
+                continue;
             }
-            std::string jsonContent((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
-            fileStream.close();
 
-            mapSaver.fromEditor(jsonContent);
-            entitySaver.fromEditor(jsonContent);
+            std::ifstream jsonFile(entry.path());
+            if (jsonFile.is_open()) {
+                std::string content(
+                    (std::istreambuf_iterator<char>(jsonFile)),
+                    std::istreambuf_iterator<char>()
+                );
+                jsonFile.close();
+
+                if (mapSaver) {
+                    mapSaver->fromEditor(content);
+                }
+
+                if (entitySaver) {
+                    entitySaver->fromEditor(content);
+                }
+            }
         }
     }
+
+    refresh();
+    std::cout << "[SYSTEM] Import zakończony." << std::endl;
 }
