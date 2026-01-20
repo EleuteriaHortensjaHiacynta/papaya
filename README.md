@@ -1,4 +1,11 @@
 # papaya
+This is platform game made for Collage subject. 
+It features:
+ - Bosses
+ - Advanced bosses
+ - Map Editor
+![Main game](./docs/main_game.png)
+![Editor](./docs/editor.png)
 # How to get the game
 ## Download precompiled binary(Easy)
 Downloand `.zip` for your system and launch it.
@@ -20,7 +27,7 @@ cd build
 ```
 Initiaze build folder with `cmake`
 ```
-cmkae ..
+cmake ..
 ```
 Build game 
 ```
