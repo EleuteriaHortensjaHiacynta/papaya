@@ -1,6 +1,8 @@
 # papaya
 This is a platformer game made for a college project. 
-[Presentation](.docs/papaaya.pptx) [Report](.docs/Papaya - sprawozdanie.docx)
+
+[Presentation](.docs/papaaya.pptx) [Report](.docs/Papaya-sprawozdanie.docx)
+
 It features:
  - Bosses
  - Advanced bosses
